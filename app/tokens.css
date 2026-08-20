@@ -1,0 +1,128 @@
+/* ===========================================================================
+   HOUSSESTUDIO — Tokens de diseño
+   ===========================================================================
+
+   Único lugar donde viven la paleta, la tipografía y la escala. Los componentes
+   nunca escriben un color literal: consumen estas variables, de modo que un
+   cambio de identidad se hace acá y en ningún otro archivo.
+
+   La paleta es monocromática de cinco pasos. Los tonos intermedios que hacen
+   falta para estados (hover, superficies sutiles) se derivan con `color-mix`
+   en vez de agregar colores nuevos, así la identidad no se diluye.
+   =========================================================================== */
+
+:root {
+  /* --- Paleta base ------------------------------------------------------- */
+  --hs-ink: #111315; /* texto principal, superficies oscuras */
+  --hs-graphite: #2a2d30; /* segundo plano oscuro */
+  --hs-slate: #4a4f55; /* texto secundario */
+  --hs-mist: #b8bdc3; /* bordes y separadores */
+  --hs-paper: #f4f5f7; /* fondo */
+
+  /* --- Superficies derivadas -------------------------------------------- */
+  --hs-surface-raised: color-mix(in oklab, var(--hs-mist) 18%, var(--hs-paper));
+  --hs-surface-hover: color-mix(in oklab, var(--hs-mist) 32%, var(--hs-paper));
+
+  /* --- Tipografía -------------------------------------------------------- */
+  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
+
+  /* Minimalista: pocos pesos y saltos de tamaño amplios. */
+  --hs-tracking-wide: 0.18em;
+  --hs-tracking-tight: -0.02em;
+
+  /* --- Forma ------------------------------------------------------------- */
+  /* Radio chico y sin sombras: la jerarquía la dan el borde y el espacio. */
+  --radius: 0.25rem;
+
+  /* =========================================================================
+     Mapeo a las variables que consumen los componentes de shadcn.
+     Traducir acá una sola vez evita tener que tocar cada componente de ui/.
+     ========================================================================= */
+  --background: var(--hs-paper);
+  --foreground: var(--hs-ink);
+
+  --card: var(--hs-paper);
+  --card-foreground: var(--hs-ink);
+  --popover: var(--hs-paper);
+  --popover-foreground: var(--hs-ink);
+
+  --primary: var(--hs-ink);
+  --primary-foreground: var(--hs-paper);
+
+  --secondary: var(--hs-surface-raised);
+  --secondary-foreground: var(--hs-ink);
+
+  --muted: var(--hs-surface-raised);
+  --muted-foreground: var(--hs-slate);
+
+  --accent: var(--hs-surface-hover);
+  --accent-foreground: var(--hs-ink);
+
+  --border: var(--hs-mist);
+  --input: var(--hs-mist);
+  --ring: var(--hs-slate);
+
+  /* La paleta no tiene un rojo, pero "cancelar turno" y "eliminar servicio" son
+     acciones irreversibles: necesitan leerse como peligro y no como un gris más.
+     Es un color funcional, deliberadamente desaturado para no romper el
+     conjunto. */
+  --destructive: oklch(0.52 0.16 25);
+  --destructive-foreground: var(--hs-paper);
+
+  --sidebar: var(--hs-surface-raised);
+  --sidebar-foreground: var(--hs-ink);
+  --sidebar-primary: var(--hs-ink);
+  --sidebar-primary-foreground: var(--hs-paper);
+  --sidebar-accent: var(--hs-surface-hover);
+  --sidebar-accent-foreground: var(--hs-ink);
+  --sidebar-border: var(--hs-mist);
+  --sidebar-ring: var(--hs-slate);
+
+  --chart-1: var(--hs-ink);
+  --chart-2: var(--hs-graphite);
+  --chart-3: var(--hs-slate);
+  --chart-4: var(--hs-mist);
+  --chart-5: var(--hs-surface-hover);
+}
+
+/* Los roles se invierten: la tinta pasa a ser fondo y el papel, texto. */
+.dark {
+  --hs-surface-raised: color-mix(in oklab, var(--hs-paper) 8%, var(--hs-ink));
+  --hs-surface-hover: color-mix(in oklab, var(--hs-paper) 14%, var(--hs-ink));
+
+  --background: var(--hs-ink);
+  --foreground: var(--hs-paper);
+
+  --card: var(--hs-graphite);
+  --card-foreground: var(--hs-paper);
+  --popover: var(--hs-graphite);
+  --popover-foreground: var(--hs-paper);
+
+  --primary: var(--hs-paper);
+  --primary-foreground: var(--hs-ink);
+
+  --secondary: var(--hs-graphite);
+  --secondary-foreground: var(--hs-paper);
+
+  --muted: var(--hs-graphite);
+  --muted-foreground: var(--hs-mist);
+
+  --accent: var(--hs-surface-hover);
+  --accent-foreground: var(--hs-paper);
+
+  --border: var(--hs-slate);
+  --input: var(--hs-slate);
+  --ring: var(--hs-mist);
+
+  --destructive: oklch(0.62 0.17 25);
+  --destructive-foreground: var(--hs-ink);
+
+  --sidebar: var(--hs-graphite);
+  --sidebar-foreground: var(--hs-paper);
+  --sidebar-primary: var(--hs-paper);
+  --sidebar-primary-foreground: var(--hs-ink);
+  --sidebar-accent: var(--hs-surface-hover);
+  --sidebar-accent-foreground: var(--hs-paper);
+  --sidebar-border: var(--hs-slate);
+  --sidebar-ring: var(--hs-mist);
+}
