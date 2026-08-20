@@ -1,4 +1,4 @@
-import { Mail, Phone, StickyNote } from "lucide-react";
+import { IdCard, Mail, Phone, StickyNote } from "lucide-react";
 
 import {
   CancelAppointmentButton,
@@ -51,6 +51,10 @@ export function AppointmentCard({
 
         {customer ? (
           <div className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            <span className="flex items-center gap-1.5">
+              <IdCard className="size-3.5" />
+              {customer.dni}
+            </span>
             <a href={`tel:${customer.phone}`} className="hover:text-foreground flex items-center gap-1.5">
               <Phone className="size-3.5" />
               {customer.phone}

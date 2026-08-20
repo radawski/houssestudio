@@ -2,9 +2,10 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 
-import { BookingFields } from "@/components/public/booking-fields";
 import { BookingSummary } from "@/components/public/booking-summary";
 import { DateStrip } from "@/components/public/date-strip";
+import { DniGate, type Identity } from "@/components/public/dni-gate";
+import { Field, inputClass } from "@/components/public/form-field";
 import { ServiceOption } from "@/components/public/service-option";
 import { StepIndicator, type StepNumber } from "@/components/public/step-indicator";
 import { StepShell } from "@/components/public/step-shell";
@@ -12,6 +13,7 @@ import { TimeSlotGrid, type Slot } from "@/components/public/time-slot-grid";
 import { createBooking, fetchSlots } from "@/lib/actions/booking";
 import { idleState } from "@/lib/actions/result";
 import type { Service } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
 /**
  * Deriva `yyyy-MM-dd` de la fecha elegida en el calendario.
@@ -32,6 +34,8 @@ const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   month: "long",
 });
 
+const UNRESOLVED_IDENTITY: Identity = { resolved: false, displayName: null };
+
 export function BookingStepper({
   services,
   closedWeekdays,
@@ -47,6 +51,7 @@ export function BookingStepper({
   const [slot, setSlot] = useState<Slot | null>(null);
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [loadingSlots, startLoadingSlots] = useTransition();
+  const [identity, setIdentity] = useState<Identity>(UNRESOLVED_IDENTITY);
   const [state, formAction] = useActionState(createBooking, idleState);
 
   // Los horarios ofrecidos dependen del servicio (los slots se encadenan según
@@ -77,6 +82,7 @@ export function BookingStepper({
       service={service}
       dateLabel={date ? dateFormatter.format(date) : null}
       timeLabel={slot ? `${slot.label} h` : null}
+      customerName={step === 3 ? identity.displayName : null}
     />
   );
 
@@ -154,12 +160,19 @@ export function BookingStepper({
 
               <StepShell
                 title="Tus datos"
-                hint="Te avisamos por email cuando el turno quede confirmado."
+                hint="Ingresá tu DNI: si ya reservaste antes, reconocemos tus datos."
                 onBack={() => setStep(2)}
                 continueType="submit"
                 continueLabel="Confirmar turno"
+                canContinue={identity.resolved}
               >
-                <BookingFields errors={state.fieldErrors} />
+                <div className="space-y-6">
+                  <DniGate errors={state.fieldErrors} onIdentityChange={setIdentity} />
+
+                  <Field id="note" label="Algo que quieras aclarar (opcional)" error={state.fieldErrors?.note}>
+                    <textarea id="note" name="note" rows={2} className={cn(inputClass, "resize-none")} />
+                  </Field>
+                </div>
 
                 {state.status === "error" && !state.fieldErrors ? (
                   <p className="border-destructive/40 text-destructive mt-5 border p-3 text-sm">

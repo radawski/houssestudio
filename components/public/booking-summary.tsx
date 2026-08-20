@@ -33,10 +33,13 @@ export function BookingSummary({
   service,
   dateLabel,
   timeLabel,
+  customerName,
 }: {
   service: Service | null;
   dateLabel: string | null;
   timeLabel: string | null;
+  /** Nombre resuelto en el paso de identificación (reconocido o recién tipeado). */
+  customerName?: string | null;
 }) {
   return (
     <aside className="border-border bg-[var(--hs-surface-raised)] border p-6">
@@ -52,6 +55,7 @@ export function BookingSummary({
         />
         <Row label="Fecha" value={dateLabel} />
         <Row label="Horario" value={timeLabel} />
+        <Row label="Cliente" value={customerName ?? null} />
       </dl>
 
       <div className="border-border mt-4 flex items-baseline justify-between border-t pt-4">

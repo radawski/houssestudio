@@ -34,22 +34,57 @@ const phoneSchema = z
     message: "El telefono no parece valido. Ej: 11 2345-6789",
   });
 
+/**
+ * Normaliza un DNI a solo digitos, con el mismo criterio que `normalizePhone`
+ * y por el mismo motivo: "30.123.456", "30 123 456" y "30123456" tienen que
+ * resolver a la misma ficha, o cada forma de escribirlo crearia un cliente
+ * nuevo y partiria el historial.
+ */
+export function normalizeDni(input: string): string {
+  return input.replace(/\D/g, "");
+}
+
+const dniSchema = z
+  .string()
+  .trim()
+  .min(1, "Ingresa tu DNI")
+  .transform(normalizeDni)
+  .refine((v) => /^\d{7,8}$/.test(v), {
+    message: "El DNI no es valido. Ej: 30123456",
+  });
+
 export const loginSchema = z.object({
   email: z.email("Ingresa un email valido"),
   password: z.string().min(6, "La contrasena debe tener al menos 6 caracteres"),
 });
 
+/** Para la consulta que dispara el reconocimiento del cliente por DNI. */
+export const identifySchema = z.object({
+  dni: dniSchema,
+});
+
+const fullNameSchema = z
+  .string()
+  .trim()
+  .min(2, "Ingresa tu nombre completo")
+  .max(80, "El nombre es demasiado largo");
+
+const emailSchema = z.email("Ingresa un email valido").max(120);
+
+/**
+ * `fullName`, `phone` y `email` son opcionales a proposito: son obligatorios
+ * solo cuando el DNI no tiene ficha previa, y eso lo decide el servidor
+ * despues de consultar la base, no este schema. `createBooking` exige los tres
+ * a mano en ese caso.
+ */
 export const bookingSchema = z.object({
   serviceId: z.uuid("Elegi un servicio"),
   /** Instante de inicio en ISO 8601, tal como lo devolvio el motor de slots. */
   startsAt: z.iso.datetime({ offset: true }),
-  fullName: z
-    .string()
-    .trim()
-    .min(2, "Ingresa tu nombre completo")
-    .max(80, "El nombre es demasiado largo"),
-  phone: phoneSchema,
-  email: z.email("Ingresa un email valido").max(120),
+  dni: dniSchema,
+  fullName: fullNameSchema.optional(),
+  phone: phoneSchema.optional(),
+  email: emailSchema.optional(),
   note: z.string().trim().max(300, "La nota es demasiado larga").optional(),
 });
 

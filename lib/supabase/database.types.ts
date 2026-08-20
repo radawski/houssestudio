@@ -51,6 +51,8 @@ export type TimeBlock = {
 
 export type Customer = {
   id: string;
+  /** Identidad unica del cliente. Solo digitos, 7 u 8 caracteres. */
+  dni: string;
   full_name: string;
   phone: string;
   email: string | null;

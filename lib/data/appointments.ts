@@ -14,10 +14,10 @@ import type { Appointment, Customer } from "@/lib/supabase/database.types";
  */
 
 export type AppointmentWithCustomer = Appointment & {
-  customer: Pick<Customer, "id" | "full_name" | "phone" | "email"> | null;
+  customer: Pick<Customer, "id" | "dni" | "full_name" | "phone" | "email"> | null;
 };
 
-const WITH_CUSTOMER = "*, customer:customers(id, full_name, phone, email)";
+const WITH_CUSTOMER = "*, customer:customers(id, dni, full_name, phone, email)";
 
 export async function countPendingAppointments(): Promise<number> {
   const supabase = await createClient();

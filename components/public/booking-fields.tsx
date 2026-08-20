@@ -1,43 +1,30 @@
 "use client";
 
+import { Field, inputClass } from "@/components/public/form-field";
 import { cn } from "@/lib/utils";
 
+export type ContactValues = { fullName: string; phone: string; email: string };
+export type ContactField = keyof ContactValues;
+
 /**
- * Campos mínimos del último paso.
+ * Datos de contacto: nombre, teléfono y email.
  *
- * Se mantienen como inputs nativos con `name`, porque el envío sigue siendo un
- * `<form action={serverAction}>`: el navegador arma el FormData solo y la
- * reserva funciona incluso antes de que hidrate el JavaScript.
+ * Se usa en dos momentos, siempre adentro de `DniGate`: dar de alta a un
+ * cliente nuevo (vacío) o editar los datos de uno reconocido (`defaultValues`
+ * precargados). Los inputs quedan sin controlar (`defaultValue`, no `value`)
+ * para que el envío del formulario siga siendo un `FormData` nativo; el
+ * `onFieldChange` es solo para que `DniGate` sepa en vivo si ya están
+ * completos y pueda habilitar "Confirmar turno".
  */
-function Field({
-  id,
-  label,
-  error,
-  children,
+export function BookingFields({
+  errors,
+  defaultValues,
+  onFieldChange,
 }: {
-  id: string;
-  label: string;
-  error?: string;
-  children: React.ReactNode;
+  errors?: Record<string, string>;
+  defaultValues?: Partial<ContactValues>;
+  onFieldChange?: (field: ContactField, value: string) => void;
 }) {
-  return (
-    <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="text-muted-foreground block text-xs tracking-[0.08em] uppercase"
-      >
-        {label}
-      </label>
-      {children}
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
-    </div>
-  );
-}
-
-const inputClass =
-  "border-border focus:border-foreground focus-visible:ring-ring w-full border bg-transparent px-4 py-3 text-base transition-colors focus-visible:ring-2 focus-visible:outline-none";
-
-export function BookingFields({ errors }: { errors?: Record<string, string> }) {
   return (
     <div className="space-y-5">
       <Field id="fullName" label="Nombre y apellido" error={errors?.fullName}>
@@ -46,6 +33,8 @@ export function BookingFields({ errors }: { errors?: Record<string, string> }) {
           name="fullName"
           autoComplete="name"
           required
+          defaultValue={defaultValues?.fullName}
+          onChange={(e) => onFieldChange?.("fullName", e.target.value)}
           className={inputClass}
           aria-invalid={Boolean(errors?.fullName)}
         />
@@ -60,6 +49,8 @@ export function BookingFields({ errors }: { errors?: Record<string, string> }) {
           autoComplete="tel"
           placeholder="11 2345-6789"
           required
+          defaultValue={defaultValues?.phone}
+          onChange={(e) => onFieldChange?.("phone", e.target.value)}
           className={cn(inputClass, "placeholder:text-muted-foreground")}
           aria-invalid={Boolean(errors?.phone)}
         />
@@ -72,13 +63,11 @@ export function BookingFields({ errors }: { errors?: Record<string, string> }) {
           type="email"
           autoComplete="email"
           required
+          defaultValue={defaultValues?.email}
+          onChange={(e) => onFieldChange?.("email", e.target.value)}
           className={inputClass}
           aria-invalid={Boolean(errors?.email)}
         />
-      </Field>
-
-      <Field id="note" label="Algo que quieras aclarar (opcional)" error={errors?.note}>
-        <textarea id="note" name="note" rows={2} className={cn(inputClass, "resize-none")} />
       </Field>
     </div>
   );
