@@ -186,3 +186,120 @@
     opacity: 0.07;
   }
 }
+
+/* ===========================================================================
+   CTA de la portada
+
+   El botón respira en reposo y un destello lo recorre cada tanto, para que
+   llame la atención sin parpadear ni saltar.
+
+   Todo el movimiento va sobre `translate` y `scale` —las propiedades
+   independientes— y no sobre `transform`. Así el flotar continuo y el realce
+   del hover pueden convivir en el mismo elemento sin pisarse: si ambos
+   escribieran `transform`, la animación ganaría siempre y el hover no se vería.
+   =========================================================================== */
+
+@keyframes hs-cta-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+@keyframes hs-cta-arrow-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 3px;
+  }
+}
+
+/* El grueso del ciclo lo pasa fuera de cuadro: la idea es un brillo ocasional
+   que cruza el botón, no un destello permanente. */
+@keyframes hs-cta-sheen {
+  0%,
+  62% {
+    translate: -150% 0;
+  }
+  100% {
+    translate: 150% 0;
+  }
+}
+
+.hs-cta {
+  position: relative;
+  overflow: hidden;
+  animation: hs-cta-float 4.6s ease-in-out infinite;
+  transition:
+    scale 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 320ms ease,
+    background-color 320ms ease;
+}
+
+.hs-cta:hover {
+  scale: 1.025;
+}
+
+/* El clic responde más rápido que el hover: a 320 ms el hundido se sentiría
+   despegado del dedo. */
+.hs-cta:active {
+  scale: 0.99;
+  transition-duration: 90ms;
+}
+
+.hs-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.16) 50%,
+    transparent 62%
+  );
+  translate: -150% 0;
+  animation: hs-cta-sheen 6.8s ease-in-out infinite;
+}
+
+/* La flecha cabecea en su propio ciclo, más corto que el del botón, para que se
+   lea como "seguí bajando" y no como parte del mismo vaivén. */
+.hs-cta-arrow {
+  animation: hs-cta-arrow-bob 2.4s ease-in-out infinite;
+  transition: translate 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hs-cta:hover .hs-cta-arrow {
+  animation: none;
+  translate: 0 3px;
+}
+
+/* Mismo criterio que las capas del fondo: se detiene el movimiento y se deja el
+   botón quieto en su posición de reposo. El realce del hover se conserva en
+   color, que no implica desplazamiento. */
+@media (prefers-reduced-motion: reduce) {
+  .hs-cta,
+  .hs-cta::after,
+  .hs-cta-arrow {
+    animation: none;
+  }
+
+  .hs-cta,
+  .hs-cta-arrow {
+    translate: 0 0;
+  }
+
+  .hs-cta:hover,
+  .hs-cta:active {
+    scale: 1;
+  }
+
+  .hs-cta::after {
+    opacity: 0;
+  }
+}

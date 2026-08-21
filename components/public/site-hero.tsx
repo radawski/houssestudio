@@ -51,10 +51,10 @@ export function SiteHero({ tagline }: { tagline?: string }) {
 
         <a
           href="#reservar"
-          className="group inline-flex w-fit items-center gap-2.5 border border-white/35 px-[22px] py-4 text-[13px] tracking-[0.18em] uppercase transition-colors hover:border-white/60 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+          className="hs-cta group inline-flex w-fit items-center gap-2.5 border border-white/35 px-[22px] py-4 text-[13px] tracking-[0.18em] uppercase hover:border-white/60 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
         >
           Reservar turno
-          <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" />
+          <ArrowDown className="hs-cta-arrow size-4" />
         </a>
       </div>
     </section>
