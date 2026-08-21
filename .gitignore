@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Export del editor de diseño (fuente de la portada). Queda fuera del repo
+# porque el repositorio es público y uploads/ trae imágenes personales; el único
+# archivo que la app necesita es el logo, ya copiado en public/logo.png.
+# El patrón evita la "ó": macOS guarda el nombre en Unicode descompuesto.
+HOUSSESTUDIO*/

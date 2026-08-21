@@ -63,3 +63,126 @@
     @apply font-sans;
   }
 }
+/* ===========================================================================
+   Portada animada
+   ===========================================================================
+
+   Tres capas superpuestas sobre el negro de la portada: un resplandor que se
+   desplaza, una grilla que deriva en diagonal y el logo respirando de fondo.
+
+   Viven acá y no como estilos en línea porque usan máscaras y degradados
+   repetidos que en utilidades de Tailwind quedarían ilegibles. Los colores son
+   blancos con alfa y no tokens del sistema: son luz sobre negro, no superficies
+   temáticas, y no deben invertirse si algún día hay modo claro.
+   =========================================================================== */
+
+@keyframes hs-glow-drift {
+  0%,
+  100% {
+    transform: translate(-40%, -55%);
+  }
+  50% {
+    transform: translate(-58%, -45%);
+  }
+}
+
+@keyframes hs-grid-drift {
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      56px 56px,
+      56px 56px;
+  }
+}
+
+@keyframes hs-logo-breathe {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.055;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.02);
+    opacity: 0.09;
+  }
+}
+
+.hs-hero-glow {
+  position: absolute;
+  inset: -30%;
+  background-image: radial-gradient(
+    circle at 30% 25%,
+    rgb(255 255 255 / 0.05),
+    transparent 60%
+  );
+  animation: hs-glow-drift 46s ease-in-out infinite;
+}
+
+.hs-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgb(255 255 255 / 0.045) 0px,
+      rgb(255 255 255 / 0.045) 1px,
+      transparent 1px,
+      transparent 56px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.045) 0px,
+      rgb(255 255 255 / 0.045) 1px,
+      transparent 1px,
+      transparent 56px
+    );
+  animation: hs-grid-drift 60s linear infinite;
+  /* La máscara desvanece la grilla hacia los bordes para que no choque contra
+     el recorte de la pantalla. */
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 75% at 50% 40%,
+    #000 40%,
+    transparent 90%
+  );
+  mask-image: radial-gradient(ellipse 90% 75% at 50% 40%, #000 40%, transparent 90%);
+}
+
+.hs-hero-logo {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: min(520px, 62vw);
+  height: auto;
+  /* El logo es blanco sobre negro: `screen` vuelve transparente el negro y deja
+     solo el trazo, sin necesidad de un PNG recortado. */
+  mix-blend-mode: screen;
+  pointer-events: none;
+  /* Estado base igual al fotograma 0: sin esto el logo aparece descentrado
+     durante el primer cuadro, antes de que arranque la animación. */
+  transform: translate(-50%, -50%);
+  opacity: 0.055;
+  animation: hs-logo-breathe 11s ease-in-out infinite;
+}
+
+/* Tres animaciones infinitas simultáneas son justo el tipo de movimiento que
+   molesta a quien pidió reducirlo. Se congela el fotograma, no se oculta la
+   capa: la composición se mantiene igual, solo deja de moverse. */
+@media (prefers-reduced-motion: reduce) {
+  .hs-hero-glow,
+  .hs-hero-grid,
+  .hs-hero-logo {
+    animation: none;
+  }
+
+  .hs-hero-glow {
+    transform: translate(-40%, -55%);
+  }
+
+  .hs-hero-logo {
+    opacity: 0.07;
+  }
+}
