@@ -89,7 +89,12 @@ export function BookingStepper({
   return (
     <section
       id="reservar"
-      className="flex min-h-dvh scroll-mt-0 flex-col px-6 py-10 sm:px-10"
+      // `tabIndex={-1}` la vuelve enfocable por programa sin meterla en el orden
+      // de tabulación: `HeroCta` le pasa el foco al bajar, para que quien navega
+      // con teclado siga desde acá y no desde la portada. El anillo se oculta
+      // porque el foco lo pone el código, no el usuario.
+      tabIndex={-1}
+      className="flex min-h-dvh scroll-mt-0 flex-col px-6 py-10 focus:outline-none sm:px-10"
     >
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
         <StepIndicator current={step} />

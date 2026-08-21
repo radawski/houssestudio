@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { ArrowDown } from "lucide-react";
 
+import { HeroCta } from "@/components/public/hero-cta";
 import { BUSINESS_NAME } from "@/lib/config";
 
 /**
@@ -12,7 +12,9 @@ import { BUSINESS_NAME } from "@/lib/config";
  * lectura del lector de pantalla antes de llegar al contenido real.
  *
  * El CTA es un ancla y no una navegación: el stepper vive en la misma página,
- * así que bajar hasta él no descarta nada de lo que el visitante ya eligió.
+ * así que bajar hasta él no descarta nada de lo que el visitante ya eligió. El
+ * descenso suave lo maneja `HeroCta`, que por eso es el único trozo de la
+ * portada que corre en el cliente.
  */
 export function SiteHero({ tagline }: { tagline?: string }) {
   return (
@@ -49,13 +51,7 @@ export function SiteHero({ tagline }: { tagline?: string }) {
 
         <div className="flex-1" />
 
-        <a
-          href="#reservar"
-          className="hs-cta group inline-flex w-fit items-center gap-2.5 border border-white/35 px-[22px] py-4 text-[13px] tracking-[0.18em] uppercase hover:border-white/60 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
-        >
-          Reservar turno
-          <ArrowDown className="hs-cta-arrow size-4" />
-        </a>
+        <HeroCta />
       </div>
     </section>
   );
