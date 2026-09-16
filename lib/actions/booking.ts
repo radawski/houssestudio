@@ -15,6 +15,7 @@ import {
 } from "@/lib/data/availability";
 import { toDateKey } from "@/lib/dates";
 import { formatTime } from "@/lib/format";
+import { isLocalPhone } from "@/lib/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateManageToken } from "@/lib/tokens";
@@ -104,7 +105,7 @@ export async function lookupCustomerByDni(rawDni: string): Promise<CustomerLooku
 /**
  * Crea la solicitud de turno en estado "pendiente".
  *
- * Hay cuatro controles encadenados, y ninguno sobra:
+ * Hay cinco controles encadenados, y ninguno sobra:
  *
  *  1. Zod valida la forma de los datos.
  *  2. Se recalcula la disponibilidad del lado del servidor y se exige que el
@@ -113,7 +114,10 @@ export async function lookupCustomerByDni(rawDni: string): Promise<CustomerLooku
  *  3. El DNI se resuelve contra la base en este mismo request, nunca contra un
  *     "ya existe" que mande el cliente: confiar en esa senal permitiria
  *     inyectar el customer_id de otra persona.
- *  4. La restriccion de exclusion de la base resuelve la carrera entre dos
+ *  4. El telefono tiene que caer dentro del area de atencion. Solo se exige
+ *     cuando entra un telefono nuevo (alta o edicion): a un cliente ya
+ *     registrado que no toca sus datos no se le revisa nada.
+ *  5. La restriccion de exclusion de la base resuelve la carrera entre dos
  *     personas que mandan el mismo horario en el mismo instante: el paso 2 no
  *     puede cubrirla porque entre leer y escribir hay una ventana.
  */
@@ -178,6 +182,19 @@ export async function createBooking(
 
     if (Object.keys(missing).length > 0) {
       return actionError("Revisá tus datos de contacto.", missing);
+    }
+
+    // Se controla acá y no solo en el navegador porque el navegador es
+    // manipulable: sin esta barrera alcanzaría con un POST a mano para tomar
+    // el horario igual. Se corta ANTES de insertar, así el slot queda libre
+    // para alguien que sí pueda venir.
+    if (!isLocalPhone(phone!)) {
+      return {
+        status: "error",
+        code: "fuera_de_area",
+        message:
+          "Para números fuera del área local, la reserva debe coordinarse directamente con el local.",
+      };
     }
 
     const { data: customer, error: customerError } = await supabase

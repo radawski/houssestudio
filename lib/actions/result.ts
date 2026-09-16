@@ -10,6 +10,12 @@ export type ActionState = {
   status: "idle" | "success" | "error";
   message?: string;
   fieldErrors?: Record<string, string>;
+  /**
+   * Distingue un rechazo que la interfaz tiene que tratar distinto de un error
+   * común. Hoy solo `fuera_de_area`, que en vez de un cartel rojo abre el
+   * camino de coordinar por WhatsApp.
+   */
+  code?: "fuera_de_area";
 };
 
 export const idleState: ActionState = { status: "idle" };

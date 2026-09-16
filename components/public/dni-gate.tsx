@@ -6,9 +6,18 @@ import { Check, Pencil } from "lucide-react";
 import { BookingFields, type ContactField, type ContactValues } from "@/components/public/booking-fields";
 import { Field, inputClass } from "@/components/public/form-field";
 import { lookupCustomerByDni, type CustomerLookupResult } from "@/lib/actions/booking";
+import { checkPhone } from "@/lib/phone";
 import { normalizeDni } from "@/lib/validation/schemas";
 
-export type Identity = { resolved: boolean; displayName: string | null };
+export type Identity = {
+  resolved: boolean;
+  displayName: string | null;
+  /**
+   * El teléfono cargado quedó fuera del área de atención. El paso 3 lo usa para
+   * mostrar la salida por WhatsApp en vez de habilitar la confirmación.
+   */
+  outOfArea: boolean;
+};
 
 const EMPTY_CONTACT: ContactValues = { fullName: "", phone: "", email: "" };
 const DEBOUNCE_MS = 400;
@@ -98,7 +107,9 @@ export function DniGate({
   // el padre lo necesita para decidir si el formulario puede enviarse.
   useEffect(() => {
     if (isLockedFound && lookup.status === "found") {
-      onIdentityChange({ resolved: true, displayName: lookup.fullName });
+      // Cliente reconocido que no tocó sus datos: no entra ningún teléfono
+      // nuevo al sistema, así que no hay nada que validar.
+      onIdentityChange({ resolved: true, displayName: lookup.fullName, outOfArea: false });
       return;
     }
 
@@ -107,11 +118,21 @@ export function DniGate({
         contact.fullName.trim().length >= 2 &&
         contact.phone.trim().length > 0 &&
         contact.email.trim().length > 0;
-      onIdentityChange({ resolved: complete, displayName: contact.fullName.trim() || null });
+
+      // Solo se marca fuera de área cuando el número está completo: avisarlo a
+      // mitad de tipeo sería un cartel que aparece y desaparece mientras el
+      // cliente todavía está escribiendo.
+      const outOfArea = checkPhone(contact.phone).kind === "out_of_area";
+
+      onIdentityChange({
+        resolved: complete && !outOfArea,
+        displayName: contact.fullName.trim() || null,
+        outOfArea,
+      });
       return;
     }
 
-    onIdentityChange({ resolved: false, displayName: null });
+    onIdentityChange({ resolved: false, displayName: null, outOfArea: false });
   }, [isLockedFound, showContactFields, contact, lookup, onIdentityChange]);
 
   return (

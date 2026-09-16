@@ -5,6 +5,7 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 import { BookingSummary } from "@/components/public/booking-summary";
 import { DniGate, type Identity } from "@/components/public/dni-gate";
 import { MonthCalendar, monthKeyOf } from "@/components/public/month-calendar";
+import { OutOfAreaNotice } from "@/components/public/out-of-area-notice";
 import { Field, inputClass } from "@/components/public/form-field";
 import { ServiceOption } from "@/components/public/service-option";
 import { StepIndicator, type StepNumber } from "@/components/public/step-indicator";
@@ -34,14 +35,17 @@ const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   month: "long",
 });
 
-const UNRESOLVED_IDENTITY: Identity = { resolved: false, displayName: null };
+const UNRESOLVED_IDENTITY: Identity = { resolved: false, displayName: null, outOfArea: false };
 
 export function BookingStepper({
   services,
   horizonDays,
+  businessWhatsapp,
 }: {
   services: Service[];
   horizonDays: number;
+  /** Teléfono del local, para derivar a quien esté fuera del área. */
+  businessWhatsapp: string | null;
 }) {
   const [step, setStep] = useState<StepNumber>(1);
   const [service, setService] = useState<Service | null>(null);
@@ -197,7 +201,16 @@ export function BookingStepper({
                   </Field>
                 </div>
 
-                {state.status === "error" && !state.fieldErrors ? (
+                {identity.outOfArea || state.code === "fuera_de_area" ? (
+                  <div className="mt-5">
+                    <OutOfAreaNotice
+                      businessWhatsapp={businessWhatsapp}
+                      serviceName={service.name}
+                      dateLabel={date ? dateFormatter.format(date) : ""}
+                      timeLabel={slot.label}
+                    />
+                  </div>
+                ) : state.status === "error" && !state.fieldErrors ? (
                   <p className="border-destructive/40 text-destructive mt-5 border p-3 text-sm">
                     {state.message}
                   </p>

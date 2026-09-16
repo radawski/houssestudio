@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { checkPhone, normalizePhone as normalizePhoneValue } from "@/lib/phone";
+
 /**
  * Schemas compartidos por el formulario del navegador y la validacion del
  * servidor. Que sean los mismos evita el clasico desfasaje en el que el front
@@ -7,32 +9,27 @@ import { z } from "zod";
  */
 
 /**
- * Normaliza un telefono argentino a solo digitos para poder usarlo como
- * identidad estable del cliente.
- *
- * La gente escribe el mismo numero de muchas formas ("11 2345-6789",
- * "+54 9 11 2345 6789", "(011) 15 2345-6789"). Sin normalizar, cada variante
- * crearia un cliente nuevo y el historial quedaria partido.
+ * La normalización del teléfono vive en `lib/phone.ts`, junto con el área de
+ * atención: sacar el `15` y reconocer la característica son el mismo problema.
  */
-export function normalizePhone(input: string): string {
-  let digits = input.replace(/\D/g, "");
-  if (digits.startsWith("54")) digits = digits.slice(2);
-  if (digits.startsWith("9")) digits = digits.slice(1);
-  if (digits.startsWith("0")) digits = digits.slice(1);
-  // El "15" solo es prefijo de celular cuando precede al numero local, nunca
-  // cuando es parte de una caracteristica de area.
-  if (digits.length > 10 && digits.startsWith("15")) digits = digits.slice(2);
-  return digits;
-}
+export { normalizePhone } from "@/lib/phone";
 
+/**
+ * Valida la FORMA del teléfono, no la zona.
+ *
+ * Un número de otra provincia pasa este schema a propósito: no es un error de
+ * tipeo sino una bifurcación del flujo, y la resuelve `createBooking`
+ * derivando al cliente a coordinar por WhatsApp. Tratarlo como error de campo
+ * lo dejaría corrigiendo un número que está bien escrito.
+ */
 const phoneSchema = z
   .string()
   .trim()
   .min(1, "Ingresa tu telefono")
-  .transform(normalizePhone)
-  .refine((v) => v.length >= 8 && v.length <= 12, {
-    message: "El telefono no parece valido. Ej: 11 2345-6789",
-  });
+  .refine((v) => checkPhone(v).kind !== "invalid", {
+    message: "El telefono no parece valido. Ej: 342 533-1802",
+  })
+  .transform(normalizePhoneValue);
 
 /**
  * Normaliza un DNI a solo digitos, con el mismo criterio que `normalizePhone`
