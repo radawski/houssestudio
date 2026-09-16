@@ -35,10 +35,9 @@ export async function getBusinessHours(): Promise<BusinessHour[]> {
   return data;
 }
 
-/** Franjas ocupadas del dia: bloqueos manuales mas turnos que ocupan agenda. */
-export async function getBusyIntervals(dateKey: string): Promise<Interval[]> {
+/** Franjas ocupadas dentro de un rango absoluto: bloqueos mas turnos vivos. */
+async function getBusyBetween(start: string, end: string): Promise<Interval[]> {
   const supabase = createAdminClient();
-  const { start, end } = dayBounds(dateKey);
 
   const [blocks, appointments] = await Promise.all([
     supabase
@@ -63,6 +62,12 @@ export async function getBusyIntervals(dateKey: string): Promise<Interval[]> {
     start: new Date(row.starts_at),
     end: new Date(row.ends_at),
   }));
+}
+
+/** Franjas ocupadas del dia: bloqueos manuales mas turnos que ocupan agenda. */
+export async function getBusyIntervals(dateKey: string): Promise<Interval[]> {
+  const { start, end } = dayBounds(dateKey);
+  return getBusyBetween(start, end);
 }
 
 export async function getActiveService(serviceId: string): Promise<Service | null> {
@@ -113,4 +118,60 @@ export async function getAvailableSlots(
     now,
     minLeadMinutes: settings.min_booking_lead_minutes,
   });
+}
+
+/**
+ * Cupos libres por cada dia de un mes, para los puntos del calendario.
+ *
+ * Hace una sola consulta de ocupacion para el mes entero y despues calcula cada
+ * dia en memoria con el mismo `computeSlots` que usa la reserva. Resolverlo dia
+ * por dia serian treinta y pico de viajes a la base cada vez que alguien pasa
+ * de mes, y ademas abriria la puerta a que el calendario y la grilla de
+ * horarios discrepen.
+ */
+export async function getMonthSlotCounts(
+  serviceId: string,
+  monthKey: string,
+  now: Date = new Date(),
+): Promise<Record<string, number>> {
+  const service = await getActiveService(serviceId);
+  if (!service) return {};
+
+  const [year, month] = monthKey.split("-").map(Number);
+  // El dia 0 del mes siguiente es el ultimo del pedido.
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+  // Un dia de margen a cada lado, por las franjas que cruzan la medianoche.
+  const rangeStart = new Date(Date.UTC(year, month - 1, 0)).toISOString();
+  const rangeEnd = new Date(Date.UTC(year, month - 1, daysInMonth + 2)).toISOString();
+
+  const [hours, busy, settings] = await Promise.all([
+    getBusinessHours(),
+    getBusyBetween(rangeStart, rangeEnd),
+    getSettings(),
+  ]);
+
+  const counts: Record<string, number> = {};
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const dayHours = hours.find((h) => h.weekday === weekdayOf(dateKey, BUSINESS_TIMEZONE));
+
+    counts[dateKey] = computeSlots({
+      dateKey,
+      durationMinutes: service.duration_minutes,
+      hours: dayHours
+        ? {
+            isClosed: dayHours.is_closed,
+            opensAt: dayHours.opens_at,
+            closesAt: dayHours.closes_at,
+          }
+        : null,
+      busy,
+      now,
+      minLeadMinutes: settings.min_booking_lead_minutes,
+    }).length;
+  }
+
+  return counts;
 }

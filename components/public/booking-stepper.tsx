@@ -3,14 +3,14 @@
 import { useActionState, useEffect, useState, useTransition } from "react";
 
 import { BookingSummary } from "@/components/public/booking-summary";
-import { DateStrip } from "@/components/public/date-strip";
 import { DniGate, type Identity } from "@/components/public/dni-gate";
+import { MonthCalendar, monthKeyOf } from "@/components/public/month-calendar";
 import { Field, inputClass } from "@/components/public/form-field";
 import { ServiceOption } from "@/components/public/service-option";
 import { StepIndicator, type StepNumber } from "@/components/public/step-indicator";
 import { StepShell } from "@/components/public/step-shell";
 import { TimeSlotGrid, type Slot } from "@/components/public/time-slot-grid";
-import { createBooking, fetchSlots } from "@/lib/actions/booking";
+import { createBooking, fetchMonthAvailability, fetchSlots } from "@/lib/actions/booking";
 import { idleState } from "@/lib/actions/result";
 import type { Service } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
@@ -38,11 +38,9 @@ const UNRESOLVED_IDENTITY: Identity = { resolved: false, displayName: null };
 
 export function BookingStepper({
   services,
-  closedWeekdays,
   horizonDays,
 }: {
   services: Service[];
-  closedWeekdays: number[];
   horizonDays: number;
 }) {
   const [step, setStep] = useState<StepNumber>(1);
@@ -51,6 +49,9 @@ export function BookingStepper({
   const [slot, setSlot] = useState<Slot | null>(null);
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [loadingSlots, startLoadingSlots] = useTransition();
+  const [monthKey, setMonthKey] = useState(() => monthKeyOf(new Date()));
+  const [monthCounts, setMonthCounts] = useState<Record<string, number> | null>(null);
+  const [loadingMonth, startLoadingMonth] = useTransition();
   const [identity, setIdentity] = useState<Identity>(UNRESOLVED_IDENTITY);
   const [state, formAction] = useActionState(createBooking, idleState);
 
@@ -61,6 +62,12 @@ export function BookingStepper({
     setService(next);
     setSlot(null);
     setSlots(null);
+    setMonthCounts(null);
+  }
+
+  function selectMonth(next: string) {
+    setMonthKey(next);
+    setMonthCounts(null);
   }
 
   function selectDate(next: Date) {
@@ -68,6 +75,13 @@ export function BookingStepper({
     setSlot(null);
     setSlots(null);
   }
+
+  useEffect(() => {
+    if (!service) return;
+    startLoadingMonth(async () => {
+      setMonthCounts(await fetchMonthAvailability(service.id, monthKey));
+    });
+  }, [service, monthKey]);
 
   useEffect(() => {
     if (!service || !date) return;
@@ -134,10 +148,13 @@ export function BookingStepper({
               onContinue={() => setStep(3)}
             >
               <div className="space-y-6">
-                <DateStrip
+                <MonthCalendar
                   value={date}
                   onChange={selectDate}
-                  closedWeekdays={closedWeekdays}
+                  monthKey={monthKey}
+                  onMonthChange={selectMonth}
+                  counts={monthCounts}
+                  loading={loadingMonth}
                   horizonDays={horizonDays}
                 />
 
@@ -152,6 +169,7 @@ export function BookingStepper({
                     selected={slot}
                     onSelect={setSlot}
                     serviceName={service.name}
+                    dateLabel={dateFormatter.format(date)}
                   />
                 )}
               </div>

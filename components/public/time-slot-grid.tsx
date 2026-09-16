@@ -17,30 +17,45 @@ export function TimeSlotGrid({
   selected,
   onSelect,
   serviceName,
+  dateLabel,
 }: {
   slots: Slot[] | null;
   loading: boolean;
   selected: Slot | null;
   onSelect: (slot: Slot) => void;
   serviceName: string;
+  /** Día elegido, para encabezar la grilla. */
+  dateLabel?: string;
 }) {
+  const heading = dateLabel ? (
+    <p className="mb-3 text-sm first-letter:uppercase">Horarios · {dateLabel}</p>
+  ) : null;
+
   if (loading || slots === null) {
     return (
-      <p className="text-muted-foreground py-8 text-center text-sm">Buscando horarios…</p>
+      <div>
+        {heading}
+        <p className="text-muted-foreground py-8 text-center text-sm">Buscando horarios…</p>
+      </div>
     );
   }
 
   if (slots.length === 0) {
     return (
-      <div className="border-border bg-[var(--hs-surface-raised)] border p-6 text-center">
+      <div>
+        {heading}
+        <div className="border-border bg-[var(--hs-surface-raised)] border p-6 text-center">
         <p className="text-sm">No quedan horarios libres ese día para {serviceName}.</p>
-        <p className="text-muted-foreground mt-1 text-sm">Probá con otra fecha.</p>
+          <p className="text-muted-foreground mt-1 text-sm">Probá con otra fecha.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+    <div>
+      {heading}
+      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
       {slots.map((slot) => {
         const isSelected = selected?.startsAt === slot.startsAt;
 
@@ -58,9 +73,10 @@ export function TimeSlotGrid({
             )}
           >
             {slot.label}
-          </button>
-        );
-      })}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -8,7 +8,11 @@ import {
   validationError,
   type ActionState,
 } from "@/lib/actions/result";
-import { getActiveService, getAvailableSlots } from "@/lib/data/availability";
+import {
+  getActiveService,
+  getAvailableSlots,
+  getMonthSlotCounts,
+} from "@/lib/data/availability";
 import { toDateKey } from "@/lib/dates";
 import { formatTime } from "@/lib/format";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -41,6 +45,24 @@ export async function fetchSlots(
     startsAt: slot.start.toISOString(),
     label: formatTime(slot.start),
   }));
+}
+
+/** `yyyy-MM`, el mes que pinta el calendario. */
+const MONTH_KEY = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+/**
+ * Cupos libres por dia del mes, para los puntos del calendario.
+ *
+ * Devuelve un objeto vacio ante un mes mal formado en lugar de reventar: el
+ * parametro viene del navegador y una fecha basura no puede tumbar el paso de
+ * la reserva.
+ */
+export async function fetchMonthAvailability(
+  serviceId: string,
+  monthKey: string,
+): Promise<Record<string, number>> {
+  if (!MONTH_KEY.test(monthKey)) return {};
+  return getMonthSlotCounts(serviceId, monthKey);
 }
 
 export type CustomerLookupResult =
