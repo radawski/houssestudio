@@ -2,6 +2,7 @@ import "server-only";
 
 import { computeSlots, weekdayOf, type Interval } from "@/lib/availability";
 import { BUSINESS_TIMEZONE } from "@/lib/config";
+import { addDaysToKey, todayKey } from "@/lib/dates";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { BusinessHour, Service, Settings } from "@/lib/supabase/database.types";
 
@@ -23,6 +24,17 @@ export async function getSettings(): Promise<Settings> {
   const { data, error } = await supabase.from("settings").select("*").single();
   if (error) throw new Error(`No se pudo leer la configuracion: ${error.message}`);
   return data;
+}
+
+/**
+ * Ultimo dia reservable, `yyyy-MM-dd` local del local.
+ *
+ * Se cuenta por dias de calendario y no por bloques de 24 horas: con el limite
+ * en 7, el septimo dia esta disponible completo, sin depender de la hora a la
+ * que el cliente entre a reservar. El dia del tope entra (inclusive).
+ */
+export function lastBookableDateKey(settings: Settings, now: Date = new Date()): string {
+  return addDaysToKey(todayKey(now), settings.max_booking_days);
 }
 
 export async function getBusinessHours(): Promise<BusinessHour[]> {
@@ -117,6 +129,7 @@ export async function getAvailableSlots(
     busy,
     now,
     minLeadMinutes: settings.min_booking_lead_minutes,
+    maxDateKey: lastBookableDateKey(settings, now),
   });
 }
 
@@ -151,6 +164,7 @@ export async function getMonthSlotCounts(
     getSettings(),
   ]);
 
+  const maxDateKey = lastBookableDateKey(settings, now);
   const counts: Record<string, number> = {};
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -170,6 +184,7 @@ export async function getMonthSlotCounts(
       busy,
       now,
       minLeadMinutes: settings.min_booking_lead_minutes,
+      maxDateKey,
     }).length;
   }
 

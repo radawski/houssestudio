@@ -256,3 +256,43 @@ describe("computeSlots", () => {
     expect(times(slots)).toEqual(["09:00", "09:50", "10:40", "11:30"]);
   });
 });
+
+describe("computeSlots: limite de anticipacion", () => {
+  const base = {
+    durationMinutes: 60,
+    hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00" },
+    now: LONG_BEFORE,
+  };
+
+  it("no ofrece nada despues del ultimo dia reservable", () => {
+    expect(
+      computeSlots({ ...base, dateKey: TUESDAY, maxDateKey: "2026-08-17" }),
+    ).toEqual([]);
+  });
+
+  it("el dia del tope entra: el limite es inclusive", () => {
+    // Con el tope puesto en el dia consultado, ese dia sigue siendo reservable.
+    expect(
+      times(computeSlots({ ...base, dateKey: TUESDAY, maxDateKey: TUESDAY })),
+    ).toEqual(["09:00", "10:00", "11:00"]);
+  });
+
+  it("sin limite configurado se comporta como antes", () => {
+    expect(times(computeSlots({ ...base, dateKey: TUESDAY }))).toEqual([
+      "09:00",
+      "10:00",
+      "11:00",
+    ]);
+  });
+
+  it("compara por dia de calendario y no por hora", () => {
+    // Aunque falten pocas horas para el corte, el dia entero sigue disponible.
+    const slots = computeSlots({
+      ...base,
+      dateKey: TUESDAY,
+      maxDateKey: TUESDAY,
+      now: businessTimeToDate(TUESDAY, "09:30"),
+    });
+    expect(times(slots)).toEqual(["10:00", "11:00"]);
+  });
+});

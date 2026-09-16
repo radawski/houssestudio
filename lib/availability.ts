@@ -37,6 +37,15 @@ export type ComputeSlotsInput = {
   now?: Date;
   /** Anticipacion minima con la que se puede reservar. */
   minLeadMinutes?: number;
+  /**
+   * Ultimo dia reservable, `yyyy-MM-dd` local del local. Es el otro extremo de
+   * `minLeadMinutes`: uno corta por adelante y el otro por atras.
+   *
+   * Lo calcula la capa de datos a partir de la configuracion, y no esta funcion,
+   * para que `computeSlots` siga siendo pura y no tenga que saber que dia es hoy
+   * en la zona del negocio.
+   */
+  maxDateKey?: string;
   timeZone?: string;
 };
 
@@ -132,10 +141,14 @@ export function computeSlots({
   busy = [],
   now = new Date(),
   minLeadMinutes = 0,
+  maxDateKey,
   timeZone = BUSINESS_TIMEZONE,
 }: ComputeSlotsInput): Interval[] {
   if (!hours || hours.isClosed) return [];
   if (durationMinutes <= 0) return [];
+  // Las claves `yyyy-MM-dd` se comparan como texto sin ambiguedad, y asi no hay
+  // que construir fechas para decidir algo que es una comparacion de calendario.
+  if (maxDateKey && dateKey > maxDateKey) return [];
 
   const open = businessTimeToDate(dateKey, hours.opensAt, timeZone);
   const close = businessTimeToDate(dateKey, hours.closesAt, timeZone);

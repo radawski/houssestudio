@@ -123,6 +123,26 @@ export const timeBlockSchema = z
     path: ["endTime"],
   });
 
+/**
+ * Ventana de reserva: los dos extremos de la misma regla.
+ *
+ * Los topes no son decorativos. Un maximo de 0 dias o una anticipacion minima
+ * enorme dejan la agenda sin ningun horario ofrecible, y desde afuera eso se
+ * lee como que la aplicacion esta rota, no como una configuracion.
+ */
+export const bookingWindowSchema = z.object({
+  maxBookingDays: z.coerce
+    .number<number>()
+    .int("Usa dias enteros")
+    .min(1, "Tiene que ser al menos 1 dia")
+    .max(365, "El maximo es 365 dias"),
+  minLeadMinutes: z.coerce
+    .number<number>()
+    .int("Usa minutos enteros")
+    .min(0, "No puede ser negativo")
+    .max(10_080, "El maximo es una semana (10080 minutos)"),
+});
+
 export const paymentSchema = z.object({
   appointmentId: z.uuid(),
   amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
@@ -133,3 +153,4 @@ export type BookingInput = z.infer<typeof bookingSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type TimeBlockInput = z.infer<typeof timeBlockSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;
+export type BookingWindowInput = z.infer<typeof bookingWindowSchema>;

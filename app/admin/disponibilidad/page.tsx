@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { BookingWindowForm } from "@/app/admin/disponibilidad/booking-window-form";
 import { BusinessHoursForm } from "@/app/admin/disponibilidad/business-hours-form";
 import { TimeBlockForm, TimeBlockList } from "@/app/admin/disponibilidad/time-blocks";
 import {
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getSettings } from "@/lib/data/availability";
 import { dayRange, todayKey } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,7 +20,7 @@ export default async function AvailabilityPage() {
   const today = todayKey();
   const supabase = await createClient();
 
-  const [hoursResult, blocksResult] = await Promise.all([
+  const [hoursResult, blocksResult, settings] = await Promise.all([
     supabase.from("business_hours").select("*").order("weekday"),
     supabase
       .from("time_blocks")
@@ -26,6 +28,7 @@ export default async function AvailabilityPage() {
       // Los bloqueos ya vencidos no aportan nada operativamente.
       .gte("ends_at", dayRange(today).start.toISOString())
       .order("starts_at"),
+    getSettings(),
   ]);
 
   if (hoursResult.error) {
@@ -43,6 +46,22 @@ export default async function AvailabilityPage() {
           Horario semanal y excepciones puntuales.
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Ventana de reserva</CardTitle>
+          <CardDescription>
+            Con cuánta anticipación se puede pedir un turno. Cambiarlo no afecta a
+            los turnos ya tomados.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BookingWindowForm
+            maxBookingDays={settings.max_booking_days}
+            minLeadMinutes={settings.min_booking_lead_minutes}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

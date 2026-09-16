@@ -1,6 +1,5 @@
 import { BookingStepper } from "@/components/public/booking-stepper";
 import { SiteHero } from "@/components/public/site-hero";
-import { BOOKING_HORIZON_DAYS } from "@/lib/config";
 import { getSettings } from "@/lib/data/availability";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -29,7 +28,7 @@ export default async function HomePage() {
       <SiteHero />
       <BookingStepper
         services={servicesResult.data}
-        horizonDays={BOOKING_HORIZON_DAYS}
+        horizonDays={settings.max_booking_days}
         businessWhatsapp={settings.phone}
       />
     </main>

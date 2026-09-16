@@ -19,9 +19,6 @@ export const BUSINESS_NAME = "HOUSSESTUDIO";
  */
 export const MIN_BOOKING_LEAD_MINUTES = 60;
 
-/** Cuantos dias hacia adelante se puede reservar desde el portal publico. */
-export const BOOKING_HORIZON_DAYS = 60;
-
 /**
  * Hasta cuantas horas antes del turno el cliente puede cancelar o pedir
  * reprogramacion por su cuenta. Configurable por fila en `settings`; este es el

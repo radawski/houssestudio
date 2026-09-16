@@ -106,6 +106,8 @@ export type Settings = {
   cancellation_window_hours: number;
   reminder_hours_before: number;
   min_booking_lead_minutes: number;
+  /** Con cuántos días de anticipación como máximo se puede reservar. */
+  max_booking_days: number;
   updated_at: string;
 };
 
