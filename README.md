@@ -121,7 +121,8 @@ que al cruzar zonas corre los turnos de día.
 disponibilidad.
 
 **Fase 2 en curso** (ver `SPEC.md`): emails transaccionales (confirmación,
-aviso interno y notificación de cancelación) ya funcionan, vía Resend.
+aviso interno y notificación de cancelación) y autogestión de cancelaciones
+desde `/turno/[token]` ya funcionan, vía Resend.
 
-Pendiente de Fase 2: autogestión de cancelaciones, cobros y cierre de caja.
+Pendiente de Fase 2: cobros y cierre de caja.
 Pendiente de Fase 3: CRM, reportes y recordatorios automáticos.
