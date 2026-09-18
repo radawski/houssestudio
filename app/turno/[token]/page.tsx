@@ -3,8 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Check } from "lucide-react";
 
+import { CancelAppointmentButton } from "@/components/public/cancel-appointment-button";
 import { StatusBadge } from "@/components/status-badge";
+import { canCancel } from "@/lib/cancellation";
 import { BUSINESS_NAME } from "@/lib/config";
+import { getSettings } from "@/lib/data/availability";
 import { getAppointmentByToken } from "@/lib/data/public";
 import { formatCurrency, formatLongDate, formatTime } from "@/lib/format";
 
@@ -43,6 +46,13 @@ export default async function AppointmentPage({
 
   const appointment = await getAppointmentByToken(token);
   if (!appointment) notFound();
+
+  const settings = await getSettings();
+  const cancelable = canCancel({
+    status: appointment.status,
+    startsAt: appointment.starts_at,
+    windowHours: settings.cancellation_window_hours,
+  });
 
   return (
     <main className="flex min-h-dvh flex-1 flex-col px-6 py-10 sm:px-10">
@@ -104,6 +114,12 @@ export default async function AppointmentPage({
           <p className="text-muted-foreground mt-2 text-sm">
             Motivo: {appointment.cancellation_reason}
           </p>
+        ) : null}
+
+        {cancelable ? (
+          <div className="mt-6">
+            <CancelAppointmentButton token={token} businessWhatsapp={settings.phone} />
+          </div>
         ) : null}
       </div>
     </main>
