@@ -1,0 +1,12 @@
+# Todo — Módulo 1: emails-transaccionales
+
+- [ ] T1 — Cliente de Resend y variables de entorno (`lib/email/env.ts`,
+      `lib/email/resend.ts`, `ADMIN_EMAIL` en `.env.local.example`,
+      `npm install resend`)
+- [ ] T2 — Confirmación al cliente (`sendBookingConfirmation`, hook en
+      `createBooking`)
+- [ ] T3 — Aviso interno al barbero (`sendNewRequestAlert`, mismo hook)
+- [ ] T4 — Notificación de cancelación (`sendCancellationNotice`, hook en
+      `cancelAppointment`)
+- [ ] Checkpoint final: `npm run typecheck && npm test && npm run build` +
+      repaso manual (reserva + cancelación) en `npm run dev`
