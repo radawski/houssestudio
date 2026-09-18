@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { canCancel, cancellationDeadline } from "@/lib/cancellation";
+import { canCancel, cancelAffordance, cancellationDeadline } from "@/lib/cancellation";
 
 const STARTS_AT = new Date("2026-08-15T17:00:00.000Z"); // turno a las 17:00 UTC
 const WINDOW_HOURS = 2;
@@ -48,6 +48,32 @@ describe("canCancel", () => {
     (status) => {
       const now = new Date("2026-08-15T10:00:00.000Z");
       expect(canCancel({ status, startsAt: STARTS_AT, windowHours: WINDOW_HOURS, now })).toBe(true);
+    },
+  );
+});
+
+describe("cancelAffordance", () => {
+  it("ofrece el botón dentro de la ventana", () => {
+    const now = new Date("2026-08-15T10:00:00.000Z");
+    expect(
+      cancelAffordance({ status: "confirmado", startsAt: STARTS_AT, windowHours: WINDOW_HOURS, now }),
+    ).toBe("boton");
+  });
+
+  it("ofrece coordinar por WhatsApp fuera de la ventana, sin ocultar todo", () => {
+    const now = new Date("2026-08-15T15:00:00.001Z");
+    expect(
+      cancelAffordance({ status: "pendiente", startsAt: STARTS_AT, windowHours: WINDOW_HOURS, now }),
+    ).toBe("coordinar");
+  });
+
+  it.each(["completado", "cancelado", "no_show"] as const)(
+    "no ofrece nada para un turno %s, sin importar la hora",
+    (status) => {
+      const now = new Date("2026-08-15T10:00:00.000Z");
+      expect(
+        cancelAffordance({ status, startsAt: STARTS_AT, windowHours: WINDOW_HOURS, now }),
+      ).toBe("ninguna");
     },
   );
 });

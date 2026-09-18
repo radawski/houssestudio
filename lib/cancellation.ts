@@ -27,3 +27,23 @@ export function canCancel(params: {
   const now = params.now ?? new Date();
   return now.getTime() < cancellationDeadline(params.startsAt, params.windowHours).getTime();
 }
+
+/**
+ * Qué mostrarle al cliente en `/turno/[token]`, resuelto en un solo lugar
+ * testeable en vez de quedar como dos booleans combinados a mano en la
+ * página. El bug que motivó esto (`page.tsx` ocultaba todo el bloque de
+ * cancelación cuando el plazo ya había vencido, sin ofrecer ni el botón ni
+ * la salida a WhatsApp) era exactamente la clase de error que un test sobre
+ * esta función atrapa y uno sobre `canCancel` no.
+ */
+export type CancelAffordance = "boton" | "coordinar" | "ninguna";
+
+export function cancelAffordance(params: {
+  status: AppointmentStatus;
+  startsAt: string | Date;
+  windowHours: number;
+  now?: Date;
+}): CancelAffordance {
+  if (!CANCELABLE_STATUSES.includes(params.status)) return "ninguna";
+  return canCancel(params) ? "boton" : "coordinar";
+}

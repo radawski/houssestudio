@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 
 import { CancelAppointmentButton } from "@/components/public/cancel-appointment-button";
 import { StatusBadge } from "@/components/status-badge";
-import { CANCELABLE_STATUSES, canCancel } from "@/lib/cancellation";
+import { cancelAffordance } from "@/lib/cancellation";
 import { BUSINESS_NAME } from "@/lib/config";
 import { getSettings } from "@/lib/data/availability";
 import { getAppointmentByToken } from "@/lib/data/public";
@@ -48,13 +48,7 @@ export default async function AppointmentPage({
   if (!appointment) notFound();
 
   const settings = await getSettings();
-  // Dos preguntas distintas: si el ESTADO admite cancelar en principio (para
-  // decidir si se muestra algo) y si el PLAZO todavía lo permite (para
-  // decidir si eso "algo" es el botón o directamente la salida a WhatsApp).
-  // Ocultar el bloque entero fuera de la ventana dejaría al cliente sin
-  // ninguna salida — el motivo original de este bug.
-  const statusIsCancelable = CANCELABLE_STATUSES.includes(appointment.status);
-  const withinWindow = canCancel({
+  const affordance = cancelAffordance({
     status: appointment.status,
     startsAt: appointment.starts_at,
     windowHours: settings.cancellation_window_hours,
@@ -122,12 +116,12 @@ export default async function AppointmentPage({
           </p>
         ) : null}
 
-        {statusIsCancelable ? (
+        {affordance !== "ninguna" ? (
           <div className="mt-6">
             <CancelAppointmentButton
               token={token}
               businessWhatsapp={settings.phone}
-              withinWindow={withinWindow}
+              withinWindow={affordance === "boton"}
             />
           </div>
         ) : null}
