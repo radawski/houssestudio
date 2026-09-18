@@ -1,121 +1,153 @@
-# Plan — Módulo 1: emails-transaccionales (Fase 2)
+# Plan — Módulo 2: autogestion-cancelacion (Fase 2)
 
-Fuente: `SPEC.md` sección 4.1. Sin cambios de esquema — `email_log` ya existe.
+Fuente: `SPEC.md` sección 4.2. Depende del módulo 1 (emails), ya completo.
+Revisado con `advisor` antes de escribir código — los ajustes de seguridad de
+abajo (rate limit, ventana dentro del `UPDATE`, código de error propio) salen
+de esa revisión, no estaban en la redacción original de la spec.
 
 ## Dependencias
 
 ```
-T1 infraestructura de envío (Resend + env)
+T1 helper puro de ventana (lib/cancellation.ts)
    │
-   ├─→ T2 confirmación al cliente (hook en createBooking)
-   ├─→ T3 aviso interno al barbero (hook en createBooking)
-   └─→ T4 notificación de cancelación (hook en cancelAppointment)
+T2 acción cancelByToken (lib/actions/booking.ts) — depende de T1 y del
+   módulo 1 (sendCancellationNotice)
+   │
+T3 UI en /turno/[token] — depende de T1 (gating) y T2 (la acción)
 ```
 
-T2, T3 y T4 dependen todas de T1 pero son independientes entre sí. Se hacen en
-ese orden porque T2 y T3 comparten el mismo punto de enganche
-(`createBooking`) y conviene tocarlo una sola vez.
+## Decisiones que no estaban explícitas en SPEC.md §4.2
 
-## Decisión nueva no cubierta literalmente por SPEC.md
-
-El aviso interno necesita una dirección de destino y no hay ninguna
-almacenada hoy (`admins` solo guarda `user_id`, no email). Se agrega
-`ADMIN_EMAIL` como variable de entorno nueva — mismo patrón que
-`RESEND_API_KEY`. Ya está contemplado en los límites de SPEC.md ("ninguna
-dependencia nueva más allá de `resend`"); esto no es una dependencia, es una
-env var, pero se marca acá para que quede visible antes de tocar código.
+- `cancelByToken` vive en `lib/actions/booking.ts` (superficie pública, sin
+  sesión), pero necesita las mismas tres guardas que ya tiene `createBooking`
+  en ese archivo:
+  1. **Rate limit** por IP (`checkRateLimit`), porque un token es un secreto
+     de 1 solo campo — sin límite, la acción es un oráculo para adivinar
+     `manage_token_hash` a fuerza bruta.
+  2. **El token nunca llega como id.** Se resuelve por `manage_token_hash`
+     dentro del propio `UPDATE`, igual que hoy se resuelve en la lectura.
+  3. **La ventana se aplica en el `UPDATE`, no en un chequeo previo.** Un
+     `.gt("starts_at", deadline)` + `.in("status", [...])` en la misma
+     sentencia es el equivalente de la restricción de exclusión que ya
+     protege `createBooking`: sin esto hay una ventana entre leer y escribir
+     en la que el plazo pudo vencer.
+- `ActionState.code` suma `"fuera_de_ventana"` (nuevo) en vez de reutilizar
+  `"fuera_de_area"` — son ramas distintas que casualmente terminan las dos en
+  WhatsApp.
+- `cancelByToken` devuelve `ActionState`, no lanza. Es superficie pública: el
+  patrón correcto a imitar es `createBooking` (useActionState), no
+  `CancelAppointmentButton` del panel (throw + toast), que es para sesión
+  admin.
+- La revalidación de rutas se extrae a `lib/cache.ts` (`revalidateAgenda()`)
+  para que la use tanto `appointments.ts` como `booking.ts` sin exportarla
+  como Server Action desde un archivo `"use server"`. La cancelación pública
+  tiene que refrescar `/` (grilla pública) además de `/admin*`, cosa que la
+  redacción original de la spec no mencionaba.
 
 ## Tareas
 
-### T1 — Cliente de Resend y variables de entorno
+### T1 — Helper puro de ventana de cancelación
 
-**Archivos**: `lib/email/env.ts`, `lib/email/resend.ts`,
-`.env.local.example` (agregar `ADMIN_EMAIL`), `package.json`
-(`npm install resend`).
+**Archivo**: `lib/cancellation.ts` (+ `lib/cancellation.test.ts`).
 
-**Alcance**: mismo patrón que `lib/supabase/env.ts` — accessors que lanzan un
-error explícito si falta la variable. `lib/email/resend.ts` exporta un
-cliente `Resend` singleton, `server-only`.
+**Alcance**: sin `server-only`, sin Supabase — mismo patrón que
+`lib/availability.ts`.
 
-**Criterios de aceptación**:
-- `npm run typecheck` pasa.
-- Falta de `RESEND_API_KEY` o `ADMIN_EMAIL` produce un error de arranque
-  legible, no un `undefined` silencioso.
-- El módulo es `server-only`: importarlo desde un componente cliente rompe el
-  build (mismo mecanismo que `lib/supabase/admin.ts`).
+```ts
+export function cancellationDeadline(startsAt: string | Date, windowHours: number): Date
+export function canCancel(params: {
+  status: AppointmentStatus;
+  startsAt: string | Date;
+  windowHours: number;
+  now?: Date;
+}): boolean
+```
 
-**Verificación**: `npm run typecheck && npm run build`.
+`canCancel` es falso para cualquier estado que no sea `pendiente` o
+`confirmado`, y falso a partir del instante exacto del límite (no solo
+después) — mismo borde estricto (`<`) que va a usar el `UPDATE` en SQL
+(`>`), para que UI y base nunca discrepen en el segundo límite.
 
-### T2 — Confirmación al cliente
+**Criterios de aceptación**: casos de borde cubiertos por test — justo antes
+del límite, justo en el límite, justo después, y cada estado no cancelable.
 
-**Archivos**: `lib/email/send.ts` (`sendBookingConfirmation`),
-`lib/actions/booking.ts` (hook en `createBooking`, después del insert
-exitoso y antes del `redirect`).
+**Verificación**: `npx vitest run lib/cancellation.test.ts` (RED antes de
+implementar, GREEN después).
 
-**Alcance**: arma el email con fecha, hora, servicio y el link a
-`/turno/[token]`. Si `customer.email` es `null` (caso legado, la columna es
-nullable), no intenta enviar — no es un error. Si Resend falla, se atrapa
-adentro de `sendBookingConfirmation`, se escribe `email_log` con
-`status = 'error'` y la función retorna normalmente: `createBooking` nunca ve
-la falla y el `redirect` sigue.
+### T2 — Server Action `cancelByToken`
 
-**Criterios de aceptación**:
-- Reservar un turno con email manda el mail y crea una fila en `email_log`
-  (`type = 'confirmacion'`, `status = 'enviado'`, `provider_id` presente).
-- Reservar con un `RESEND_API_KEY` inválido (simulado) igual redirige a
-  `/turno/[token]?nuevo=1`, y la fila en `email_log` queda `status = 'error'`
-  con el mensaje.
-- Un cliente sin email registrado no genera ninguna fila ni error.
+**Archivos**: `lib/actions/booking.ts`, `lib/cache.ts` (nuevo, extrae
+`revalidateAgenda` de `lib/actions/appointments.ts`), `lib/validation/schemas.ts`
+(`cancelByTokenSchema`), `lib/actions/result.ts` (suma el código
+`"fuera_de_ventana"` al tipo `ActionState["code"]`).
 
-**Verificación**: `npm run dev`, reservar un turno real de prueba, revisar la
-bandeja del sandbox y la tabla `email_log` en el SQL Editor de Supabase.
-
-### T3 — Aviso interno al barbero
-
-**Archivos**: `lib/email/send.ts` (`sendNewRequestAlert`),
-`lib/actions/booking.ts` (mismo hook que T2, mismo evento).
-
-**Alcance**: manda a `ADMIN_EMAIL` los datos de la solicitud nueva (cliente,
-servicio, fecha/hora). No escribe en `email_log` — esa tabla registra
-comunicación al cliente, no avisos internos, y así no interfiere con el
-índice de idempotencia de recordatorios (Fase 3).
-
-**Criterios de aceptación**:
-- Cada reserva nueva genera un aviso a `ADMIN_EMAIL` con los datos correctos.
-- Un fallo de envío no impide que la reserva se guarde ni afecta a T2 (fallan
-  independientemente: si un envío revienta, el otro igual se intenta).
-
-**Verificación**: igual que T2 — reservar y revisar que lleguen los dos
-mails.
-
-### T4 — Notificación de cancelación
-
-**Archivos**: `lib/email/send.ts` (`sendCancellationNotice`),
-`lib/actions/appointments.ts` (hook en `cancelAppointment`, después del
-update exitoso).
-
-**Alcance**: manda a cliente (si tiene email) y a `ADMIN_EMAIL` el aviso de
-cancelación con el motivo si lo hay. `cancelAppointment` sigue lanzando error
-solo por fallas de la propia base (como hoy); el email nunca es parte de esa
-condición de error.
+**Alcance**:
+- Firma `cancelByToken(_prev: ActionState, formData: FormData)` — `token` y
+  `reason` (opcional) viajan en el `FormData`, nunca un id de turno.
+- Rate limit `cancel-token:${ip}`, mismo límite que `booking:${ip}`.
+- Lee `settings.cancellation_window_hours` con `getSettings()` (ya existe).
+- Un solo `UPDATE` con `.eq("manage_token_hash", hash)`,
+  `.in("status", ["pendiente", "confirmado"])`,
+  `.gt("starts_at", cancellationDeadline)` y
+  `.select("id, service_name_at_booking, starts_at, cancellation_reason, customer:customers(full_name, email)")`
+  `.maybeSingle()` (no `.single()`: cero filas es un resultado válido, no un
+  error).
+- Si `data` es `null`, se vuelve a consultar el turno por token
+  (`getAppointmentByToken`) solo para dar el mensaje correcto: turno
+  inexistente, ya resuelto (no cancelable por estado), o vigente pero fuera
+  de ventana (`code: "fuera_de_ventana"`, deriva a WhatsApp con
+  `settings.phone`).
+- Si `data` existe: `cancelled_by: "cliente"` ya quedó grabado por el
+  `UPDATE`; se llama `revalidateAgenda()` (de `lib/cache.ts`, ahora incluye
+  `/`) y `sendCancellationNotice({ ..., cancelledBy: "cliente" })` reusando
+  el módulo 1 tal cual.
 
 **Criterios de aceptación**:
-- Cancelar un turno desde el panel manda la notificación a ambas partes.
-- Un fallo de Resend no impide que la cancelación quede guardada ni rompe el
-  `toast` de éxito en `CancelAppointmentButton`.
-- Queda fila en `email_log` (`type = 'cancelacion'`) solo para el envío al
-  cliente.
+- Dentro de la ventana: el turno pasa a `cancelado`, el slot vuelve a la
+  grilla pública sin recargar manualmente (revalidación correcta), y los dos
+  emails de cancelación salen con `cancelledBy: "cliente"`.
+- Fuera de la ventana: no se modifica nada, se devuelve
+  `code: "fuera_de_ventana"` con el mensaje de coordinar por WhatsApp.
+- Un turno ya `completado`/`cancelado`/`no_show`: mensaje claro de que ya no
+  se puede cancelar desde acá, sin tocar la base.
+- Más de 10 intentos por minuto desde la misma IP: mensaje de límite, igual
+  que en `createBooking`.
 
-**Verificación**: cancelar un turno de prueba desde `/admin/solicitudes` o
-`/admin/agenda`, revisar bandeja y `email_log`.
+**Verificación**: `npm run typecheck`, y prueba manual real (siguiente
+tarea trae la UI para poder probarlo).
+
+### T3 — UI en `/turno/[token]`
+
+**Archivos**: `app/turno/[token]/page.tsx`,
+`components/public/cancel-appointment-button.tsx` (nuevo).
+
+**Alcance**:
+- La página server-side llama `getSettings()` además de
+  `getAppointmentByToken`, y usa `canCancel` (T1) para decidir si renderiza
+  el botón.
+- Componente cliente con `useActionState(cancelByToken, idleState)`: diálogo
+  de confirmación con motivo opcional (igual estética que
+  `CancelAppointmentButton` del panel, pero atado a `useActionState` en vez
+  de `useTransition` + throw), y si la respuesta trae
+  `code === "fuera_de_ventana"`, muestra la salida a WhatsApp reusando el
+  patrón visual de `OutOfAreaNotice` con `settings.phone`.
+
+**Criterios de aceptación**:
+- El botón no aparece en `completado`, `cancelado` ni `no_show`.
+- Dentro de la ventana: cancelar refresca la página mostrando "Este turno fue
+  cancelado" sin recarga manual.
+- Fuera de la ventana (o turno ya resuelto entre que se abrió la página y se
+  confirmó): se ve la salida a WhatsApp, no un cartel de error genérico.
+
+**Verificación**: prueba manual real — reservar un turno con
+`min_booking_lead_minutes` bajo o `cancellation_window_hours` alto para poder
+probar ambas ramas (dentro y fuera de ventana) sin esperar horas reales, y
+revisar `email_log` + las dos casillas después de cancelar dentro de la
+ventana.
 
 ## Checkpoints
 
-- Después de T1: `npm run typecheck && npm run build` en verde antes de
-  seguir — si el wrapper de Resend no compila, no tiene sentido cablear los
-  hooks encima.
-- Después de T2+T3: probar una reserva real de punta a punta en el navegador
-  antes de tocar `appointments.ts` para T4.
-- Al final: `npm run typecheck && npm test && npm run build`, más el repaso
-  manual de los tres disparadores (reserva, cancelación admin) en una sola
-  pasada.
+- Después de T1: tests en verde antes de tocar la Server Action.
+- Después de T2: `npm run typecheck && npm test` en verde antes de tocar UI.
+- Al final: `npm run typecheck && npm test && npm run build`, más la prueba
+  manual de ambas ramas (dentro y fuera de ventana) en `npm run dev`.
