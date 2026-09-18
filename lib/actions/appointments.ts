@@ -3,6 +3,8 @@
 import { revalidateAgenda } from "@/lib/cache";
 import { requireAdmin } from "@/lib/auth";
 import { sendCancellationNotice } from "@/lib/email/send";
+import type { PaymentMethod } from "@/lib/supabase/database.types";
+import { paymentSchema } from "@/lib/validation/schemas";
 
 /**
  * Los tipos de `database.types.ts` no declaran relaciones (son manuales, no
@@ -27,6 +29,58 @@ export async function confirmAppointment(id: string) {
     .eq("status", "pendiente");
 
   if (error) throw new Error(`No se pudo confirmar el turno: ${error.message}`);
+
+  revalidateAgenda();
+}
+
+/**
+ * Cierra la atencion de un turno: lo marca completado y registra el cobro.
+ *
+ * Las dos escrituras (el UPDATE del estado y el INSERT del pago) van dentro
+ * de `complete_appointment_with_payment`, una funcion de Postgres, y no como
+ * dos llamadas sueltas desde aca. Sin eso, un fallo de red entre una y otra
+ * podria dejar el turno completado sin pago o, peor, un pago sin turno
+ * completado - exactamente el estado intermedio que no puede existir.
+ */
+export async function completeAppointment(
+  id: string,
+  payment: { amount: number; method: PaymentMethod },
+) {
+  const { supabase } = await requireAdmin();
+
+  const parsed = paymentSchema.safeParse({ appointmentId: id, ...payment });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Datos de pago invalidos.");
+  }
+
+  const { error } = await supabase.rpc("complete_appointment_with_payment", {
+    p_appointment_id: id,
+    p_amount: parsed.data.amount,
+    p_method: parsed.data.method,
+  });
+
+  if (error) throw new Error(`No se pudo registrar el cobro: ${error.message}`);
+
+  revalidateAgenda();
+}
+
+/**
+ * Marca un turno confirmado como ausente, sin cobro.
+ *
+ * El `.eq("status", "confirmado")` es la guarda real; `canMarkNoShow` del
+ * lado del cliente solo decide si se muestra el boton, no si la base acepta
+ * el cambio.
+ */
+export async function markNoShow(id: string) {
+  const { supabase } = await requireAdmin();
+
+  const { error } = await supabase
+    .from("appointments")
+    .update({ status: "no_show" })
+    .eq("id", id)
+    .eq("status", "confirmado");
+
+  if (error) throw new Error(`No se pudo marcar el turno como ausente: ${error.message}`);
 
   revalidateAgenda();
 }
