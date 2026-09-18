@@ -13,12 +13,22 @@ import { BUSINESS_TIMEZONE } from "@/lib/config";
 
 export type Interval = { start: Date; end: Date };
 
-export type DayHours = {
-  isClosed: boolean;
+export type TimeRange = {
   /** `HH:MM` o `HH:MM:SS`, en hora local del local. */
   opensAt: string;
   /** `HH:MM` o `HH:MM:SS`, en hora local del local. */
   closesAt: string;
+};
+
+export type DayHours = TimeRange & {
+  isClosed: boolean;
+  /**
+   * Segundo tramo del dia (horario partido, ej. corte por almuerzo). Se
+   * suma como campo opcional en vez de reemplazar `opensAt`/`closesAt` por
+   * un arreglo: un dia sin horario partido sigue siendo exactamente el
+   * `DayHours` de siempre, sin tocar a quien ya lo construye.
+   */
+  secondRange?: TimeRange | null;
 };
 
 export type ComputeSlotsInput = {
@@ -150,25 +160,37 @@ export function computeSlots({
   // que construir fechas para decidir algo que es una comparacion de calendario.
   if (maxDateKey && dateKey > maxDateKey) return [];
 
-  const open = businessTimeToDate(dateKey, hours.opensAt, timeZone);
-  const close = businessTimeToDate(dateKey, hours.closesAt, timeZone);
-  if (close.getTime() <= open.getTime()) return [];
-
   const durationMs = durationMinutes * MINUTE_MS;
   const earliestStart = now.getTime() + minLeadMinutes * MINUTE_MS;
 
+  const ranges: TimeRange[] = [
+    { opensAt: hours.opensAt, closesAt: hours.closesAt },
+    ...(hours.secondRange ? [hours.secondRange] : []),
+  ];
+
   const slots: Interval[] = [];
 
-  for (const gap of subtractIntervals({ start: open, end: close }, busy)) {
-    const gapEnd = gap.end.getTime();
+  // Cada tramo encadena por su cuenta, del borde de SU rango: un horario
+  // partido no es un horario corrido con un hueco ocupado en el medio, es
+  // dos ventanas independientes. Si se tratara como una sola resta de
+  // intervalos, el encadenado del segundo tramo dependeria de donde termino
+  // el ultimo slot del primero en vez de arrancar limpio a su propia hora.
+  for (const range of ranges) {
+    const open = businessTimeToDate(dateKey, range.opensAt, timeZone);
+    const close = businessTimeToDate(dateKey, range.closesAt, timeZone);
+    if (close.getTime() <= open.getTime()) continue;
 
-    for (
-      let start = gap.start.getTime();
-      start + durationMs <= gapEnd;
-      start += durationMs
-    ) {
-      if (start < earliestStart) continue;
-      slots.push({ start: new Date(start), end: new Date(start + durationMs) });
+    for (const gap of subtractIntervals({ start: open, end: close }, busy)) {
+      const gapEnd = gap.end.getTime();
+
+      for (
+        let start = gap.start.getTime();
+        start + durationMs <= gapEnd;
+        start += durationMs
+      ) {
+        if (start < earliestStart) continue;
+        slots.push({ start: new Date(start), end: new Date(start + durationMs) });
+      }
     }
   }
 

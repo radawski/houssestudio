@@ -257,6 +257,61 @@ describe("computeSlots", () => {
   });
 });
 
+describe("computeSlots: horario partido", () => {
+  it("encadena cada tramo por separado, sin saltar el hueco del medio", () => {
+    const slots = computeSlots({
+      dateKey: TUESDAY,
+      durationMinutes: 60,
+      hours: {
+        isClosed: false,
+        opensAt: "07:00",
+        closesAt: "12:00",
+        secondRange: { opensAt: "15:00", closesAt: "20:00" },
+      },
+      now: LONG_BEFORE,
+    });
+
+    // Cada tramo arranca su propio encadenado en su propio borde: no hay un
+    // slot 11:00-12:00 seguido de "13:00" ni nada que dependa del tramo
+    // anterior. El de las 12:00 no entra (tramo cierra justo ahi).
+    expect(times(slots)).toEqual([
+      "07:00", "08:00", "09:00", "10:00", "11:00",
+      "15:00", "16:00", "17:00", "18:00", "19:00",
+    ]);
+  });
+
+  it("un turno que pisa el segundo tramo solo afecta a ese tramo", () => {
+    const slots = computeSlots({
+      dateKey: TUESDAY,
+      durationMinutes: 60,
+      hours: {
+        isClosed: false,
+        opensAt: "07:00",
+        closesAt: "12:00",
+        secondRange: { opensAt: "15:00", closesAt: "20:00" },
+      },
+      busy: [at(TUESDAY, "16:00", "17:00")],
+      now: LONG_BEFORE,
+    });
+
+    expect(times(slots)).toEqual([
+      "07:00", "08:00", "09:00", "10:00", "11:00",
+      "15:00", "17:00", "18:00", "19:00",
+    ]);
+  });
+
+  it("sin segundo tramo se comporta exactamente como horario corrido", () => {
+    const slots = computeSlots({
+      dateKey: TUESDAY,
+      durationMinutes: 60,
+      hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00", secondRange: null },
+      now: LONG_BEFORE,
+    });
+
+    expect(times(slots)).toEqual(["09:00", "10:00", "11:00"]);
+  });
+});
+
 describe("computeSlots: limite de anticipacion", () => {
   const base = {
     durationMinutes: 60,
