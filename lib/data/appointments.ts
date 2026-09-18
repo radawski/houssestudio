@@ -2,7 +2,7 @@ import "server-only";
 
 import { dayRange } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
-import type { Appointment, Customer } from "@/lib/supabase/database.types";
+import type { Appointment, Customer, Service } from "@/lib/supabase/database.types";
 
 /**
  * Lecturas del panel privado.
@@ -63,6 +63,20 @@ export async function getAppointmentsForDay(
 ): Promise<AppointmentWithCustomer[]> {
   const { start, end } = dayRange(dateKey);
   return getAppointmentsBetween(start, end);
+}
+
+/** Catálogo activo, para el selector de venta suelta. */
+export async function getActiveServices(): Promise<Pick<Service, "id" | "name" | "price">[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("services")
+    .select("id, name, price")
+    .eq("is_active", true)
+    .order("sort_order")
+    .order("name");
+
+  if (error) throw new Error(`No se pudieron leer los servicios: ${error.message}`);
+  return data;
 }
 
 export async function getAppointmentById(

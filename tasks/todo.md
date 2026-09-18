@@ -5,7 +5,7 @@
       (falta aplicarla contra Supabase real, en el checkpoint final)
 - [x] T2 — Regla pura: `canMarkNoShow` (con tests)
 - [x] T3 — Acciones de turno: `completeAppointment` (RPC) + `markNoShow`
-- [ ] T4 — Ventas sueltas: `walkInSaleSchema` + `recordWalkInSale` +
+- [x] T4 — Ventas sueltas: `walkInSaleSchema` + `recordWalkInSale` +
       `getActiveServices`
 - [ ] T5 — UI: cobrar / marcar ausente desde la ficha del turno
 - [ ] T6 — UI: venta suelta desde la agenda

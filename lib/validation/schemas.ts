@@ -201,9 +201,17 @@ export const paymentSchema = z.object({
   method: z.enum(["efectivo", "transferencia"]),
 });
 
+export const walkInSaleSchema = z.object({
+  serviceId: z.uuid("Elegí un servicio"),
+  amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
+  method: z.enum(["efectivo", "transferencia"]),
+  note: z.string().trim().max(200, "La nota es demasiado larga").optional(),
+});
+
 export type BookingInput = z.infer<typeof bookingSchema>;
 export type CancelByTokenInput = z.infer<typeof cancelByTokenSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type TimeBlockInput = z.infer<typeof timeBlockSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;
+export type WalkInSaleInput = z.infer<typeof walkInSaleSchema>;
 export type BookingWindowInput = z.infer<typeof bookingWindowSchema>;
