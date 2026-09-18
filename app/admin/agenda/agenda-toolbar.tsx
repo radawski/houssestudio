@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { WalkInSaleButton } from "@/components/admin/walk-in-sale-button";
 import { Button } from "@/components/ui/button";
 import { addDaysToKey, todayKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
@@ -20,10 +21,12 @@ export function AgendaToolbar({
   view,
   dateKey,
   title,
+  services,
 }: {
   view: AgendaView;
   dateKey: string;
   title: string;
+  services: { id: string; name: string; price: number }[];
 }) {
   const step = STEP_DAYS[view];
 
@@ -46,21 +49,25 @@ export function AgendaToolbar({
         <h1 className="ml-2 text-base font-semibold first-letter:uppercase">{title}</h1>
       </div>
 
-      <div className="bg-muted flex rounded-md p-0.5">
-        {(["dia", "semana", "mes"] as const).map((option) => (
-          <Link
-            key={option}
-            href={hrefFor(option, dateKey)}
-            className={cn(
-              "rounded px-3 py-1 text-sm capitalize transition-colors",
-              view === option
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {option === "dia" ? "día" : option}
-          </Link>
-        ))}
+      <div className="flex items-center gap-3">
+        <WalkInSaleButton services={services} />
+
+        <div className="bg-muted flex rounded-md p-0.5">
+          {(["dia", "semana", "mes"] as const).map((option) => (
+            <Link
+              key={option}
+              href={hrefFor(option, dateKey)}
+              className={cn(
+                "rounded px-3 py-1 text-sm capitalize transition-colors",
+                view === option
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {option === "dia" ? "día" : option}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

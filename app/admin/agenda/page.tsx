@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { AgendaToolbar, type AgendaView } from "@/app/admin/agenda/agenda-toolbar";
 import { DayView, MonthView, WeekView } from "@/app/admin/agenda/agenda-views";
-import { getAppointmentsBetween } from "@/lib/data/appointments";
+import { getActiveServices, getAppointmentsBetween } from "@/lib/data/appointments";
 import { dayRange, monthRange, todayKey, weekRange } from "@/lib/dates";
 import { formatInTz, formatLongDate } from "@/lib/format";
 
@@ -23,13 +23,20 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
   const dateKey =
     typeof fecha === "string" && DATE_KEY_PATTERN.test(fecha) ? fecha : todayKey();
 
+  const services = await getActiveServices();
+
   if (view === "dia") {
     const { start, end } = dayRange(dateKey);
     const appointments = await getAppointmentsBetween(start, end);
 
     return (
       <div className="space-y-4">
-        <AgendaToolbar view={view} dateKey={dateKey} title={formatLongDate(start)} />
+        <AgendaToolbar
+          view={view}
+          dateKey={dateKey}
+          title={formatLongDate(start)}
+          services={services}
+        />
         <DayView appointments={appointments} />
       </div>
     );
@@ -45,6 +52,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
           view={view}
           dateKey={dateKey}
           title={`${formatInTz(start, "d 'de' MMMM")} – ${formatInTz(dayRange(days[6]).start, "d 'de' MMMM")}`}
+          services={services}
         />
         <WeekView days={days} appointments={appointments} />
       </div>
@@ -60,6 +68,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
         view={view}
         dateKey={dateKey}
         title={formatInTz(dayRange(`${monthKey}-01`).start, "MMMM yyyy")}
+        services={services}
       />
       <MonthView days={days} monthKey={monthKey} appointments={appointments} />
     </div>

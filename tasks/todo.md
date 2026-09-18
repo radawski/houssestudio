@@ -8,6 +8,6 @@
 - [x] T4 — Ventas sueltas: `walkInSaleSchema` + `recordWalkInSale` +
       `getActiveServices`
 - [x] T5 — UI: cobrar / marcar ausente desde la ficha del turno
-- [ ] T6 — UI: venta suelta desde la agenda
+- [x] T6 — UI: venta suelta desde la agenda
 - [ ] Checkpoint final: typecheck + test + build, migración aplicada, prueba
       manual real (cobrar, marcar ausente, venta suelta)
