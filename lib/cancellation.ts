@@ -10,7 +10,7 @@ import type { AppointmentStatus } from "@/lib/supabase/database.types";
  * los dos tienen que coincidir en el segundo límite o UI y base discrepan.
  */
 
-const CANCELABLE_STATUSES: AppointmentStatus[] = ["pendiente", "confirmado"];
+export const CANCELABLE_STATUSES: AppointmentStatus[] = ["pendiente", "confirmado"];
 
 export function cancellationDeadline(startsAt: string | Date, windowHours: number): Date {
   const start = typeof startsAt === "string" ? new Date(startsAt) : startsAt;
