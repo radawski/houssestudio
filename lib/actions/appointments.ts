@@ -1,7 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
+import { revalidateAgenda } from "@/lib/cache";
 import { requireAdmin } from "@/lib/auth";
 import { sendCancellationNotice } from "@/lib/email/send";
 
@@ -17,20 +16,6 @@ type CancelledAppointment = {
   cancellation_reason: string | null;
   customer: { full_name: string; email: string | null } | null;
 };
-
-/**
- * Transiciones de estado de un turno, disparadas desde el panel.
- *
- * Todas revalidan las mismas rutas porque cualquier cambio de estado afecta a la
- * vez la agenda, la bandeja de pendientes y la disponibilidad publica: confirmar
- * o cancelar mueve el slot dentro o fuera de la grilla que ve el cliente.
- */
-function revalidateAgenda() {
-  revalidatePath("/admin");
-  revalidatePath("/admin/agenda");
-  revalidatePath("/admin/solicitudes");
-  revalidatePath("/reservar");
-}
 
 export async function confirmAppointment(id: string) {
   const { supabase } = await requireAdmin();

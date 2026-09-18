@@ -143,6 +143,11 @@ export const bookingWindowSchema = z.object({
     .max(10_080, "El maximo es una semana (10080 minutos)"),
 });
 
+export const cancelByTokenSchema = z.object({
+  token: z.string().trim().min(1),
+  reason: z.string().trim().max(300, "El motivo es demasiado largo").optional(),
+});
+
 export const paymentSchema = z.object({
   appointmentId: z.uuid(),
   amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
@@ -150,6 +155,7 @@ export const paymentSchema = z.object({
 });
 
 export type BookingInput = z.infer<typeof bookingSchema>;
+export type CancelByTokenInput = z.infer<typeof cancelByTokenSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;
 export type TimeBlockInput = z.infer<typeof timeBlockSchema>;
 export type PaymentInput = z.infer<typeof paymentSchema>;

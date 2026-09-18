@@ -12,10 +12,11 @@ export type ActionState = {
   fieldErrors?: Record<string, string>;
   /**
    * Distingue un rechazo que la interfaz tiene que tratar distinto de un error
-   * común. Hoy solo `fuera_de_area`, que en vez de un cartel rojo abre el
-   * camino de coordinar por WhatsApp.
+   * común: en vez de un cartel rojo, abren el camino de coordinar por
+   * WhatsApp. `fuera_de_area` es un teléfono fuera de la zona de atención;
+   * `fuera_de_ventana` es un pedido de cancelación que llegó pasado el plazo.
    */
-  code?: "fuera_de_area";
+  code?: "fuera_de_area" | "fuera_de_ventana";
 };
 
 export const idleState: ActionState = { status: "idle" };

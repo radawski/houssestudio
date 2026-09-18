@@ -5,23 +5,28 @@ import { redirect } from "next/navigation";
 
 import {
   actionError,
+  actionSuccess,
   validationError,
   type ActionState,
 } from "@/lib/actions/result";
+import { revalidateAgenda } from "@/lib/cache";
+import { canCancel } from "@/lib/cancellation";
 import { siteUrl } from "@/lib/config";
 import {
   getActiveService,
   getAvailableSlots,
   getMonthSlotCounts,
+  getSettings,
 } from "@/lib/data/availability";
+import { getAppointmentByToken } from "@/lib/data/public";
 import { toDateKey } from "@/lib/dates";
-import { sendBookingConfirmation, sendNewRequestAlert } from "@/lib/email/send";
+import { sendBookingConfirmation, sendCancellationNotice, sendNewRequestAlert } from "@/lib/email/send";
 import { formatTime } from "@/lib/format";
 import { isLocalPhone } from "@/lib/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateManageToken } from "@/lib/tokens";
-import { bookingSchema, identifySchema } from "@/lib/validation/schemas";
+import { generateManageToken, hashManageToken } from "@/lib/tokens";
+import { bookingSchema, cancelByTokenSchema, identifySchema } from "@/lib/validation/schemas";
 
 /** Código de Postgres para violación de restricción de exclusión. */
 const EXCLUSION_VIOLATION = "23P01";
@@ -268,4 +273,121 @@ export async function createBooking(
   ]);
 
   redirect(`/turno/${token}?nuevo=1`);
+}
+
+/**
+ * Igual que `AppointmentWithCustomer` en `lib/data/appointments.ts`: los
+ * tipos de `database.types.ts` no declaran relaciones, así que el embed
+ * `customer:customers(...)` necesita un cast.
+ */
+type CancelledByTokenAppointment = {
+  id: string;
+  service_name_at_booking: string;
+  starts_at: string;
+  cancellation_reason: string | null;
+  customer: { full_name: string; email: string | null } | null;
+};
+
+/**
+ * Cancela un turno por su cuenta el propio cliente, desde `/turno/[token]`.
+ *
+ * El token nunca llega como id de turno: se resuelve por
+ * `manage_token_hash` dentro del mismo `UPDATE` que aplica el cambio, y ese
+ * `UPDATE` lleva también el estado cancelable y el límite de la ventana
+ * (`.gt("starts_at", ...)`). No hay un chequeo previo separado: igual que la
+ * restricción de exclusión resuelve la carrera de `createBooking`, hacerlo
+ * todo en una sola sentencia es lo único que cierra la ventana entre leer y
+ * escribir. Un login o un número de turno no alcanzan como filtro porque acá
+ * no hay sesión: el hash del token es la única prueba de que quien pide la
+ * baja es quien recibió el link.
+ */
+export async function cancelByToken(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const parsed = cancelByTokenSchema.safeParse({
+    token: formData.get("token"),
+    reason: formData.get("reason") || undefined,
+  });
+  if (!parsed.success) return validationError(parsed.error);
+
+  const { token, reason } = parsed.data;
+
+  const ip = await getClientIp();
+  if (!checkRateLimit(`cancel-token:${ip}`, { limit: 10, windowMs: 60_000 })) {
+    return actionError("Demasiados intentos. Esperá un momento y volvé a probar.");
+  }
+
+  const settings = await getSettings();
+  // Cancelable solo si el turno empieza despues de este instante: es la
+  // misma cuenta que `cancellationDeadline`, mirada desde el otro lado (la
+  // hora minima de inicio en vez del limite de cancelacion).
+  const earliestCancelableStart = new Date(
+    Date.now() + settings.cancellation_window_hours * 60 * 60 * 1000,
+  );
+
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({
+      status: "cancelado",
+      cancelled_at: new Date().toISOString(),
+      cancelled_by: "cliente",
+      cancellation_reason: reason?.trim() || null,
+    })
+    .eq("manage_token_hash", hashManageToken(token))
+    .in("status", ["pendiente", "confirmado"])
+    .gt("starts_at", earliestCancelableStart.toISOString())
+    .select(
+      "id, service_name_at_booking, starts_at, cancellation_reason, customer:customers(full_name, email)",
+    )
+    .maybeSingle();
+
+  if (error) return actionError("No pudimos cancelar tu turno. Intentá de nuevo.");
+
+  if (!data) {
+    // El UPDATE no afectó ninguna fila: el token no existe, el turno ya no
+    // está en un estado cancelable, o el plazo venció entre que se abrió la
+    // página y se confirmó. Se reconsulta solo para elegir el mensaje
+    // correcto — nunca para decidir si cancelar, eso ya lo resolvió el
+    // UPDATE de arriba.
+    const current = await getAppointmentByToken(token);
+    if (!current) return actionError("No encontramos tu turno.");
+
+    if (!canCancel({ status: current.status, startsAt: current.starts_at, windowHours: settings.cancellation_window_hours })) {
+      if (current.status !== "pendiente" && current.status !== "confirmado") {
+        return actionError("Este turno ya no se puede cancelar desde acá.");
+      }
+      return {
+        status: "error",
+        code: "fuera_de_ventana",
+        message:
+          "Ya estás dentro del plazo mínimo para cancelar por tu cuenta. Coordiná el cambio directamente con el local.",
+      };
+    }
+
+    // Cancelable según la relectura pero el UPDATE no encontró fila: carrera
+    // perdida contra otro pedido concurrente (poco probable, pero no es un
+    // error de la persona que cancela).
+    return actionError("No pudimos cancelar tu turno. Volvé a intentar.");
+  }
+
+  const appointment = data as unknown as CancelledByTokenAppointment;
+
+  revalidateAgenda();
+
+  // Nunca lanza: un fallo de envío no puede tumbar una cancelación ya guardada.
+  if (appointment.customer) {
+    await sendCancellationNotice({
+      appointmentId: appointment.id,
+      toEmail: appointment.customer.email,
+      fullName: appointment.customer.full_name,
+      serviceName: appointment.service_name_at_booking,
+      startsAt: appointment.starts_at,
+      reason: appointment.cancellation_reason,
+      cancelledBy: "cliente",
+    });
+  }
+
+  return actionSuccess("Turno cancelado.");
 }
