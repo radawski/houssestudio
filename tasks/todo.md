@@ -1,6 +1,6 @@
 # Todo — Módulo 2: autogestion-cancelacion
 
-- [ ] T1 — Helper puro de ventana (`lib/cancellation.ts` + test)
+- [x] T1 — Helper puro de ventana (`lib/cancellation.ts` + test)
 - [ ] T2 — Server Action `cancelByToken` (rate limit, ventana en el UPDATE,
       `lib/cache.ts`, `cancelByTokenSchema`, código `fuera_de_ventana`)
 - [ ] T3 — UI en `/turno/[token]` (gating + botón + salida a WhatsApp)
