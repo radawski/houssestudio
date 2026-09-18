@@ -1,6 +1,6 @@
 # Todo — Módulo 1: emails-transaccionales
 
-- [ ] T1 — Cliente de Resend y variables de entorno (`lib/email/env.ts`,
+- [x] T1 — Cliente de Resend y variables de entorno (`lib/email/env.ts`,
       `lib/email/resend.ts`, `ADMIN_EMAIL` en `.env.local.example`,
       `npm install resend`)
 - [ ] T2 — Confirmación al cliente (`sendBookingConfirmation`, hook en
