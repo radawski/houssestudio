@@ -90,6 +90,18 @@ export type Payment = {
   created_at: string;
 };
 
+export type WalkInSale = {
+  id: string;
+  service_id: string | null;
+  /** Congelado al momento de la venta, igual que `service_name_at_booking`. */
+  service_name: string;
+  amount: number;
+  method: PaymentMethod;
+  sold_at: string;
+  note: string | null;
+  created_at: string;
+};
+
 export type EmailLogEntry = {
   id: string;
   appointment_id: string | null;
@@ -154,6 +166,7 @@ export type Database = {
         | "cancelled_at"
       >;
       payments: TableShape<Payment, "paid_at">;
+      walk_in_sales: TableShape<WalkInSale, "service_id" | "sold_at" | "note">;
       email_log: TableShape<
         EmailLogEntry,
         "appointment_id" | "status" | "provider_id" | "error" | "sent_at"
@@ -168,6 +181,10 @@ export type Database = {
     Views: Record<never, never>;
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      complete_appointment_with_payment: {
+        Args: { p_appointment_id: string; p_amount: number; p_method: PaymentMethod };
+        Returns: void;
+      };
     };
     Enums: {
       appointment_status: AppointmentStatus;
