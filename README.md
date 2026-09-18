@@ -120,5 +120,8 @@ que al cruzar zonas corre los turnos de día.
 **Fase 1 completa**: reservas públicas, agenda, solicitudes, servicios y
 disponibilidad.
 
-Pendiente: cobros y cierre de caja, emails transaccionales, autogestión de
-cancelaciones, CRM, reportes y recordatorios automáticos.
+**Fase 2 en curso** (ver `SPEC.md`): emails transaccionales (confirmación,
+aviso interno y notificación de cancelación) ya funcionan, vía Resend.
+
+Pendiente de Fase 2: autogestión de cancelaciones, cobros y cierre de caja.
+Pendiente de Fase 3: CRM, reportes y recordatorios automáticos.
