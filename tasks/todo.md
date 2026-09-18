@@ -8,5 +8,6 @@
 - [x] T3 — Aviso interno al barbero (`sendNewRequestAlert`, mismo hook)
 - [x] T4 — Notificación de cancelación (`sendCancellationNotice`, hook en
       `cancelAppointment`)
-- [ ] Checkpoint final: `npm run typecheck && npm test && npm run build` +
-      repaso manual (reserva + cancelación) en `npm run dev`
+- [x] Checkpoint final: `npm run typecheck && npm test && npm run build` +
+      repaso manual (reserva + cancelación) en `npm run dev` — los tres
+      mails llegaron y `email_log` quedó correcto
