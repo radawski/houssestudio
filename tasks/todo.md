@@ -6,5 +6,6 @@
 - [x] T3 — Capa de datos: mapear el segundo tramo
 - [x] T4 — Validación (`businessHourSchema`) + `saveBusinessHours`
 - [x] T5 — Panel: switch de horario partido
-- [ ] Checkpoint final: typecheck + test + build, migración aplicada, prueba
-      manual real
+- [x] Checkpoint final: typecheck + test + build, migración aplicada, prueba
+      manual real — martes con horario partido 09-13 y 15-19, la grilla
+      pública ofrece los dos tramos por separado
