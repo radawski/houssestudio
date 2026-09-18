@@ -1,10 +1,23 @@
 import "server-only";
 
-import { computeSlots, weekdayOf, type Interval } from "@/lib/availability";
+import { computeSlots, weekdayOf, type DayHours, type Interval } from "@/lib/availability";
 import { BUSINESS_TIMEZONE } from "@/lib/config";
 import { addDaysToKey, todayKey } from "@/lib/dates";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { BusinessHour, Service, Settings } from "@/lib/supabase/database.types";
+
+/** `business_hours` -> `DayHours`, incluyendo el segundo tramo si lo tiene. */
+function toDayHours(row: BusinessHour): DayHours {
+  return {
+    isClosed: row.is_closed,
+    opensAt: row.opens_at,
+    closesAt: row.closes_at,
+    secondRange:
+      row.opens_at_2 && row.closes_at_2
+        ? { opensAt: row.opens_at_2, closesAt: row.closes_at_2 }
+        : null,
+  };
+}
 
 /** Estados que ocupan la agenda. Los demas liberan el slot automaticamente. */
 export const BLOCKING_STATUSES = ["pendiente", "confirmado"] as const;
@@ -119,13 +132,7 @@ export async function getAvailableSlots(
   return computeSlots({
     dateKey,
     durationMinutes: service.duration_minutes,
-    hours: dayHours
-      ? {
-          isClosed: dayHours.is_closed,
-          opensAt: dayHours.opens_at,
-          closesAt: dayHours.closes_at,
-        }
-      : null,
+    hours: dayHours ? toDayHours(dayHours) : null,
     busy,
     now,
     minLeadMinutes: settings.min_booking_lead_minutes,
@@ -174,13 +181,7 @@ export async function getMonthSlotCounts(
     counts[dateKey] = computeSlots({
       dateKey,
       durationMinutes: service.duration_minutes,
-      hours: dayHours
-        ? {
-            isClosed: dayHours.is_closed,
-            opensAt: dayHours.opens_at,
-            closesAt: dayHours.closes_at,
-          }
-        : null,
+      hours: dayHours ? toDayHours(dayHours) : null,
       busy,
       now,
       minLeadMinutes: settings.min_booking_lead_minutes,

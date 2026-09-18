@@ -36,6 +36,7 @@ function SaveButton() {
 
 function DayRow({ hour }: { hour: BusinessHour }) {
   const [isOpen, setIsOpen] = useState(!hour.is_closed);
+  const [hasSplit, setHasSplit] = useState(Boolean(hour.opens_at_2 && hour.closes_at_2));
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b py-3 last:border-b-0">
@@ -56,25 +57,62 @@ function DayRow({ hour }: { hour: BusinessHour }) {
       {!isOpen ? <input type="hidden" name={`closed-${hour.weekday}`} value="on" /> : null}
 
       {isOpen ? (
-        <div className="flex items-center gap-2">
-          <Input
-            type="time"
-            name={`opens-${hour.weekday}`}
-            defaultValue={toInputTime(hour.opens_at)}
-            className="w-32"
-            aria-label={`Apertura ${WEEKDAY_NAMES[hour.weekday]}`}
-            required
-          />
-          <span className="text-muted-foreground text-sm">a</span>
-          <Input
-            type="time"
-            name={`closes-${hour.weekday}`}
-            defaultValue={toInputTime(hour.closes_at)}
-            className="w-32"
-            aria-label={`Cierre ${WEEKDAY_NAMES[hour.weekday]}`}
-            required
-          />
-        </div>
+        <>
+          <div className="flex items-center gap-2">
+            <Input
+              type="time"
+              name={`opens-${hour.weekday}`}
+              defaultValue={toInputTime(hour.opens_at)}
+              className="w-32"
+              aria-label={`Apertura ${WEEKDAY_NAMES[hour.weekday]}`}
+              required
+            />
+            <span className="text-muted-foreground text-sm">a</span>
+            <Input
+              type="time"
+              name={`closes-${hour.weekday}`}
+              defaultValue={toInputTime(hour.closes_at)}
+              className="w-32"
+              aria-label={`Cierre ${WEEKDAY_NAMES[hour.weekday]}`}
+              required
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              id={`split-${hour.weekday}`}
+              checked={hasSplit}
+              onCheckedChange={setHasSplit}
+              aria-label={`Horario partido los ${WEEKDAY_NAMES[hour.weekday]}`}
+            />
+            <Label htmlFor={`split-${hour.weekday}`} className="text-muted-foreground font-normal">
+              Horario partido
+            </Label>
+          </div>
+
+          {hasSplit ? (
+            <div className="flex items-center gap-2">
+              <input type="hidden" name={`split-${hour.weekday}`} value="on" />
+              <Input
+                type="time"
+                name={`opens2-${hour.weekday}`}
+                defaultValue={hour.opens_at_2 ? toInputTime(hour.opens_at_2) : ""}
+                className="w-32"
+                aria-label={`Apertura del segundo tramo, ${WEEKDAY_NAMES[hour.weekday]}`}
+                required
+              />
+              <span className="text-muted-foreground text-sm">a</span>
+              <Input
+                type="time"
+                name={`closes2-${hour.weekday}`}
+                defaultValue={hour.closes_at_2 ? toInputTime(hour.closes_at_2) : ""}
+                className="w-32"
+                aria-label={`Cierre del segundo tramo, ${WEEKDAY_NAMES[hour.weekday]}`}
+                required
+              />
+            </div>
+          ) : null}
+        </>
       ) : (
         <>
           <span className="text-muted-foreground text-sm">Cerrado</span>

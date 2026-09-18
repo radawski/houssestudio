@@ -97,17 +97,64 @@ export const serviceSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+const timeFormat = /^\d{2}:\d{2}$/;
+
+/**
+ * `hasSecondRange` decide si `opensAt2`/`closesAt2` importan: sin horario
+ * partido, esos dos campos ni se validan aunque lleguen vacios del form.
+ * Un solo `superRefine` en vez de varios `refine` encadenados porque las
+ * reglas del segundo tramo dependen unas de otras (no hay apertura sin
+ * cierre, no hay segundo tramo sin que el primero sea valido).
+ */
 export const businessHourSchema = z
   .object({
     weekday: z.coerce.number<number>().int().min(0).max(6),
     isClosed: z.boolean(),
     /** `HH:MM` en hora local del local. */
-    opensAt: z.string().regex(/^\d{2}:\d{2}$/, "Formato invalido"),
-    closesAt: z.string().regex(/^\d{2}:\d{2}$/, "Formato invalido"),
+    opensAt: z.string().regex(timeFormat, "Formato invalido"),
+    closesAt: z.string().regex(timeFormat, "Formato invalido"),
+    /** Horario partido (segundo tramo, ej. corte por almuerzo). */
+    hasSecondRange: z.boolean(),
+    opensAt2: z.string().regex(timeFormat, "Formato invalido").optional(),
+    closesAt2: z.string().regex(timeFormat, "Formato invalido").optional(),
   })
-  .refine((v) => v.isClosed || v.closesAt > v.opensAt, {
-    message: "El cierre tiene que ser posterior a la apertura",
-    path: ["closesAt"],
+  .superRefine((v, ctx) => {
+    if (v.isClosed) return;
+
+    if (v.closesAt <= v.opensAt) {
+      ctx.addIssue({
+        code: "custom",
+        message: "El cierre tiene que ser posterior a la apertura",
+        path: ["closesAt"],
+      });
+    }
+
+    if (!v.hasSecondRange) return;
+
+    if (!v.opensAt2 || !v.closesAt2) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Completá el segundo tramo o desactivá el horario partido",
+        path: ["opensAt2"],
+      });
+      return;
+    }
+
+    if (v.closesAt2 <= v.opensAt2) {
+      ctx.addIssue({
+        code: "custom",
+        message: "El cierre del segundo tramo tiene que ser posterior a su apertura",
+        path: ["closesAt2"],
+      });
+    }
+
+    if (v.opensAt2 <= v.closesAt) {
+      ctx.addIssue({
+        code: "custom",
+        message: "El segundo tramo tiene que empezar después de que cierra el primero",
+        path: ["opensAt2"],
+      });
+    }
   });
 
 export const timeBlockSchema = z

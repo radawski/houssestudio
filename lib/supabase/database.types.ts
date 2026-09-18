@@ -38,6 +38,9 @@ export type BusinessHour = {
   opens_at: string;
   /** `HH:MM:SS` en hora local del local. */
   closes_at: string;
+  /** Segundo tramo (horario partido). Van de a par: los dos o ninguno. */
+  opens_at_2: string | null;
+  closes_at_2: string | null;
   updated_at: string;
 };
 

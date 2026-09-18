@@ -35,11 +35,15 @@ export async function saveBusinessHours(
 
   const rows = [];
   for (let weekday = 0; weekday < 7; weekday++) {
+    const hasSecondRange = formData.get(`split-${weekday}`) === "on";
     const parsed = businessHourSchema.safeParse({
       weekday,
       isClosed: formData.get(`closed-${weekday}`) === "on",
       opensAt: formData.get(`opens-${weekday}`),
       closesAt: formData.get(`closes-${weekday}`),
+      hasSecondRange,
+      opensAt2: formData.get(`opens2-${weekday}`) || undefined,
+      closesAt2: formData.get(`closes2-${weekday}`) || undefined,
     });
 
     if (!parsed.success) return validationError(parsed.error);
@@ -49,6 +53,10 @@ export async function saveBusinessHours(
       is_closed: parsed.data.isClosed,
       opens_at: parsed.data.opensAt,
       closes_at: parsed.data.closesAt,
+      // Sin horario partido el segundo tramo se limpia: no tiene sentido
+      // conservar horas que la interfaz ya no muestra ni deja editar.
+      opens_at_2: parsed.data.hasSecondRange ? parsed.data.opensAt2! : null,
+      closes_at_2: parsed.data.hasSecondRange ? parsed.data.closesAt2! : null,
       updated_at: new Date().toISOString(),
     });
   }
