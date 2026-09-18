@@ -8,12 +8,14 @@ import {
   validationError,
   type ActionState,
 } from "@/lib/actions/result";
+import { siteUrl } from "@/lib/config";
 import {
   getActiveService,
   getAvailableSlots,
   getMonthSlotCounts,
 } from "@/lib/data/availability";
 import { toDateKey } from "@/lib/dates";
+import { sendBookingConfirmation, sendNewRequestAlert } from "@/lib/email/send";
 import { formatTime } from "@/lib/format";
 import { isLocalPhone } from "@/lib/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -160,7 +162,7 @@ export async function createBooking(
 
   const { data: existingCustomer } = await supabase
     .from("customers")
-    .select("id")
+    .select("id, full_name, phone, email")
     .eq("dni", dni)
     .maybeSingle();
 
@@ -171,9 +173,16 @@ export async function createBooking(
   const isEditingOrNew = !existingCustomer || Boolean(fullName || phone || email);
 
   let customerId: string;
+  /** Para los emails transaccionales: siempre la ficha vigente tras esta operación. */
+  let contact: { fullName: string; phone: string; email: string | null };
 
   if (!isEditingOrNew) {
     customerId = existingCustomer.id;
+    contact = {
+      fullName: existingCustomer.full_name,
+      phone: existingCustomer.phone,
+      email: existingCustomer.email,
+    };
   } else {
     const missing: Record<string, string> = {};
     if (!fullName) missing.fullName = "Ingresa tu nombre completo";
@@ -203,28 +212,33 @@ export async function createBooking(
         { dni, full_name: fullName!, phone: phone!, email: email! },
         { onConflict: "dni" },
       )
-      .select("id")
+      .select("id, full_name, phone, email")
       .single();
 
     if (customerError || !customer) {
       return actionError("No pudimos guardar tus datos. Intentá de nuevo.");
     }
     customerId = customer.id;
+    contact = { fullName: customer.full_name, phone: customer.phone, email: customer.email };
   }
 
   const { token, hash } = generateManageToken();
 
-  const { error } = await supabase.from("appointments").insert({
-    customer_id: customerId,
-    service_id: service.id,
-    service_name_at_booking: service.name,
-    price_at_booking: service.price,
-    duration_minutes_at_booking: service.duration_minutes,
-    starts_at: startDate.toISOString(),
-    ends_at: endDate.toISOString(),
-    manage_token_hash: hash,
-    customer_note: note ?? null,
-  });
+  const { data: appointment, error } = await supabase
+    .from("appointments")
+    .insert({
+      customer_id: customerId,
+      service_id: service.id,
+      service_name_at_booking: service.name,
+      price_at_booking: service.price,
+      duration_minutes_at_booking: service.duration_minutes,
+      starts_at: startDate.toISOString(),
+      ends_at: endDate.toISOString(),
+      manage_token_hash: hash,
+      customer_note: note ?? null,
+    })
+    .select("id")
+    .single();
 
   if (error) {
     if (error.code === EXCLUSION_VIOLATION) {
@@ -232,6 +246,26 @@ export async function createBooking(
     }
     return actionError("No pudimos registrar tu turno. Intentá de nuevo.");
   }
+
+  // Nunca lanzan: un fallo de envío no puede tumbar una reserva ya guardada.
+  await Promise.all([
+    sendBookingConfirmation({
+      appointmentId: appointment.id,
+      toEmail: contact.email,
+      fullName: contact.fullName,
+      serviceName: service.name,
+      startsAt: startDate.toISOString(),
+      price: service.price,
+      manageUrl: `${siteUrl()}/turno/${token}`,
+    }),
+    sendNewRequestAlert({
+      fullName: contact.fullName,
+      phone: contact.phone,
+      serviceName: service.name,
+      startsAt: startDate.toISOString(),
+      price: service.price,
+    }),
+  ]);
 
   redirect(`/turno/${token}?nuevo=1`);
 }
