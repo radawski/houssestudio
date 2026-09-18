@@ -63,7 +63,7 @@ Fuera de alcance (Fase 3 u otra decisión explícita del usuario):
 - Un turno cancelado que ya tenía cobro registrado no borra el pago: queda
   como dato histórico para el reporte de caja.
 
-## 3. Cambios de datos (migración `0006_fase2.sql`)
+## 3. Cambios de datos (migración `0007_ventas_sueltas.sql`)
 
 - **`walk_in_sales`** (tabla nueva): las ventas sueltas no encajan en
   `payments`, que exige `appointment_id not null unique` — una venta suelta no
@@ -224,8 +224,8 @@ npm run build
 ```
 
 Nuevo antes de empezar: `npm install resend`, completar `RESEND_API_KEY` y
-`EMAIL_FROM` en `.env.local` (sandbox), y aplicar
-`supabase/migrations/0006_fase2.sql` desde el SQL Editor.
+`EMAIL_FROM` en `.env.local` (sandbox), y aplicar la migración de cada
+módulo desde el SQL Editor a medida que se implementa.
 
 ## 6. Estilo de código (recapitulando lo ya vigente, no hay reglas nuevas)
 
@@ -265,8 +265,9 @@ Nuevo antes de empezar: `npm install resend`, completar `RESEND_API_KEY` y
   catálogo por si cambia después.
 
 **Preguntar antes**:
-- Antes de aplicar la migración `0006` contra el proyecto de Supabase real
-  (no es un entorno de prueba descartable).
+- Antes de aplicar una migración contra el proyecto de Supabase real (no es
+  un entorno de prueba descartable). El número de archivo concreto de cada
+  módulo se decide al implementarlo, no acá.
 - Antes de instalar cualquier dependencia nueva más allá de `resend`.
 - Si alguna decisión de la sección 2 necesita cambiar sobre la marcha.
 
