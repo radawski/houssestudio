@@ -2,10 +2,13 @@ import { IdCard, Mail, Phone, StickyNote } from "lucide-react";
 
 import {
   CancelAppointmentButton,
+  CompleteAppointmentButton,
   ConfirmAppointmentButton,
+  MarkNoShowButton,
 } from "@/components/admin/appointment-actions";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { canMarkNoShow } from "@/lib/appointment-rules";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import { formatCurrency, formatLongDate, formatTime } from "@/lib/format";
 
@@ -85,9 +88,18 @@ export function AppointmentCard({
         ) : null}
 
         {isOpen ? (
-          <div className="flex gap-2 pt-1">
-            {status === "pendiente" ? (
-              <ConfirmAppointmentButton id={appointment.id} />
+          <div className="flex flex-wrap gap-2 pt-1">
+            {status === "pendiente" ? <ConfirmAppointmentButton id={appointment.id} /> : null}
+            {status === "confirmado" ? (
+              <>
+                <CompleteAppointmentButton
+                  id={appointment.id}
+                  suggestedAmount={appointment.price_at_booking}
+                />
+                {canMarkNoShow({ status, startsAt: appointment.starts_at }) ? (
+                  <MarkNoShowButton id={appointment.id} />
+                ) : null}
+              </>
             ) : null}
             <CancelAppointmentButton
               id={appointment.id}
