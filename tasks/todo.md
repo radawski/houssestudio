@@ -9,5 +9,6 @@
       `getActiveServices`
 - [x] T5 — UI: cobrar / marcar ausente desde la ficha del turno
 - [x] T6 — UI: venta suelta desde la agenda
-- [ ] Checkpoint final: typecheck + test + build, migración aplicada, prueba
-      manual real (cobrar, marcar ausente, venta suelta)
+- [x] Checkpoint final: typecheck + test + build, migración aplicada, prueba
+      manual real (cobrar, marcar ausente, venta suelta) — las tres
+      operaciones quedaron confirmadas en payments/appointments/walk_in_sales

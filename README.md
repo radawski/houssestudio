@@ -120,9 +120,9 @@ que al cruzar zonas corre los turnos de día.
 **Fase 1 completa**: reservas públicas, agenda, solicitudes, servicios y
 disponibilidad.
 
-**Fase 2 en curso** (ver `SPEC.md`): emails transaccionales (confirmación,
-aviso interno y notificación de cancelación) y autogestión de cancelaciones
-desde `/turno/[token]` ya funcionan, vía Resend.
+**Fase 2 en curso** (ver `SPEC.md`): emails transaccionales, autogestión de
+cancelaciones y registro de cobros (turnos cobrados vía RPC atómica, turnos
+ausentes, ventas sueltas) ya funcionan.
 
-Pendiente de Fase 2: cobros y cierre de caja.
+Pendiente de Fase 2: cierre de caja.
 Pendiente de Fase 3: CRM, reportes y recordatorios automáticos.
