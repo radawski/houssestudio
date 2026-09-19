@@ -1,6 +1,6 @@
 # Todo — Módulo 4: cierre-de-caja
 
-- [ ] T1 — Motor puro: `lib/cashbox.ts` (`summarizeCharges`, con tests)
+- [x] T1 — Motor puro: `lib/cashbox.ts` (`summarizeCharges`, con tests)
 - [ ] T2 — `exactMonthRange` en `lib/dates.ts` (con tests)
 - [ ] T3 — Lectura combinada: `lib/data/cashbox.ts` (`getCashboxSummary`)
 - [ ] T4 — Página `/admin/caja` + `caja-toolbar.tsx`
