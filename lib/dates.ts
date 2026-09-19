@@ -77,6 +77,24 @@ export function monthRange(dateKey: string): {
   };
 }
 
+/**
+ * Primer y último instante del mes calendario real, sin el relleno de
+ * semanas completas que trae `monthRange` para el grid visual del
+ * calendario. Sirve para reportes (caja) donde ese relleno inflaría el
+ * total con días de otro mes.
+ */
+export function exactMonthRange(dateKey: string): { start: Date; end: Date; monthKey: string } {
+  const anchor = new TZDate(businessTimeToDate(dateKey, "12:00"), BUSINESS_TIMEZONE);
+  const firstKey = toDateKey(startOfMonth(anchor));
+  const lastKey = toDateKey(endOfMonth(anchor));
+
+  return {
+    start: dayRange(firstKey).start,
+    end: dayRange(lastKey).end,
+    monthKey: dateKey.slice(0, 7),
+  };
+}
+
 /** `true` si la clave de fecha pertenece al mes de la clave de referencia. */
 export function isSameMonth(dateKey: string, referenceKey: string): boolean {
   return dateKey.slice(0, 7) === referenceKey.slice(0, 7);
