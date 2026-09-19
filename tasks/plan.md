@@ -1,157 +1,103 @@
-# Plan — Módulo 3: registro-de-cobros (Fase 2)
+# Plan — Módulo 4: cierre-de-caja (Fase 2)
 
-Fuente: `SPEC.md` sección 4.3. Depende de nada nuevo (los módulos 1 y 2 ya
-están completos). Revisado con `advisor` antes de escribir código.
+Fuente: `SPEC.md` sección 4.4. Depende del módulo 3 (`payments`,
+`walk_in_sales`), ya completo. `revalidateAgenda()` ya incluye
+`/admin/caja` desde el módulo 3.
 
 ## Dependencias
 
 ```
-T1 esquema (migración 0007 + tipos)
-   │
-   ├─→ T2 regla pura: canMarkNoShow
-   │      │
-   │      └─→ T3 acciones de turno: completeAppointment (RPC) + markNoShow
-   │
-   └─→ T4 ventas sueltas: walkInSaleSchema + recordWalkInSale + getActiveServices
-
-T3 + T4 ─→ T5 UI de turno (appointment-actions.tsx + appointment-card.tsx)
-T4      ─→ T6 UI de venta suelta (diálogo en la agenda)
+T1 motor puro: lib/cashbox.ts (summarizeCharges)
+T2 lib/dates.ts: exactMonthRange (rango exacto del mes, sin relleno de grilla)
+      │
+      └─→ T3 lib/data/cashbox.ts: getCashboxSummary(range)
+              │
+              └─→ T4 UI: app/admin/caja + caja-toolbar.tsx
+                      │
+                      └─→ T5 admin-nav.tsx: link a Caja
 ```
 
-## Ajustes de diseño que salieron de la revisión (no estaban en SPEC.md §4.3)
+## Decisión que no estaba explícita en SPEC.md §4.4
 
-- **`completeAppointment` va por una función de Postgres (RPC), no por dos
-  escrituras sueltas desde el cliente.** El criterio de aceptación de la spec
-  ("no queda un estado intermedio 'completado sin pago'") es una garantía de
-  atomicidad, y `supabase-js` no puede envolver dos `.update()`/`.insert()`
-  sueltos en una sola transacción. La función
-  `complete_appointment_with_payment(appointment_id, amount, method)` hace el
-  `UPDATE` y el `INSERT` en la misma transacción, `security invoker` para
-  que sigan mandando las políticas RLS de siempre (`requireAdmin()` +
-  cliente de sesión, no `service_role`).
-- **`/admin/caja` se suma a `revalidateAgenda()` en este módulo, no en el
-  4.** Tanto `completeAppointment` como `recordWalkInSale` cambian lo que esa
-  página (todavía no existe) va a mostrar; si se revalida recién en el
-  módulo 4, ese módulo arranca con un reporte que no se actualiza al cobrar
-  o registrar una venta suelta.
-- **Las lecturas de servicios dentro de las acciones admin van por el
-  cliente de sesión (`requireAdmin()`), no por `createAdminClient()`.**
-  `getActiveService` en `lib/data/availability.ts` usa `service_role` porque
-  sirve al portal público (sin sesión). Reusarla dentro de una acción admin
-  rompería el patrón: todo lo que corre con sesión de barbero se apoya en
-  RLS como segunda barrera. Se agrega `getActiveServices()` en
-  `lib/data/appointments.ts` (el archivo de lecturas del panel) con
-  `createClient()`.
+`monthRange` en `lib/dates.ts` devuelve la grilla completa del calendario
+visual (con días de relleno del mes anterior/siguiente para completar
+semanas), pensada para `MonthView` de la agenda. Usarla tal cual en el
+reporte de caja incluiría días que no son del mes en el total mensual. Se
+agrega `exactMonthRange`, el primer y último instante del mes calendario
+real, sin relleno — nueva función, no una que ya exista y haya que tocar.
 
 ## Tareas
 
-### T1 — Esquema: `walk_in_sales` + función de cobro atómico
+### T1 — Motor puro de agregación
 
-**Archivo**: `supabase/migrations/0007_ventas_sueltas.sql` +
-`lib/supabase/database.types.ts`.
-
-**Alcance**:
-- Tabla `walk_in_sales` tal como la describe SPEC.md §3 (`service_id`,
-  `service_name`, `amount`, `method`, `sold_at`, `note`), índice por
-  `sold_at`, RLS con el mismo patrón `_admin_all` del resto de las tablas.
-- Función `complete_appointment_with_payment(p_appointment_id, p_amount,
-  p_method)`: `UPDATE appointments` (solo desde `confirmado`) + `INSERT
-  payments` en una transacción; `raise exception` si el turno ya no está en
-  `confirmado` (cero filas afectadas).
-- `database.types.ts`: tipo `WalkInSale`, entrada en `Database.Tables`, y la
-  función nueva en `Database.Functions` (junto a `is_admin`).
-
-**Verificación**: `npm run typecheck` (el tipo de la función es lo que
-avisa si algo quedó mal declarado).
-
-### T2 — Regla pura: `canMarkNoShow`
-
-**Archivo**: `lib/appointment-rules.ts` (+ test).
+**Archivo**: `lib/cashbox.ts` (+ test).
 
 ```ts
-export function canMarkNoShow(params: {
-  status: AppointmentStatus;
-  startsAt: string | Date;
-  now?: Date;
-}): boolean
+export type Charge = { amount: number; method: PaymentMethod };
+export type CashboxBreakdown = { total: number; byMethod: Record<PaymentMethod, number> };
+export function summarizeCharges(charges: Charge[]): CashboxBreakdown
 ```
 
-Solo `confirmado` y con `starts_at` ya pasado. Mismo patrón que
-`lib/cancellation.ts`: función pura, sin `server-only`, testeada en los
-bordes (justo antes/después del inicio del turno, cada estado no válido).
+Sin `server-only`, sin Supabase — mismo patrón que `lib/availability.ts` y
+`lib/cancellation.ts`. Cubre: lista vacía, un solo medio, ambos medios
+mezclados, montos con decimales.
 
-**Verificación**: `npx vitest run lib/appointment-rules.test.ts` (RED antes
-de implementar).
+**Verificación**: `npx vitest run lib/cashbox.test.ts` (RED antes de
+implementar).
 
-### T3 — Acciones de turno: cobrar y marcar ausente
+### T2 — `exactMonthRange` en `lib/dates.ts`
 
-**Archivo**: `lib/actions/appointments.ts`.
+**Archivo**: `lib/dates.ts` (+ test nuevo `lib/dates.test.ts`, el archivo no
+tiene tests todavía pese a tener lógica de bordes de fecha — se suma la
+cobertura para esta función).
 
-- `completeAppointment(id, payment: { amount: number; method: PaymentMethod
-  })`: valida con `paymentSchema` (`{appointmentId: id, ...payment}`), llama
-  `supabase.rpc("complete_appointment_with_payment", ...)`, revalida agenda
-  (incluye `/admin/caja` desde ya) y dispara nada de email (no está en
-  alcance de este módulo).
-- `markNoShow(id)`: `UPDATE` a `no_show` con `.eq("status", "confirmado")`;
-  usa `canMarkNoShow` solo del lado del cliente para decidir si se muestra
-  el botón, la base es la que manda vía el `.eq`.
+`exactMonthRange(dateKey)`: primer y último instante del mes calendario que
+contiene `dateKey`, en hora local. Reusa `dayRange` para los dos extremos,
+igual que `monthRange`, pero sin `startOfWeek`/`endOfWeek`.
 
-**Verificación**: `npm run typecheck` (la UI todavía no existe, se prueba
-manual recién en el checkpoint final).
+**Verificación**: test de un mes que empieza o termina a mitad de semana,
+para confirmar que no hay días de otro mes adentro del rango.
 
-### T4 — Ventas sueltas
+### T3 — Lectura combinada: `getCashboxSummary`
 
-**Archivos**: `lib/validation/schemas.ts` (`walkInSaleSchema`),
-`lib/actions/sales.ts` (nuevo, `recordWalkInSale`), `lib/data/appointments.ts`
-(`getActiveServices`).
+**Archivo**: `lib/data/cashbox.ts` (nuevo, `server-only`).
 
-- `walkInSaleSchema`: `serviceId` (uuid), `amount` (editable, sugerido desde
-  el servicio), `method`, `note` opcional.
-- `recordWalkInSale`: busca el servicio con el cliente de sesión, congela
-  `service_name` al momento de la venta (mismo criterio que
-  `service_name_at_booking`), inserta en `walk_in_sales`.
-- `getActiveServices()`: `id, name, price` de servicios activos, para el
-  selector del diálogo.
+- Trae `payments` (con el turno embebido para `service_name_at_booking` y
+  `status`) y `walk_in_sales` del rango en paralelo, por `paid_at` /
+  `sold_at`.
+- Filtra en memoria los pagos cuyo turno esté `cancelado` (hoy ningún flujo
+  cancela un turno ya `completado`, pero es el criterio de aceptación de la
+  spec y no cuesta nada respetarlo). Se filtra en JS y no con un filtro de
+  PostgREST sobre la tabla embebida, para no depender de una sintaxis de
+  query mas fragil para un volumen de filas que es chico de entrada.
+- Devuelve `{ movements: CashboxMovement[], breakdown: CashboxBreakdown }`
+  (usa `summarizeCharges` de T1), movimientos ordenados del más reciente al
+  más viejo.
 
 **Verificación**: `npm run typecheck`.
 
-### T5 — UI: cobrar y marcar ausente desde la ficha del turno
+### T4 — Página `/admin/caja`
 
-**Archivos**: `components/admin/appointment-actions.tsx`,
-`components/admin/appointment-card.tsx`.
+**Archivos**: `app/admin/caja/page.tsx`, `app/admin/caja/caja-toolbar.tsx`
+(nuevo, mismo patrón de navegación día/semana/mes que
+`agenda-toolbar.tsx`, sin el botón de venta suelta — ese ya vive en la
+agenda).
 
-- `CompleteAppointmentButton`: diálogo con monto (sugerido =
-  `price_at_booking`, editable) y selector de medio de pago. Mismo patrón de
-  diálogo que `CancelAppointmentButton`.
-- `MarkNoShowButton`: sin diálogo, mismo patrón directo que
-  `ConfirmAppointmentButton`.
-- `AppointmentCard` separa las acciones por estado: `pendiente` → Aceptar /
-  Rechazar (como hoy); `confirmado` → Marcar cobrado / Marcar ausente (solo
-  si `canMarkNoShow`) / Cancelar.
+- Resumen del período (total + desglose por medio de pago) y tabla de
+  movimientos (fecha/hora, origen turno/venta suelta, servicio, medio,
+  monto), usando `components/ui/table.tsx`.
 
 **Verificación**: prueba manual en el checkpoint final.
 
-### T6 — UI: venta suelta desde la agenda
+### T5 — Link en la navegación
 
-**Archivos**: `app/admin/agenda/agenda-toolbar.tsx` (o un componente nuevo
-que se monte ahí), `app/admin/agenda/page.tsx` (pasa `services` desde
-`getActiveServices()`).
-
-- Botón "Venta suelta" en la barra de la agenda (visible en las tres
-  vistas), abre un diálogo con selector de servicio (autocompleta monto
-  sugerido), monto editable, medio de pago y nota opcional.
-
-**Verificación**: prueba manual en el checkpoint final.
+**Archivo**: `app/admin/admin-nav.tsx`: nuevo ítem "Caja" → `/admin/caja`.
 
 ## Checkpoints
 
-- Después de T1: `npm run typecheck` en verde antes de escribir ninguna
-  acción que dependa de los tipos nuevos.
-- Después de T2: tests en verde antes de usar la regla en T3/T5.
-- Después de T3+T4: `npm run typecheck && npm test` en verde antes de tocar
-  UI.
-- Al final: `npm run typecheck && npm test && npm run build`, aplicar la
-  migración contra Supabase real (se pregunta antes) y prueba manual: cobrar
-  un turno confirmado, marcar ausente uno cuyo horario ya pasó, y registrar
-  una venta suelta — revisar las filas resultantes en `payments` y
-  `walk_in_sales`.
+- Después de T1 y T2: tests en verde antes de escribir la capa de datos.
+- Después de T3: `npm run typecheck` en verde antes de tocar UI.
+- Al final: `npm run typecheck && npm test && npm run build`, y prueba
+  manual real: confirmar que el cobro y la venta suelta del módulo 3
+  aparecen en la vista de día correspondiente, que semana/mes los siguen
+  sumando, y que el desglose por medio de pago da el número correcto.
