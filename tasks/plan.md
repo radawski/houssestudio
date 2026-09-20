@@ -1,103 +1,180 @@
-# Plan — Módulo 4: cierre-de-caja (Fase 2)
+# Plan — Wireframes móviles del panel `/admin` (iPhone 390×844)
 
-Fuente: `SPEC.md` sección 4.4. Depende del módulo 3 (`payments`,
-`walk_in_sales`), ya completo. `revalidateAgenda()` ya incluye
-`/admin/caja` desde el módulo 3.
+Fuente: `design/admin-iphone/` (README, `canvas.json` → `notes`, 28 `.dc.html`).
+Verifiqué la fidelidad de las notas contra los renders reales de `Main.dc.html`
+y `CajaMes.dc.html`: coinciden al pixel. El resto de los `.dc.html` los abro
+recién al implementar cada pantalla — las notas ya traen medidas, tokens,
+orden de bloques y qué es `<a>`/`<button>`, así que releerlos todos ahora sería
+duplicar contexto sin cambiar el plan.
 
-## Dependencias
+No es un re-skin: hay piezas de UI y de datos que no existen en el código
+actual (ficha del turno, tab bar inferior, pantalla Más, hojas por bottom
+sheet, esqueletos de carga, errores por ruta). Están marcadas como tales en
+cada fase.
 
-```
-T1 motor puro: lib/cashbox.ts (summarizeCharges)
-T2 lib/dates.ts: exactMonthRange (rango exacto del mes, sin relleno de grilla)
-      │
-      └─→ T3 lib/data/cashbox.ts: getCashboxSummary(range)
-              │
-              └─→ T4 UI: app/admin/caja + caja-toolbar.tsx
-                      │
-                      └─→ T5 admin-nav.tsx: link a Caja
-```
+## Verificación previa: tokens
 
-## Decisión que no estaba explícita en SPEC.md §4.4
+Los hex de `n-sistema` calzan exactos con `app/tokens.css` — no hace falta
+ningún token nuevo:
 
-`monthRange` en `lib/dates.ts` devuelve la grilla completa del calendario
-visual (con días de relleno del mes anterior/siguiente para completar
-semanas), pensada para `MonthView` de la agenda. Usarla tal cual en el
-reporte de caja incluiría días que no son del mes en el total mensual. Se
-agrega `exactMonthRange`, el primer y último instante del mes calendario
-real, sin relleno — nueva función, no una que ya exista y haya que tocar.
+| Nota | Token existente |
+|---|---|
+| ink `#111315` | `--hs-ink` |
+| graphite `#2a2d30` | `--hs-graphite` |
+| slate `#4a4f55` | `--hs-slate` |
+| mist `#b8bdc3` | `--hs-mist` |
+| paper `#f4f5f7` | `--hs-paper` |
+| destructivo `#b0332a` | `--destructive` (el oklch ya resuelve a ese hex) |
+| ámbar (fondo/borde/texto) | clases Tailwind `amber-100`/`amber-200`/`amber-900` (ya usadas en `lib/status.ts`) |
 
-## Tareas
+**Único desajuste encontrado**: el punto del badge "Pendiente" usa hoy
+`bg-amber-500`; la nota pide `#b45309`, que es `amber-700`. Es un cambio de
+una clase en `lib/status.ts`, no un token nuevo — lo incluyo en la Fase A.
 
-### T1 — Motor puro de agregación
+## Conflictos estructurales (wireframe vs. código actual)
 
-**Archivo**: `lib/cashbox.ts` (+ test).
+1. **Navegación**: hoy `AdminNav` es una barra superior de 6 ítems, igual en
+   toda resolución. El wireframe pide una tab bar inferior de 5 ítems solo en
+   mobile, con Servicios y Disponibilidad colgando de una pantalla nueva
+   "Más" (`app/admin/mas/page.tsx`, no existe). En desktop el nav actual no
+   se toca — es una adición condicionada por breakpoint, no un reemplazo.
+2. **Diálogos → hojas**: `components/ui/dialog.tsx` es el `Dialog` de Radix
+   centrado. La nota `n-hojas` pide restylearlo a bottom sheet en mobile
+   (mismo componente, mismo primitive, otra presentación) mantieniendo el
+   modal centrado en desktop. Es un cambio en un solo archivo compartido por
+   todos los diálogos del panel.
+3. **Ficha del turno**: no existe. Hoy un turno `completado`/`cancelado` no
+   tiene ninguna interacción en `AppointmentCard` (sin fila de acciones, sin
+   nada que tocar). El wireframe abre una hoja con datos del cliente, el pago
+   (o el motivo de cancelación) y una línea de tiempo. Necesita: traer el
+   pago asociado al turno en la lectura, y un componente nuevo.
+4. **Caja semana/mes**: hoy ambas vistas reusan la tabla de movimientos del
+   día. El wireframe pide visualizaciones nuevas — barras por día (semana) y
+   un heatmap de un mes calendario completo (mes) — que no son un ajuste de
+   estilos, son lógica de agregación nueva sobre los mismos datos.
+5. **Disponibilidad**: hoy es un formulario único de 7 filas + un botón
+   "Guardar horarios" que manda las 7 a la vez. El wireframe lo vuelve un
+   resumen colapsado con una hoja de edición por día (guarda un solo día) más
+   "Copiar este horario a todos los días" — necesita una Server Action nueva
+   o un ajuste de la existente.
+6. **Estados de carga/error**: no existen (`loading.tsx`/`error.tsx` no están
+   creados en ninguna ruta admin). Son archivos nuevos, patrón nuevo en el
+   repo.
+7. **Toasts**: el `<Toaster position="top-center" richColors />` es global
+   (`app/layout.tsx`), usado también por el portal público. El wireframe pide
+   los avisos del panel abajo, sobre la tab bar. Como es un solo `Toaster`
+   para toda la app, la forma de no romper el público es leer el pathname
+   adentro de `components/ui/sonner.tsx` (ya es client component) y variar
+   `position`/offset solo para `/admin`. Lo marco como decisión a confirmar
+   más abajo.
 
-```ts
-export type Charge = { amount: number; method: PaymentMethod };
-export type CashboxBreakdown = { total: number; byMethod: Record<PaymentMethod, number> };
-export function summarizeCharges(charges: Charge[]): CashboxBreakdown
-```
+## Fases (orden de dependencia)
 
-Sin `server-only`, sin Supabase — mismo patrón que `lib/availability.ts` y
-`lib/cancellation.ts`. Cubre: lista vacía, un solo medio, ambos medios
-mezclados, montos con decimales.
+Cada fase es un incremento verificable — se prueba en el navegador (viewport
+390px y desktop) antes de pasar a la siguiente, mismo criterio que las fases
+de Fase 2.
 
-**Verificación**: `npx vitest run lib/cashbox.test.ts` (RED antes de
-implementar).
+### Fase A — Fundaciones compartidas
 
-### T2 — `exactMonthRange` en `lib/dates.ts`
+Todo lo demás se apoya en esto.
 
-**Archivo**: `lib/dates.ts` (+ test nuevo `lib/dates.test.ts`, el archivo no
-tiene tests todavía pese a tener lógica de bordes de fecha — se suma la
-cobertura para esta función).
+- `lib/status.ts`: punto ámbar `amber-500` → `amber-700`.
+- `components/ui/dialog.tsx`: variante bottom sheet en mobile (grabber,
+  pegado abajo, radio superior, scrim, `data-state` + `translate-y`),
+  centrado sin cambios en `sm:` en adelante.
+- `components/ui/sonner.tsx`: posición/offset condicionados a `/admin` vía
+  `usePathname()`.
+- `app/admin/layout.tsx` + nuevo `app/admin/admin-tab-bar.tsx`: tab bar
+  inferior de 5 ítems, mobile-only (`AdminNav` actual se conserva para
+  `md:` en adelante, oculto en mobile).
+- `app/admin/mas/page.tsx` (nueva ruta): tarjetas a Servicios/Disponibilidad
+  + tarjeta de sesión con `signOut`.
+- Header "← + título" para Servicios y Disponibilidad en mobile (chrome
+  normal sin cambios en desktop).
 
-`exactMonthRange(dateKey)`: primer y último instante del mes calendario que
-contiene `dateKey`, en hora local. Reusa `dayRange` para los dos extremos,
-igual que `monthRange`, pero sin `startOfWeek`/`endOfWeek`.
+### Fase B — Hoy + Ficha del turno
 
-**Verificación**: test de un mes que empieza o termina a mitad de semana,
-para confirmar que no hay días de otro mes adentro del rango.
+- `lib/data/appointments.ts`: sumar el pago asociado (join a `payments`)
+  cuando el turno está `completado`.
+- `components/admin/appointment-sheet.tsx` (nuevo): ficha con las dos
+  variantes (completado/cancelado), línea de tiempo desde
+  `created_at`/`confirmed_at`/`completed_at`/`cancelled_at`.
+- `components/admin/appointment-card.tsx`: completado/cancelado abren la
+  ficha al tocar la tarjeta; pending state compartido entre "Cobrar" y "No
+  vino" de la misma tarjeta (hoy cada botón maneja su propio `useTransition`
+  — hay que levantarlo al padre para que "No vino" se deshabilite mientras
+  "Cobrar" está en vuelo).
+- `app/admin/page.tsx`: ajustar a las medidas exactas del wireframe (grid de
+  3 tiles, banner ámbar como fila-link completa).
 
-### T3 — Lectura combinada: `getCashboxSummary`
+### Fase C — Agenda mobile
 
-**Archivo**: `lib/data/cashbox.ts` (nuevo, `server-only`).
+- Tira de 7 días (día activo) en la vista día — no existe hoy.
+- Vista semana: lista vertical por día en mobile (`md:hidden`), la grilla de
+  4 columnas actual queda para desktop (`hidden md:grid`) — son modelos de
+  interacción distintos, no vale la pena forzarlos a un solo componente.
+- Vista mes: en mobile, tocar una celda cambia la lista de abajo (estado
+  local); en desktop sigue navegando a la vista día como hoy. Mismo criterio
+  de bifurcar, no unificar.
+- FAB "Venta suelta" en mobile (position fixed); en desktop sigue en la
+  toolbar como está.
 
-- Trae `payments` (con el turno embebido para `service_name_at_booking` y
-  `status`) y `walk_in_sales` del rango en paralelo, por `paid_at` /
-  `sold_at`.
-- Filtra en memoria los pagos cuyo turno esté `cancelado` (hoy ningún flujo
-  cancela un turno ya `completado`, pero es el criterio de aceptación de la
-  spec y no cuesta nada respetarlo). Se filtra en JS y no con un filtro de
-  PostgREST sobre la tabla embebida, para no depender de una sintaxis de
-  query mas fragil para un volumen de filas que es chico de entrada.
-- Devuelve `{ movements: CashboxMovement[], breakdown: CashboxBreakdown }`
-  (usa `summarizeCharges` de T1), movimientos ordenados del más reciente al
-  más viejo.
+### Fase D — Caja mobile
 
-**Verificación**: `npm run typecheck`.
+- `lib/cashbox.ts`: función pura nueva para agrupar movimientos por día
+  (reusa `CashboxMovement[]`, ya tiene `.at`) + "mejor día"/"promedio por día
+  abierto".
+- `app/admin/caja/page.tsx`: tarjeta única de resumen en mobile (las tres
+  tarjetas de escritorio quedan en `hidden md:grid`), lista en vez de tabla,
+  y las vistas semana (barras) y mes (heatmap) nuevas en mobile.
 
-### T4 — Página `/admin/caja`
+### Fase E — Solicitudes mobile
 
-**Archivos**: `app/admin/caja/page.tsx`, `app/admin/caja/caja-toolbar.tsx`
-(nuevo, mismo patrón de navegación día/semana/mes que
-`agenda-toolbar.tsx`, sin el botón de venta suelta — ese ya vive en la
-agenda).
+- Chips de DNI/teléfono en la tarjeta (variante de `AppointmentCard` o
+  tarjeta propia de solicitudes — a decidir al implementar, según cuánto
+  diverja del resto).
+- Hoja de rechazo con 3 chips de motivo predefinido que rellenan el textarea.
 
-- Resumen del período (total + desglose por medio de pago) y tabla de
-  movimientos (fecha/hora, origen turno/venta suelta, servicio, medio,
-  monto), usando `components/ui/table.tsx`.
+### Fase F — Servicios mobile
 
-**Verificación**: prueba manual en el checkpoint final.
+- FAB "Nuevo servicio" en mobile; botón de header en desktop.
+- Switch de visibilidad dentro de un botón de área táctil 48×44.
+- Hoja de servicio: duración como `<select>` de valores fijos en mobile
+  (input libre en desktop, o se unifica si el `<select>` no pierde nada).
 
-### T5 — Link en la navegación
+### Fase G — Disponibilidad mobile
 
-**Archivo**: `app/admin/admin-nav.tsx`: nuevo ítem "Caja" → `/admin/caja`.
+La de mayor riesgo: cambia el modelo de guardado, no solo el estilo.
 
-## Checkpoints
+- Nueva Server Action (o ajuste de `saveBusinessHours`) para guardar un solo
+  día desde la hoja.
+- "Copiar este horario a todos los días": acción nueva o lógica en la misma
+  acción con un flag.
+- Ventana de reserva colapsada con su propia hoja (hoy es una `Card` siempre
+  expandida).
+- Barra fija de cambios sin guardar sobre la tab bar (reemplaza a los
+  botones "Guardar" sueltos, sin tocar el desktop).
 
-- Después de T1 y T2: tests en verde antes de escribir la capa de datos.
-- Después de T3: `npm run typecheck` en verde antes de tocar UI.
-- Al final: `npm run typecheck && npm test && npm run build`, y prueba
-  manual real: confirmar que el cobro y la venta suelta del módulo 3
-  aparecen en la vista de día correspondiente, que semana/mes los siguen
-  sumando, y que el desglose por medio de pago da el número correcto.
+### Fase H — Estados transversales
+
+- `loading.tsx` por ruta admin (Hoy, Agenda, Solicitudes, Caja) con
+  esqueletos a la medida exacta de `n-CargaHoy`.
+- `error.tsx` por ruta con el patrón de `n-ErrorCarga` (Reintentar = `reset()`
+  de Next.js).
+- Retrofit de los `toast.error(...)` existentes con acción "Reintentar"
+  donde la nota lo pide — toca varios archivos (`appointment-actions.tsx`,
+  `service-dialog.tsx`, `walk-in-sale-button.tsx`, `cancel-appointment-button.tsx`,
+  `business-hours-form.tsx`).
+
+## Decisiones a confirmar antes de tocar código
+
+1. **Alcance de esta ronda**: ¿las 8 fases seguidas, o arrancamos por A+B
+   (chrome + Hoy, la pantalla que más se usa) y las repasamos una por una,
+   mismo ritmo que Fase 2?
+2. **Toaster global**: ¿confirmás que el reposicionamiento de los avisos
+   quede condicionado a `/admin` (el público sigue arriba-centro), en vez de
+   cambiar la posición para todo el sitio?
+3. **Disponibilidad (Fase G)**: ¿el guardado por día reemplaza a
+   `saveBusinessHours` (una acción menos, dos formas de invocarla) o convive
+   como una acción nueva separada? Lo relevante es que hoy guardar es
+   atómico para las 7 filas y el wireframe pide guardar de a una.
