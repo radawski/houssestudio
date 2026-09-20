@@ -32,6 +32,16 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        /**
+         * Táctiles: el wireframe móvil del panel admin (design/admin-iphone)
+         * exige área táctil ≥44px en toda fila de acciones y hoja. Son
+         * aditivos — ningún tamaño existente cambia, así que el escritorio
+         * sigue igual.
+         */
+        "icon-touch": "size-11",
+        touch: "h-11 gap-2 px-4",
+        "touch-lg": "h-12 gap-2 px-4",
+        "touch-xl": "h-[50px] gap-2 px-4 text-base",
       },
     },
     defaultVariants: {

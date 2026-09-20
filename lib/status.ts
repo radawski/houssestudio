@@ -14,7 +14,7 @@ export const STATUS_META: Record<
   pendiente: {
     label: "Pendiente",
     badge: "bg-amber-100 text-amber-900 border-amber-200",
-    dot: "bg-amber-500",
+    dot: "bg-amber-700",
     event: "border-amber-300 bg-amber-50 text-amber-950",
   },
   confirmado: {
