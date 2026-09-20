@@ -39,7 +39,10 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        // Scrim más oscuro en mobile (patrón de hoja, design/admin-iphone
+        // n-hojas: rgba(17,19,21,.45)) que en desktop, donde el diálogo
+        // centrado ya tenía un scrim más sutil con blur.
+        "fixed inset-0 isolate z-50 bg-[var(--hs-ink)]/45 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 sm:bg-black/10 sm:supports-backdrop-filter:backdrop-blur-xs",
         className
       )}
       {...props}
@@ -61,12 +64,23 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          // Mobile: hoja pegada abajo (design/admin-iphone n-hojas). El
+          // Dialog de Radix es el mismo en las dos formas — solo cambia la
+          // presentación — para conservar foco y accesibilidad sin
+          // reimplementar el patrón.
+          "fixed inset-x-0 bottom-0 z-50 grid max-h-[85vh] w-full gap-4 overflow-y-auto rounded-t-[14px] border-t border-border bg-popover pt-2 pb-6 text-sm text-popover-foreground outline-none duration-150 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
+          // Desktop (sm+): diálogo centrado de siempre, sin cambios.
+          "sm:top-1/2 sm:left-1/2 sm:max-h-none sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-visible sm:rounded-xl sm:border-t-0 sm:bg-popover sm:p-4 sm:ring-1 sm:ring-foreground/10 sm:data-open:zoom-in-95 sm:data-open:fade-in-0 sm:data-open:slide-in-from-bottom-0 sm:data-closed:zoom-out-95 sm:data-closed:fade-out-0 sm:data-closed:slide-out-to-bottom-0",
           className
         )}
         {...props}
       >
-        {children}
+        {/* Grabber: solo en la presentación de hoja (mobile). */}
+        <div
+          aria-hidden="true"
+          className="mx-auto h-1 w-9.5 shrink-0 rounded-full bg-[var(--hs-mist)] sm:hidden"
+        />
+        <div className="flex flex-col gap-4 px-4 sm:contents">{children}</div>
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
@@ -107,7 +121,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        "-mx-4 -mb-6 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:-mb-4 sm:flex-row sm:justify-end",
         className
       )}
       {...props}
