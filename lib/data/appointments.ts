@@ -2,7 +2,7 @@ import "server-only";
 
 import { dayRange } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
-import type { Appointment, Customer, Service } from "@/lib/supabase/database.types";
+import type { Appointment, Customer, Payment, Service } from "@/lib/supabase/database.types";
 
 /**
  * Lecturas del panel privado.
@@ -15,9 +15,18 @@ import type { Appointment, Customer, Service } from "@/lib/supabase/database.typ
 
 export type AppointmentWithCustomer = Appointment & {
   customer: Pick<Customer, "id" | "dni" | "full_name" | "phone" | "email"> | null;
+  /**
+   * El cobro asociado, si lo hay. Se trae en la misma consulta (no una por
+   * turno) para que la ficha del turno (design/admin-iphone n-SheetTurno)
+   * pueda mostrar "Cobrado $X · Efectivo · hora" sin un viaje aparte a la
+   * base — `payments.appointment_id` es único, así que el embed devuelve un
+   * solo objeto, no un arreglo.
+   */
+  payment: Pick<Payment, "amount" | "method" | "paid_at"> | null;
 };
 
-const WITH_CUSTOMER = "*, customer:customers(id, dni, full_name, phone, email)";
+const WITH_CUSTOMER =
+  "*, customer:customers(id, dni, full_name, phone, email), payment:payments(amount, method, paid_at)";
 
 export async function countPendingAppointments(): Promise<number> {
   const supabase = await createClient();
