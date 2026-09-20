@@ -46,7 +46,7 @@ export default async function AdminHomePage() {
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Turnos hoy" value={confirmed.length + pendingToday.length} />
         <Stat label="Confirmados" value={confirmed.length} />
-        <Stat label="Por responder" value={pending.length} />
+        <Stat label="Pendientes" value={pending.length} />
       </div>
 
       {pending.length > 0 ? (
