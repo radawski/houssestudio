@@ -11,12 +11,15 @@
 - [ ] Header "← + título" de Servicios/Disponibilidad en mobile — diferido a
       Fases F/G (es específico de esas pantallas)
 
-## Fase B — Hoy + Ficha del turno (siguiente)
-- [ ] `lib/data/appointments.ts`: sumar el pago asociado al turno completado
-- [ ] `components/admin/appointment-sheet.tsx`: ficha (completado/cancelado)
-- [ ] `AppointmentCard`: abrir ficha en completado/cancelado, pending state
-      compartido entre Cobrar/No vino
-- [ ] `app/admin/page.tsx`: medidas exactas del wireframe (n-Main)
+## Fase B — Hoy + Ficha del turno
+- [x] `lib/appointment-timeline.ts`: historial puro, con tests
+- [x] `lib/data/appointments.ts`: sumar el pago asociado al turno
+- [x] `components/admin/appointment-sheet.tsx`: ficha (completado/cancelado/no_show)
+- [x] `AppointmentCard` + `ConfirmedAppointmentActions`: ficha al tocar la
+      tarjeta en completado/cancelado/no_show, pending compartido
+      Cobrar/No vino, tel/mail, picker de medio de pago dibujado
+- [x] `app/admin/page.tsx`: "Por responder" → "Pendientes"
+- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
 
 ## Fases C–H (pendientes, ver tasks/plan.md)
 - [ ] C — Agenda mobile (tira de días, semana en lista, mes con selección local)
