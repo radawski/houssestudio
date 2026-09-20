@@ -6,9 +6,12 @@
    nunca escriben un color literal: consumen estas variables, de modo que un
    cambio de identidad se hace acá y en ningún otro archivo.
 
-   La paleta es monocromática de cinco pasos. Los tonos intermedios que hacen
-   falta para estados (hover, superficies sutiles) se derivan con `color-mix`
-   en vez de agregar colores nuevos, así la identidad no se diluye.
+   La paleta es monocromática de seis pasos (agrega blanco puro como
+   superficie elevada: tarjetas, header, hojas — separada del fondo `paper`,
+   que sin esto quedaba idéntico a la tarjeta y la jerarquía dependía solo
+   del borde). Los tonos intermedios que hacen falta para estados (hover,
+   superficies sutiles) se derivan con `color-mix` en vez de agregar colores
+   nuevos, así la identidad no se diluye.
    =========================================================================== */
 
 :root {
@@ -18,6 +21,7 @@
   --hs-slate: #4a4f55; /* texto secundario */
   --hs-mist: #b8bdc3; /* bordes y separadores */
   --hs-paper: #f4f5f7; /* fondo */
+  --hs-white: #ffffff; /* superficie elevada: tarjetas, header, hojas */
 
   /* --- Superficies derivadas -------------------------------------------- */
   --hs-surface-raised: color-mix(in oklab, var(--hs-mist) 18%, var(--hs-paper));
@@ -41,9 +45,9 @@
   --background: var(--hs-paper);
   --foreground: var(--hs-ink);
 
-  --card: var(--hs-paper);
+  --card: var(--hs-white);
   --card-foreground: var(--hs-ink);
-  --popover: var(--hs-paper);
+  --popover: var(--hs-white);
   --popover-foreground: var(--hs-ink);
 
   --primary: var(--hs-ink);
