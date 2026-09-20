@@ -68,7 +68,7 @@ function DialogContent({
           // Dialog de Radix es el mismo en las dos formas — solo cambia la
           // presentación — para conservar foco y accesibilidad sin
           // reimplementar el patrón.
-          "fixed inset-x-0 bottom-0 z-50 grid max-h-[85vh] w-full gap-4 overflow-y-auto rounded-t-[14px] border-t border-border bg-popover pt-2 pb-6 text-sm text-popover-foreground outline-none duration-150 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
+          "fixed inset-x-0 bottom-0 z-50 grid max-h-[85vh] w-full gap-4 overflow-y-auto rounded-t-[14px] border-t border-[var(--hs-border-card)] bg-popover pt-2 pb-6 text-sm text-popover-foreground outline-none duration-150 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
           // Desktop (sm+): diálogo centrado de siempre, sin cambios.
           "sm:top-1/2 sm:left-1/2 sm:max-h-none sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-visible sm:rounded-xl sm:border-t-0 sm:bg-popover sm:p-4 sm:ring-1 sm:ring-foreground/10 sm:data-open:zoom-in-95 sm:data-open:fade-in-0 sm:data-open:slide-in-from-bottom-0 sm:data-closed:zoom-out-95 sm:data-closed:fade-out-0 sm:data-closed:slide-out-to-bottom-0",
           className

@@ -23,6 +23,15 @@
   --hs-paper: #f4f5f7; /* fondo */
   --hs-white: #ffffff; /* superficie elevada: tarjetas, header, hojas */
 
+  /* --- Grises intermedios -------------------------------------------------
+     Entre mist y paper, para bordes de contenedor y divisores internos. Van
+     con valor exacto (como el resto de la paleta base) y no por color-mix
+     porque el diseño ya trae el hex preciso — mist sigue siendo el borde de
+     elementos interactivos (inputs, botones outline, chips). */
+  --hs-border-card: #dde0e4; /* borde de tarjetas, hojas y contenedores */
+  --hs-divider: #eceef1; /* separador interno dentro de una tarjeta */
+  --hs-track: #f0f1f3; /* riel de barras de progreso/comparación */
+
   /* --- Superficies derivadas -------------------------------------------- */
   --hs-surface-raised: color-mix(in oklab, var(--hs-mist) 18%, var(--hs-paper));
   --hs-surface-hover: color-mix(in oklab, var(--hs-mist) 32%, var(--hs-paper));

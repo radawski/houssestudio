@@ -45,7 +45,7 @@ export default async function MasPage() {
       </div>
 
       <Card className="py-0">
-        <CardContent className="divide-border divide-y p-0">
+        <CardContent className="divide-y divide-[var(--hs-divider)] p-0">
           {LINKS.map(({ href, label, description, icon: Icon }) => (
             <Link
               key={href}
