@@ -44,7 +44,10 @@
       mismo diálogo que el botón de escritorio
 - [x] `AgendaToolbar`: tira de 7 días (solo vista día, mobile), segmentado
       Día/Semana/Mes a todo el ancho en mobile, `Hoy` reordenado con `order-last`
-- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
+- [x] **Verificación manual** — día/semana/mes correctos en iPhone real;
+      desktop confirmado sin cambios; color de celda del mes se deja como
+      está (con turnos = oscuro, sin turnos = gris; no se agrega el criterio
+      de "cerrado" de `AgendaMes.dc.html`)
 
 ## Fases D–H (pendientes, ver tasks/plan.md)
 - [ ] D — Caja mobile (resumen único, lista, barras semana, heatmap mes)
