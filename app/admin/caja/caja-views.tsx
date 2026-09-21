@@ -32,15 +32,15 @@ export function SummaryCard({ label, breakdown }: { label: string; breakdown: Ca
           {formatCurrency(breakdown.total)}
         </p>
       </div>
-      <div className="flex items-center gap-3 border-t border-[var(--hs-divider)] pt-2.5">
-        <div className="flex flex-1 items-baseline justify-between gap-2">
+      <div className="flex items-center justify-between gap-3 border-t border-[var(--hs-divider)] pt-2.5">
+        <div className="flex items-baseline gap-2">
           <span className="text-muted-foreground text-xs">Efectivo</span>
           <span className="text-[15px] font-semibold tabular-nums">
             {formatCurrency(breakdown.byMethod.efectivo)}
           </span>
         </div>
-        <span className="w-px self-stretch bg-[var(--hs-divider)]" />
-        <div className="flex flex-1 items-baseline justify-between gap-2">
+        <span className="h-4 w-px shrink-0 bg-[var(--hs-divider)]" />
+        <div className="flex items-baseline gap-2">
           <span className="text-muted-foreground text-xs">Transferencia</span>
           <span className="text-[15px] font-semibold tabular-nums">
             {formatCurrency(breakdown.byMethod.transferencia)}
@@ -121,8 +121,11 @@ function WeekDayRow({
       >
         {label}
       </span>
-      <span className="h-2 flex-1 rounded-full bg-[var(--hs-track)]">
-        <span className="bg-foreground block h-2 rounded-full" style={{ width: `${pct}%` }} />
+      <span className="relative h-2 flex-1 overflow-hidden rounded-full bg-[var(--hs-track)]">
+        <span
+          className="bg-foreground absolute inset-y-0 left-0 rounded-full"
+          style={{ width: `${pct}%` }}
+        />
       </span>
       <span
         className={cn(
@@ -214,9 +217,9 @@ function MonthCell({
   return (
     <div
       className={cn(
-        "flex h-[50px] flex-col items-center justify-center gap-0.5 rounded",
+        "flex h-[50px] flex-col items-center justify-center gap-0.5 rounded border border-transparent",
         heatBandClass(revenue.total, maxTotal),
-        isToday && "ring-foreground ring-1 ring-inset",
+        isToday && "border-foreground",
       )}
     >
       <span className="text-xs tabular-nums">{dayNumber(cellKey)}</span>
