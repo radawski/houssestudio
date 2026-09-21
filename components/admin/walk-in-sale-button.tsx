@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ShoppingBag } from "lucide-react";
+import { Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -91,8 +91,20 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="hidden md:inline-flex">
           <ShoppingBag className="size-4" />
+          Venta suelta
+        </Button>
+      </DialogTrigger>
+
+      {/* FAB (design/admin-iphone n-Agenda): mismo diálogo, disparador propio
+          para mobile, fijo por encima de la tab bar inferior. */}
+      <DialogTrigger asChild>
+        <Button
+          size="touch-lg"
+          className="fixed right-4 bottom-[calc(78px+max(env(safe-area-inset-bottom),22px))] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
+        >
+          <Plus className="size-[18px]" />
           Venta suelta
         </Button>
       </DialogTrigger>
