@@ -49,8 +49,27 @@
       está (con turnos = oscuro, sin turnos = gris; no se agrega el criterio
       de "cerrado" de `AgendaMes.dc.html`)
 
-## Fases D–H (pendientes, ver tasks/plan.md)
-- [ ] D — Caja mobile (resumen único, lista, barras semana, heatmap mes)
+## Fase D — Caja mobile
+- [x] `app/tokens.css`: `--hs-heat-1/2/3` + `--hs-surface-closed` para el
+      heatmap del mes (valores exactos, mismo criterio que Fase B/C)
+- [x] `lib/cashbox.ts`: `buildDayRevenues`/`bestDay`/`averagePerOpenDay`, con
+      tests (incluida una prueba de conservación contra `summarizeCharges`)
+- [x] `lib/dates.ts`: `monthDateKeys` (días reales del mes, sin el relleno de
+      `monthRange`), con tests
+- [x] `lib/format.ts`: `formatCompactAmount` ("42k") para las celdas del heatmap
+- [x] `lib/data/appointments.ts`: `getClosedWeekdays`
+- [x] `app/admin/caja/caja-views.tsx` (nuevo): `SummaryCard`, `MovementsList`,
+      `WeekBars`, `MonthHeatmap` — las bandas de color del heatmap son
+      relativas al mejor día del propio mes (no un peso fijo como el
+      wireframe), decisión confirmada con el usuario
+- [x] `app/admin/caja/page.tsx`: tarjeta única + lista en día, barras en
+      semana, heatmap en mes; las tres tarjetas y la tabla de escritorio
+      quedan intactas detrás de `hidden md:grid`/`hidden md:block`
+- [x] `app/admin/caja/caja-toolbar.tsx`: segmentado a todo el ancho en mobile,
+      mismo patrón que `agenda-toolbar.tsx` sin FAB ni tira de días
+- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
+
+## Fases E–H (pendientes, ver tasks/plan.md)
 - [ ] E — Solicitudes mobile (chips, hoja de rechazo con motivos)
 - [ ] F — Servicios mobile (FAB, switch en botón 48×44, `<select>` de duración,
       header "← + título" diferido de la Fase A)
