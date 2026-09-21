@@ -117,6 +117,19 @@ export async function getBusinessHoursForDay(dateKey: string): Promise<DayHours 
   };
 }
 
+/**
+ * Dias de la semana (0 = domingo) en los que el local no abre nunca, para
+ * distinguir "no facturo" de "no abrio" en los resumenes de Caja por semana
+ * y por mes (design/admin-iphone n-CajaSemana / n-CajaMes).
+ */
+export async function getClosedWeekdays(): Promise<Set<number>> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("business_hours").select("weekday, is_closed");
+
+  if (error) throw new Error(`No se pudieron leer los horarios: ${error.message}`);
+  return new Set(data.filter((row) => row.is_closed).map((row) => row.weekday));
+}
+
 /** Bloqueos manuales del dia, para restarlos de los huecos libres de la agenda. */
 export async function getTimeBlocksForDay(dateKey: string): Promise<Interval[]> {
   const supabase = await createClient();

@@ -32,6 +32,15 @@
   --hs-divider: #eceef1; /* separador interno dentro de una tarjeta */
   --hs-track: #f0f1f3; /* riel de barras de progreso/comparación */
 
+  /* --- Heatmap de Caja · mes ----------------------------------------------
+     Tres pasos de magnitud (no de categoría) para el fondo de cada celda del
+     calendario según cuánto facturó ese día, más la superficie de un día
+     cerrado — mismo criterio de valor exacto que el resto de esta sección. */
+  --hs-heat-1: #eceef1; /* facturación baja del período — mismo tono que --hs-divider */
+  --hs-heat-2: #dfe2e6; /* facturación media */
+  --hs-heat-3: #cbd0d5; /* facturación alta */
+  --hs-surface-closed: #f7f8f9; /* celda de un día que el local no abre */
+
   /* --- Superficies derivadas -------------------------------------------- */
   --hs-surface-raised: color-mix(in oklab, var(--hs-mist) 18%, var(--hs-paper));
   --hs-surface-hover: color-mix(in oklab, var(--hs-mist) 32%, var(--hs-paper));

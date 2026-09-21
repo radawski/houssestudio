@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { exactMonthRange, toDateKey } from "@/lib/dates";
+import { exactMonthRange, monthDateKeys, toDateKey } from "@/lib/dates";
 
 describe("exactMonthRange", () => {
   it("no incluye días del mes anterior, a diferencia de la grilla visual de monthRange", () => {
@@ -25,5 +25,19 @@ describe("exactMonthRange", () => {
     const { start, end } = exactMonthRange("2026-06-10");
     expect(toDateKey(start)).toBe("2026-06-01");
     expect(toDateKey(end)).toBe("2026-07-01");
+  });
+});
+
+describe("monthDateKeys", () => {
+  it("devuelve exactamente los dias del mes, sin relleno de otro mes", () => {
+    const days = monthDateKeys("2026-09");
+    expect(days).toHaveLength(30);
+    expect(days[0]).toBe("2026-09-01");
+    expect(days[29]).toBe("2026-09-30");
+  });
+
+  it("respeta un mes de 31 dias y uno de 28 (no bisiesto)", () => {
+    expect(monthDateKeys("2026-08")).toHaveLength(31);
+    expect(monthDateKeys("2026-02")).toHaveLength(28);
   });
 });

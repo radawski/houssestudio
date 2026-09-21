@@ -44,6 +44,12 @@ export function formatDateTime(date: Date | string): string {
   return `${formatLongDate(date)}, ${formatTime(date)}`;
 }
 
+/** Ej: `42000` -> `"42k"`, para celdas angostas (heatmap de Caja · mes). */
+export function formatCompactAmount(amount: number): string {
+  if (amount >= 1000) return `${Math.round(amount / 1000)}k`;
+  return String(Math.round(amount));
+}
+
 export function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
