@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   businessTimeToDate,
+  computeFreeGaps,
   computeSlots,
   mergeIntervals,
   subtractIntervals,
@@ -309,6 +310,77 @@ describe("computeSlots: horario partido", () => {
     });
 
     expect(times(slots)).toEqual(["09:00", "10:00", "11:00"]);
+  });
+});
+
+describe("computeFreeGaps", () => {
+  it("sin horario o local cerrado no hay huecos", () => {
+    expect(computeFreeGaps({ dateKey: TUESDAY, hours: null })).toEqual([]);
+    expect(
+      computeFreeGaps({ dateKey: TUESDAY, hours: { ...OPEN_9_TO_19, isClosed: true } }),
+    ).toEqual([]);
+  });
+
+  it("sin ocupados, el hueco es el dia entero", () => {
+    const gaps = computeFreeGaps({ dateKey: TUESDAY, hours: OPEN_9_TO_19 });
+    expect(gaps).toEqual([at(TUESDAY, "09:00", "19:00")]);
+  });
+
+  it("resta los turnos y bloqueos ocupados, sin trocear por duracion", () => {
+    const gaps = computeFreeGaps({
+      dateKey: TUESDAY,
+      hours: OPEN_9_TO_19,
+      busy: [at(TUESDAY, "10:30", "11:15"), at(TUESDAY, "12:00", "13:00")],
+    });
+
+    expect(gaps).toEqual([
+      at(TUESDAY, "09:00", "10:30"),
+      at(TUESDAY, "11:15", "12:00"),
+      at(TUESDAY, "13:00", "19:00"),
+    ]);
+  });
+
+  it("no filtra por `now`: los huecos de esta manana siguen apareciendo", () => {
+    const gaps = computeFreeGaps({
+      dateKey: TUESDAY,
+      hours: OPEN_9_TO_19,
+      busy: [at(TUESDAY, "12:00", "13:00")],
+    });
+
+    // A diferencia de computeSlots, no hay `now`/`minLeadMinutes` que filtre:
+    // el primer hueco (09:00-12:00) esta completo aunque ya haya pasado.
+    expect(gaps[0]).toEqual(at(TUESDAY, "09:00", "12:00"));
+  });
+
+  it("un horario ocupado por completo no deja huecos", () => {
+    const gaps = computeFreeGaps({
+      dateKey: TUESDAY,
+      hours: OPEN_9_TO_19,
+      busy: [at(TUESDAY, "09:00", "19:00")],
+    });
+
+    expect(gaps).toEqual([]);
+  });
+
+  it("horario partido: cada tramo resta sus propios ocupados por separado", () => {
+    const gaps = computeFreeGaps({
+      dateKey: TUESDAY,
+      hours: {
+        isClosed: false,
+        opensAt: "07:00",
+        closesAt: "12:00",
+        secondRange: { opensAt: "15:00", closesAt: "20:00" },
+      },
+      busy: [at(TUESDAY, "16:00", "17:00")],
+    });
+
+    // El corte del mediodia (12:00-15:00) nunca aparece como hueco: no es
+    // parte de ningun tramo del horario comercial.
+    expect(gaps).toEqual([
+      at(TUESDAY, "07:00", "12:00"),
+      at(TUESDAY, "15:00", "16:00"),
+      at(TUESDAY, "17:00", "20:00"),
+    ]);
   });
 });
 

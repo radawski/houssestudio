@@ -144,6 +144,53 @@ export function subtractIntervals(base: Interval, busy: Interval[]): Interval[] 
  * Huecos libres: 9:00-11:00 y 11:45-cierre.
  *   -> 9:00, 9:45, 10:30 no entra (terminaria 11:15), luego 11:45, 12:30, ...
  */
+export type ComputeFreeGapsInput = {
+  /** Dia a resolver, `yyyy-MM-dd` en hora local del local. */
+  dateKey: string;
+  /** Horario comercial del dia. `null` o cerrado devuelve cero huecos. */
+  hours: DayHours | null;
+  /** Franjas ya ocupadas: bloqueos manuales y turnos vivos. */
+  busy?: Interval[];
+  timeZone?: string;
+};
+
+/**
+ * Huecos libres del dia dentro del horario comercial, sin trocear por
+ * duracion de servicio (a diferencia de `computeSlots`, que ademas filtra por
+ * `now`/`minLeadMinutes` porque sirve a la reserva publica). Es para la
+ * agenda del panel admin (design/admin-iphone n-Agenda, fila "Libre · N
+ * min"), donde un hueco de esta manana sigue siendo relevante aunque ya haya
+ * pasado.
+ */
+export function computeFreeGaps({
+  dateKey,
+  hours,
+  busy = [],
+  timeZone = BUSINESS_TIMEZONE,
+}: ComputeFreeGapsInput): Interval[] {
+  if (!hours || hours.isClosed) return [];
+
+  const ranges: TimeRange[] = [
+    { opensAt: hours.opensAt, closesAt: hours.closesAt },
+    ...(hours.secondRange ? [hours.secondRange] : []),
+  ];
+
+  const gaps: Interval[] = [];
+
+  // Mismo motivo que en `computeSlots`: cada tramo del horario partido resta
+  // sus propios ocupados por separado, para que el corte del mediodia no
+  // aparezca como un hueco libre gigante que atraviesa el almuerzo.
+  for (const range of ranges) {
+    const open = businessTimeToDate(dateKey, range.opensAt, timeZone);
+    const close = businessTimeToDate(dateKey, range.closesAt, timeZone);
+    if (close.getTime() <= open.getTime()) continue;
+
+    gaps.push(...subtractIntervals({ start: open, end: close }, busy));
+  }
+
+  return gaps;
+}
+
 export function computeSlots({
   dateKey,
   durationMinutes,

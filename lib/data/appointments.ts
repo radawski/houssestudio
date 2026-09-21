@@ -1,5 +1,6 @@
 import "server-only";
 
+import { weekdayOf, type DayHours, type Interval } from "@/lib/availability";
 import { dayRange } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import type { Appointment, Customer, Payment, Service } from "@/lib/supabase/database.types";
@@ -86,6 +87,48 @@ export async function getActiveServices(): Promise<Pick<Service, "id" | "name" |
 
   if (error) throw new Error(`No se pudieron leer los servicios: ${error.message}`);
   return data;
+}
+
+/**
+ * Horario comercial de un dia, para la vista de agenda del dia (huecos
+ * libres). A diferencia de `lib/data/availability.ts` (portal publico,
+ * service_role), esta va por el cliente ligado a la sesion — mismo criterio
+ * que el resto de este archivo.
+ */
+export async function getBusinessHoursForDay(dateKey: string): Promise<DayHours | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("business_hours")
+    .select("*")
+    .eq("weekday", weekdayOf(dateKey))
+    .maybeSingle();
+
+  if (error) throw new Error(`No se pudieron leer los horarios: ${error.message}`);
+  if (!data) return null;
+
+  return {
+    isClosed: data.is_closed,
+    opensAt: data.opens_at,
+    closesAt: data.closes_at,
+    secondRange:
+      data.opens_at_2 && data.closes_at_2
+        ? { opensAt: data.opens_at_2, closesAt: data.closes_at_2 }
+        : null,
+  };
+}
+
+/** Bloqueos manuales del dia, para restarlos de los huecos libres de la agenda. */
+export async function getTimeBlocksForDay(dateKey: string): Promise<Interval[]> {
+  const supabase = await createClient();
+  const { start, end } = dayRange(dateKey);
+  const { data, error } = await supabase
+    .from("time_blocks")
+    .select("starts_at, ends_at")
+    .lt("starts_at", end.toISOString())
+    .gt("ends_at", start.toISOString());
+
+  if (error) throw new Error(`No se pudieron leer los bloqueos: ${error.message}`);
+  return (data ?? []).map((row) => ({ start: new Date(row.starts_at), end: new Date(row.ends_at) }));
 }
 
 export async function getAppointmentById(

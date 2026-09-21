@@ -3,44 +3,13 @@
 import Link from "next/link";
 import { IdCard, Mail, Phone, StickyNote, Wallet } from "lucide-react";
 
+import { AdminStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { buildAppointmentTimeline } from "@/lib/appointment-timeline";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import { formatCurrency, formatDateTime, formatDuration, formatLongDate, formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-/**
- * Badge monocromático propio de la ficha (design/admin-iphone n-SheetTurno /
- * n-SheetTurnoCancelado): deliberadamente NO reusa `STATUS_META` de
- * `lib/status.ts`, que también pinta el badge del portal público — ese
- * archivo queda fuera del alcance de este rediseño (es solo el panel admin).
- */
-const SHEET_BADGE: Record<
-  "confirmado" | "completado" | "cancelado" | "no_show",
-  { label: string; badge: string; dot: string }
-> = {
-  confirmado: {
-    label: "Confirmado",
-    badge: "border-[var(--hs-mist)] bg-popover text-foreground",
-    dot: "bg-foreground",
-  },
-  completado: {
-    label: "Completado",
-    badge: "border-[var(--hs-mist)] bg-popover text-muted-foreground",
-    dot: "bg-muted-foreground",
-  },
-  cancelado: {
-    label: "Cancelado",
-    badge: "border-[var(--hs-border-card)] bg-background text-muted-foreground",
-    dot: "bg-[var(--hs-mist)]",
-  },
-  no_show: {
-    label: "No asistió",
-    badge: "border-[var(--hs-border-card)] bg-background text-muted-foreground",
-    dot: "bg-[var(--hs-mist)]",
-  },
-};
 
 function ClientRow({
   icon: Icon,
@@ -74,14 +43,14 @@ function ClientRow({
 }
 
 /**
- * Ficha del turno: se abre tocando una tarjeta completada, cancelada o
- * ausente (design/admin-iphone n-SheetTurno / n-SheetTurnoCancelado). Un
- * turno pendiente o confirmado no la usa — esos siguen resolviéndose con la
- * fila de acciones de `AppointmentCard`.
+ * Ficha del turno (design/admin-iphone n-SheetTurno / n-SheetTurnoCancelado):
+ * se abre tocando una tarjeta completada, cancelada o ausente en `AppointmentCard`
+ * — ahi un pendiente o confirmado sigue resolviendose con la fila de acciones
+ * — y ademas cualquier turno desde la lista de Agenda (n-Agenda), donde no hay
+ * botones y la ficha es de solo lectura para todos los estados.
  */
 export function AppointmentSheet({ appointment }: { appointment: AppointmentWithCustomer }) {
   const { customer, status } = appointment;
-  const badge = SHEET_BADGE[status as keyof typeof SHEET_BADGE] ?? SHEET_BADGE.completado;
   const timeline = buildAppointmentTimeline(appointment);
 
   return (
@@ -97,15 +66,7 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
             </h2>
           </DialogTitle>
         </div>
-        <span
-          className={cn(
-            "inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium",
-            badge.badge,
-          )}
-        >
-          <span className={cn("size-1.5 rounded-full", badge.dot)} />
-          {badge.label}
-        </span>
+        <AdminStatusBadge status={status} />
       </div>
 
       <p className="text-muted-foreground text-sm tabular-nums">
