@@ -19,7 +19,8 @@
       tarjeta en completado/cancelado/no_show, pending compartido
       Cobrar/No vino, tel/mail, picker de medio de pago dibujado
 - [x] `app/admin/page.tsx`: "Por responder" → "Pendientes"
-- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
+- [x] **Verificación manual** — encontró y corrigió desborde horizontal
+      (`grid gap-3` sin columnas explícitas en 4 listas)
 
 ## Fases C–H (pendientes, ver tasks/plan.md)
 - [ ] C — Agenda mobile (tira de días, semana en lista, mes con selección local)
