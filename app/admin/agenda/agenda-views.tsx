@@ -270,14 +270,14 @@ export function MonthView({
           </div>
         ))}
 
-        {days.map((dateKey) => {
-          const dayAppointments = grouped.get(dateKey) ?? [];
-          const inMonth = isSameMonth(dateKey, `${monthKey}-01`);
+        {days.map((cellKey) => {
+          const dayAppointments = grouped.get(cellKey) ?? [];
+          const inMonth = isSameMonth(cellKey, `${monthKey}-01`);
 
           return (
             <Link
-              key={dateKey}
-              href={`/admin/agenda?vista=dia&fecha=${dateKey}`}
+              key={cellKey}
+              href={`/admin/agenda?vista=dia&fecha=${cellKey}`}
               className={cn(
                 "bg-background hover:bg-accent min-h-24 space-y-1 p-1.5 transition-colors",
                 !inMonth && "bg-muted/40",
@@ -287,10 +287,10 @@ export function MonthView({
                 className={cn(
                   "inline-flex size-6 items-center justify-center rounded-full text-xs tabular-nums",
                   !inMonth && "text-muted-foreground",
-                  dateKey === today && "bg-foreground text-background font-medium",
+                  cellKey === today && "bg-foreground text-background font-medium",
                 )}
               >
-                {dayNumber(dateKey)}
+                {dayNumber(cellKey)}
               </span>
 
               {/* Más de tres chips no entran sin romper la altura de la celda;
