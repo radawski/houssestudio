@@ -22,10 +22,35 @@
 - [x] **Verificación manual** — encontró y corrigió desborde horizontal
       (`grid gap-3` sin columnas explícitas en 4 listas)
 
-## Fases C–H (pendientes, ver tasks/plan.md)
-- [ ] C — Agenda mobile (tira de días, semana en lista, mes con selección local)
+## Fase C — Agenda mobile
+- [x] `lib/availability.ts`: `computeFreeGaps` (huecos libres, sin trocear por
+      duración ni filtrar por `now`), con tests
+- [x] `lib/agenda-day.ts`: `buildAgendaDayRows` (intercala turnos + huecos),
+      más `groupByDay`/`dayNumber`/`WEEKDAY_SHORT` (movidos acá para romper un
+      ciclo de imports entre `agenda-views.tsx` y `month-mobile.tsx`)
+- [x] `components/admin/status-badge.tsx`: `AdminStatusBadge` compartido
+      (monocromo salvo pendiente en ámbar) — reemplaza el `SHEET_BADGE` local
+      de la ficha, ahora también usado en las 3 vistas de Agenda
+- [x] `lib/data/appointments.ts`: `getBusinessHoursForDay` + `getTimeBlocksForDay`
+- [x] Vista día: lista mobile [hora · tarjeta/hueco] con ficha de solo lectura
+      al tocar (sin botones, a diferencia de Hoy/Solicitudes); desktop
+      intacto detrás de `hidden md:block`
+- [x] Vista semana: lista vertical por día en mobile; grilla de 4 columnas
+      original detrás de `hidden md:grid` (con el `grid-cols-1`/`sm:grid-cols-2`
+      correcto — mismo bug de desborde de la Fase B que seguía latente acá)
+- [x] Vista mes: `app/admin/agenda/month-mobile.tsx` (client, selección local
+      de día) + calendario compacto; desktop intacto detrás de `hidden md:block`
+- [x] `WalkInSaleButton`: segundo `DialogTrigger` como FAB fixed en mobile,
+      mismo diálogo que el botón de escritorio
+- [x] `AgendaToolbar`: tira de 7 días (solo vista día, mobile), segmentado
+      Día/Semana/Mes a todo el ancho en mobile, `Hoy` reordenado con `order-last`
+- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
+
+## Fases D–H (pendientes, ver tasks/plan.md)
 - [ ] D — Caja mobile (resumen único, lista, barras semana, heatmap mes)
 - [ ] E — Solicitudes mobile (chips, hoja de rechazo con motivos)
-- [ ] F — Servicios mobile (FAB, switch en botón 48×44, `<select>` de duración)
-- [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios)
+- [ ] F — Servicios mobile (FAB, switch en botón 48×44, `<select>` de duración,
+      header "← + título" diferido de la Fase A)
+- [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios,
+      header "← + título" diferido de la Fase A)
 - [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)
