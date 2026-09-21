@@ -73,7 +73,7 @@ export default async function AdminHomePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {appointments.map((appointment) => (
               <AppointmentCard key={appointment.id} appointment={appointment} />
             ))}

@@ -40,7 +40,7 @@ export default async function ServicesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {services.map((service) => (
             <Card key={service.id}>
               <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4">

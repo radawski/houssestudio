@@ -40,7 +40,7 @@ export function DayView({ appointments }: { appointments: AppointmentWithCustome
   if (appointments.length === 0) return <EmptyDay />;
 
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-3">
       {appointments.map((appointment) => (
         <AppointmentCard key={appointment.id} appointment={appointment} />
       ))}

@@ -31,7 +31,8 @@ export function ConfirmAppointmentButton({ id }: { id: string }) {
 
   return (
     <Button
-      size="sm"
+      size="touch"
+      className="flex-1"
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
@@ -63,7 +64,7 @@ export function CancelAppointmentButton({
 
   return (
     <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+      <Button size="touch" variant="outline" className="flex-1" onClick={() => setOpen(true)}>
         <X className="size-4" />
         {label}
       </Button>
