@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { averagePerOpenDay, bestDay, type CashboxBreakdown, type DayRevenue } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
 import { dayRange, isSameMonth, todayKey } from "@/lib/dates";
@@ -197,34 +199,47 @@ function MonthCell({
     );
   }
 
+  let cell: React.ReactNode;
+
   if (isFuture) {
-    return (
+    cell = (
       <div className="flex h-[50px] flex-col items-center justify-center gap-0.5 rounded">
         <span className="text-muted-foreground text-xs tabular-nums">{dayNumber(cellKey)}</span>
       </div>
     );
-  }
-
-  if (!revenue || revenue.isClosed) {
-    return (
+  } else if (!revenue || revenue.isClosed) {
+    cell = (
       <div className="flex h-[50px] flex-col items-center justify-center gap-0.5 rounded bg-[var(--hs-surface-closed)]">
         <span className="text-xs tabular-nums text-[var(--hs-mist)]">{dayNumber(cellKey)}</span>
         <span className="text-xs text-[var(--hs-mist)]">—</span>
       </div>
     );
+  } else {
+    cell = (
+      <div
+        className={cn(
+          "flex h-[50px] flex-col items-center justify-center gap-0.5 rounded border border-transparent",
+          heatBandClass(revenue.total, maxTotal),
+          isToday && "border-foreground",
+        )}
+      >
+        <span className="text-xs tabular-nums">{dayNumber(cellKey)}</span>
+        <span className="text-xs font-semibold tabular-nums">{formatCompactAmount(revenue.total)}</span>
+      </div>
+    );
   }
 
+  // Cualquier día real del mes lleva a su vista día, también los cerrados o
+  // futuros: el pedido es "tocar un día y ver ese día", no solo los que
+  // facturaron.
   return (
-    <div
-      className={cn(
-        "flex h-[50px] flex-col items-center justify-center gap-0.5 rounded border border-transparent",
-        heatBandClass(revenue.total, maxTotal),
-        isToday && "border-foreground",
-      )}
+    <Link
+      href={`/admin/caja?vista=dia&fecha=${cellKey}`}
+      aria-label={`Ver el ${formatInTz(dayRange(cellKey).start, "EEEE d 'de' MMMM")}`}
+      className="focus-visible:ring-ring rounded focus-visible:ring-2 focus-visible:outline-none"
     >
-      <span className="text-xs tabular-nums">{dayNumber(cellKey)}</span>
-      <span className="text-xs font-semibold tabular-nums">{formatCompactAmount(revenue.total)}</span>
-    </div>
+      {cell}
+    </Link>
   );
 }
 
