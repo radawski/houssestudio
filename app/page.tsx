@@ -1,3 +1,4 @@
+import { BookingLanding } from "@/components/public/booking-landing";
 import { BookingStepper } from "@/components/public/booking-stepper";
 import { SiteHero } from "@/components/public/site-hero";
 import { getSettings } from "@/lib/data/availability";
@@ -25,12 +26,13 @@ export default async function HomePage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <SiteHero />
-      <BookingStepper
-        services={servicesResult.data}
-        horizonDays={settings.max_booking_days}
-        businessWhatsapp={settings.phone}
-      />
+      <BookingLanding hero={<SiteHero />}>
+        <BookingStepper
+          services={servicesResult.data}
+          horizonDays={settings.max_booking_days}
+          businessWhatsapp={settings.phone}
+        />
+      </BookingLanding>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 
 import { BookingSummary } from "@/components/public/booking-summary";
 import { DniGate, type Identity } from "@/components/public/dni-gate";
@@ -58,6 +58,20 @@ export function BookingStepper({
   const [loadingMonth, startLoadingMonth] = useTransition();
   const [identity, setIdentity] = useState<Identity>(UNRESOLVED_IDENTITY);
   const [state, formAction] = useActionState(createBooking, idleState);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Continuar y Volver cambian el contenido sin navegar: si el tope del stepper
+  // quedó arriba, fuera de pantalla, se sube suavemente hasta él para que el
+  // paso nuevo se lea desde el principio (con el indicador de pasos a la
+  // vista). Suave aunque el sistema pida menos movimiento, igual que
+  // `HeroCta`: es corto y lo inicia el visitante.
+  function goToStep(next: StepNumber) {
+    setStep(next);
+    const section = sectionRef.current;
+    if (section && section.getBoundingClientRect().top < 0) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
 
   // Los horarios ofrecidos dependen del servicio (los slots se encadenan según
   // su duración), así que cambiar de servicio invalida la selección de hora.
@@ -107,6 +121,7 @@ export function BookingStepper({
   return (
     <section
       id="reservar"
+      ref={sectionRef}
       // `tabIndex={-1}` la vuelve enfocable por programa sin meterla en el orden
       // de tabulación: `HeroCta` le pasa el foco al bajar, para que quien navega
       // con teclado siga desde acá y no desde la portada. El anillo se oculta
@@ -123,7 +138,7 @@ export function BookingStepper({
               title="¿Qué te hacés?"
               hint="La duración del servicio define los horarios disponibles."
               canContinue={Boolean(service)}
-              onContinue={() => setStep(2)}
+              onContinue={() => goToStep(2)}
             >
               <div className="space-y-2">
                 {services.length === 0 ? (
@@ -147,9 +162,9 @@ export function BookingStepper({
           {step === 2 && service ? (
             <StepShell
               title="Elegí fecha y horario"
-              onBack={() => setStep(1)}
+              onBack={() => goToStep(1)}
               canContinue={Boolean(slot)}
-              onContinue={() => setStep(3)}
+              onContinue={() => goToStep(3)}
             >
               <div className="space-y-6">
                 <MonthCalendar
@@ -188,7 +203,7 @@ export function BookingStepper({
               <StepShell
                 title="Tus datos"
                 hint="Ingresá tu DNI: si ya reservaste antes, reconocemos tus datos."
-                onBack={() => setStep(2)}
+                onBack={() => goToStep(2)}
                 continueType="submit"
                 continueLabel="Confirmar turno"
                 canContinue={identity.resolved}

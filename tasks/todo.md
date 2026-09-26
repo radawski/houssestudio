@@ -98,7 +98,17 @@
       `allowedDevOrigins` en `next.config.ts`; con eso el 13 Pro también
       ejecuta JavaScript. Además, `showPicker()` ya no se llama con el dedo
       (iOS entrega el toque como `click` con `pointerType` "mouse")
-- [ ] T3 — Portada oculta tras "Reservar turno" + scroll suave forzado
+- [x] FAB "Venta suelta" verificado abajo también en el iPhone 13 Pro: salía
+      arriba porque Safari tenía guardado un CSS viejo, sin la regla
+      `bottom-[84px]` (se resolvió borrando los datos del sitio; no era código)
+- [x] T3 — `components/public/booking-landing.tsx` envuelve portada y
+      stepper; `HeroCta` baja suave (ya sin salida por reducir movimiento),
+      espera el fin del scroll (`scrollend` o 150 ms sin `scroll`) y, si
+      llegó, retira la portada y deja el scroll en 0 en el mismo commit.
+      Continuar/Volver suben al tope de `#reservar` si quedó fuera de
+      pantalla. Medido en Chrome: sin salto, foco en `#reservar`
+- [ ] T3 — **Verificación manual pendiente** en iPhone (con "Reducir
+      movimiento") y desktop
 - [ ] T4 — Venta suelta de productos (migración 0008), etiqueta en la lista de Caja
 - [ ] T5 — Horario con N bloques (antes/junto con Fase G)
 - [ ] T6 — Verde en horarios (hora verde + filete en la lista día de Agenda)
