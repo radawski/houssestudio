@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 /**
@@ -23,6 +23,7 @@ export function StepShell({
    * `submit` real dentro del `<form>` y no un handler de click.
    */
   continueType = "button",
+  footerRef,
 }: {
   title: string;
   hint?: string;
@@ -32,6 +33,8 @@ export function StepShell({
   continueLabel?: string;
   canContinue?: boolean;
   continueType?: "button" | "submit";
+  /** Para que el paso pueda desplazar la página hasta los botones. */
+  footerRef?: Ref<HTMLElement>;
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -44,7 +47,7 @@ export function StepShell({
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">{children}</div>
 
-      <footer className="border-border mt-6 flex items-center justify-between gap-4 border-t pt-6">
+      <footer ref={footerRef} className="border-border mt-6 flex items-center justify-between gap-4 border-t pt-6">
         {onBack ? (
           <button
             type="button"
