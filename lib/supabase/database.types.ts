@@ -90,10 +90,16 @@ export type Payment = {
   created_at: string;
 };
 
+export type WalkInSaleKind = "servicio" | "producto";
+
 export type WalkInSale = {
   id: string;
+  kind: WalkInSaleKind;
   service_id: string | null;
-  /** Congelado al momento de la venta, igual que `service_name_at_booking`. */
+  /**
+   * Congelado al momento de la venta, igual que `service_name_at_booking`.
+   * En un producto es el nombre libre que se escribió al venderlo.
+   */
   service_name: string;
   amount: number;
   method: PaymentMethod;
@@ -166,7 +172,7 @@ export type Database = {
         | "cancelled_at"
       >;
       payments: TableShape<Payment, "paid_at">;
-      walk_in_sales: TableShape<WalkInSale, "service_id" | "sold_at" | "note">;
+      walk_in_sales: TableShape<WalkInSale, "kind" | "service_id" | "sold_at" | "note">;
       email_log: TableShape<
         EmailLogEntry,
         "appointment_id" | "status" | "provider_id" | "error" | "sent_at"

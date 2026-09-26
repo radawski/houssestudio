@@ -27,7 +27,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { idleState } from "@/lib/actions/result";
 import { recordWalkInSale } from "@/lib/actions/sales";
 import { formatCurrency } from "@/lib/format";
-import type { PaymentMethod } from "@/lib/supabase/database.types";
+import type { PaymentMethod, WalkInSaleKind } from "@/lib/supabase/database.types";
+import { cn } from "@/lib/utils";
 
 type ServiceOption = { id: string; name: string; price: number };
 
@@ -37,7 +38,9 @@ function FieldError({ message }: { message?: string }) {
 }
 
 /**
- * Para un corte que entra sin turno reservado.
+ * Para una venta sin turno reservado: un corte que entra de pasada o un
+ * producto (cera, bebida...). El producto no sale del catálogo: se escribe
+ * su nombre y el monto arranca vacío.
  *
  * `serviceId` y `method` van por un input oculto que refleja el estado del
  * `Select` en vez de confiar en su prop `name` para participar del
@@ -47,7 +50,9 @@ function FieldError({ message }: { message?: string }) {
  */
 export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
   const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState<WalkInSaleKind>("servicio");
   const [serviceId, setServiceId] = useState("");
+  const [productName, setProductName] = useState("");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("efectivo");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>();
@@ -59,8 +64,19 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
     if (service) setAmount(String(service.price));
   }
 
-  function reset() {
+  function changeKind(next: WalkInSaleKind) {
+    if (next === kind) return;
+    setKind(next);
     setServiceId("");
+    setProductName("");
+    setAmount("");
+    setFieldErrors(undefined);
+  }
+
+  function reset() {
+    setKind("servicio");
+    setServiceId("");
+    setProductName("");
     setAmount("");
     setMethod("efectivo");
     setFieldErrors(undefined);
@@ -114,29 +130,68 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Registrar venta suelta</DialogTitle>
-          <DialogDescription>Para un corte que entró sin turno reservado.</DialogDescription>
+          <DialogDescription>
+            Un corte que entró sin turno reservado, o un producto.
+          </DialogDescription>
         </DialogHeader>
 
         <form action={submit} className="space-y-4">
-          <input type="hidden" name="serviceId" value={serviceId} />
+          <input type="hidden" name="kind" value={kind} />
           <input type="hidden" name="method" value={method} />
 
-          <div className="space-y-2">
-            <Label htmlFor="walkin-service">Servicio</Label>
-            <Select value={serviceId} onValueChange={handleServiceChange}>
-              <SelectTrigger id="walkin-service" className="w-full">
-                <SelectValue placeholder="Elegí un servicio" />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map((service) => (
-                  <SelectItem key={service.id} value={service.id}>
-                    {service.name} · {formatCurrency(service.price)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError message={fieldErrors?.serviceId} />
+          <div role="group" aria-label="Qué se vendió" className="bg-muted flex gap-0.5 rounded-md p-0.5">
+            {(["servicio", "producto"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={kind === option}
+                onClick={() => changeKind(option)}
+                className={cn(
+                  "h-9 flex-1 rounded text-sm capitalize transition-colors",
+                  kind === option
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {option}
+              </button>
+            ))}
           </div>
+
+          {kind === "servicio" ? (
+            <div className="space-y-2">
+              <input type="hidden" name="serviceId" value={serviceId} />
+              <Label htmlFor="walkin-service">Servicio</Label>
+              <Select value={serviceId} onValueChange={handleServiceChange}>
+                <SelectTrigger id="walkin-service" className="w-full">
+                  <SelectValue placeholder="Elegí un servicio" />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} · {formatCurrency(service.price)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError message={fieldErrors?.serviceId} />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="walkin-product">Producto</Label>
+              <Input
+                id="walkin-product"
+                name="productName"
+                placeholder="Cera, bebida…"
+                maxLength={80}
+                autoComplete="off"
+                value={productName}
+                onChange={(event) => setProductName(event.target.value)}
+                required
+              />
+              <FieldError message={fieldErrors?.productName} />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="walkin-amount">Monto</Label>
@@ -174,7 +229,10 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
           </div>
 
           <DialogFooter>
-            <Button type="submit" disabled={pending || !serviceId}>
+            <Button
+              type="submit"
+              disabled={pending || (kind === "servicio" ? !serviceId : !productName.trim())}
+            >
               {pending ? "Guardando…" : "Registrar venta"}
             </Button>
           </DialogFooter>

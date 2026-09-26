@@ -6,7 +6,8 @@ import type { PaymentMethod } from "@/lib/supabase/database.types";
 
 export type CashboxMovement = {
   id: string;
-  origin: "turno" | "venta_suelta";
+  /** `venta_suelta` es un servicio sin turno; `producto`, una venta de producto. */
+  origin: "turno" | "venta_suelta" | "producto";
   serviceName: string;
   amount: number;
   method: PaymentMethod;
@@ -41,7 +42,7 @@ export async function getCashboxSummary(range: {
       .lt("paid_at", range.end),
     supabase
       .from("walk_in_sales")
-      .select("id, service_name, amount, method, sold_at")
+      .select("id, kind, service_name, amount, method, sold_at")
       .gte("sold_at", range.start)
       .lt("sold_at", range.end),
   ]);
@@ -73,7 +74,7 @@ export async function getCashboxSummary(range: {
 
   const saleMovements: CashboxMovement[] = salesResult.data.map((row) => ({
     id: row.id,
-    origin: "venta_suelta" as const,
+    origin: row.kind === "producto" ? ("producto" as const) : ("venta_suelta" as const),
     serviceName: row.service_name,
     amount: row.amount,
     method: row.method,

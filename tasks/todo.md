@@ -107,8 +107,15 @@
       llegó, retira la portada y deja el scroll en 0 en el mismo commit.
       Continuar/Volver suben al tope de `#reservar` si quedó fuera de
       pantalla. Medido en Chrome: sin salto, foco en `#reservar`
-- [ ] T3 — **Verificación manual pendiente** en iPhone (con "Reducir
-      movimiento") y desktop
-- [ ] T4 — Venta suelta de productos (migración 0008), etiqueta en la lista de Caja
+- [x] T3 — Verificado en iPhone. De la prueba salió además: elegir día
+      baja a los horarios, elegir horario deja "Continuar" a la vista, y el
+      scroll al tope al cambiar de paso va después del render (de 2 a 3 la
+      página se achicaba y Safari cortaba la animación)
+- [x] T4 — Venta de productos: migración 0008 (`walk_in_sales.kind`,
+      aplicada en Supabase), esquema con unión discriminada + tests,
+      segmentado Servicio/Producto en el diálogo, etiqueta "Producto" en
+      Caja (lista mobile y tabla, columna renombrada a "Concepto"), SPEC §2.
+      Comprobado en desktop: la venta de producto aparece y suma en el total
+- [ ] T4 — **Verificación manual pendiente** en iPhone
 - [ ] T5 — Horario con N bloques (antes/junto con Fase G)
 - [ ] T6 — Verde en horarios (hora verde + filete en la lista día de Agenda)

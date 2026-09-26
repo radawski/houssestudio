@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const METHOD_LABEL = { efectivo: "Efectivo", transferencia: "Transferencia" } as const;
-const ORIGIN_LABEL = { turno: "Turno", venta_suelta: "Venta suelta" } as const;
+const ORIGIN_LABEL = { turno: "Turno", venta_suelta: "Venta suelta", producto: "Producto" } as const;
 const WEEKDAY_SHORT_LOWER = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"] as const;
 
 const dayNumber = (dateKey: string) => Number(dateKey.slice(8, 10));

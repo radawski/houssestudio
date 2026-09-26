@@ -201,12 +201,32 @@ export const paymentSchema = z.object({
   method: z.enum(["efectivo", "transferencia"]),
 });
 
-export const walkInSaleSchema = z.object({
-  serviceId: z.uuid("Elegí un servicio"),
+const walkInSaleCommon = {
   amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
   method: z.enum(["efectivo", "transferencia"]),
   note: z.string().trim().max(200, "La nota es demasiado larga").optional(),
-});
+};
+
+/**
+ * Un servicio sale del catálogo (se valida que exista); un producto no tiene
+ * catálogo y se describe con un nombre libre.
+ */
+export const walkInSaleSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("servicio"),
+    serviceId: z.uuid("Elegí un servicio"),
+    ...walkInSaleCommon,
+  }),
+  z.object({
+    kind: z.literal("producto"),
+    productName: z
+      .string("Escribí qué vendiste")
+      .trim()
+      .min(1, "Escribí qué vendiste")
+      .max(80, "El nombre es demasiado largo"),
+    ...walkInSaleCommon,
+  }),
+]);
 
 export type BookingInput = z.infer<typeof bookingSchema>;
 export type CancelByTokenInput = z.infer<typeof cancelByTokenSchema>;

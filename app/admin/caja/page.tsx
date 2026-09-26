@@ -39,7 +39,7 @@ const SUMMARY_LABEL: Record<CajaView, string> = {
 };
 
 const METHOD_LABEL = { efectivo: "Efectivo", transferencia: "Transferencia" } as const;
-const ORIGIN_LABEL = { turno: "Turno", venta_suelta: "Venta suelta" } as const;
+const ORIGIN_LABEL = { turno: "Turno", venta_suelta: "Venta suelta", producto: "Producto" } as const;
 
 function DesktopSummaryCard({ label, amount }: { label: string; amount: number }) {
   return (
@@ -133,7 +133,7 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
                   <TableRow>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Origen</TableHead>
-                    <TableHead>Servicio</TableHead>
+                    <TableHead>Concepto</TableHead>
                     <TableHead>Medio</TableHead>
                     <TableHead className="text-right">Monto</TableHead>
                   </TableRow>

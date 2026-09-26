@@ -58,8 +58,11 @@ Fuera de alcance (Fase 3 u otra decisión explícita del usuario):
 - Autogestión: el cliente **solo cancela**, no reprograma. Plazo mínimo =
   `settings.cancellation_window_hours` (arranca en 2, ya es el valor por
   defecto de la base — no hace falta inventar otro número).
-- Ventas sueltas usan el catálogo de servicios existente como sugerencia de
-  nombre/precio, con monto final editable.
+- Ventas sueltas: un **servicio** usa el catálogo existente como sugerencia
+  de nombre/precio, con monto final editable; un **producto** (cera,
+  bebida…) no tiene catálogo: nombre libre y monto a mano. En Caja el
+  producto lleva la etiqueta "Producto" y suma como cualquier otro cobro,
+  sin subtotal aparte (`walk_in_sales.kind`, migración 0008).
 - Un turno cancelado que ya tenía cobro registrado no borra el pago: queda
   como dato histórico para el reporte de caja.
 
@@ -163,7 +166,8 @@ registrar ventas sueltas.
   alguien que todavía no tenía que llegar).
 - `recordWalkInSale(input)` en un `lib/actions/sales.ts` nuevo: inserta en
   `walk_in_sales`. El formulario sugiere nombre/precio desde el catálogo de
-  servicios activos, pero el monto final es editable.
+  servicios activos, pero el monto final es editable. Para un producto se
+  escribe el nombre y el monto (`kind = 'producto'`, `service_id` nulo).
 - UI: en `AppointmentCard`/`appointment-actions.tsx`, reemplazar o extender
   las acciones disponibles sobre un turno `confirmado` para incluir "Marcar
   cobrado" (abre diálogo con monto sugerido = `price_at_booking` y selector de

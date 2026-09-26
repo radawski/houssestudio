@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { bookingSchema, identifySchema, normalizeDni, normalizePhone } from "@/lib/validation/schemas";
+import {
+  bookingSchema,
+  identifySchema,
+  normalizeDni,
+  normalizePhone,
+  walkInSaleSchema,
+} from "@/lib/validation/schemas";
 
 describe("normalizeDni", () => {
   it("deja solo digitos", () => {
@@ -85,5 +91,46 @@ describe("normalizePhone (regresion)", () => {
   it("sigue funcionando igual que antes del cambio de DNI", () => {
     expect(normalizePhone("11 2345-6789")).toBe("1123456789");
     expect(normalizePhone("+54 9 11 2345 6789")).toBe("1123456789");
+  });
+});
+
+describe("walkInSaleSchema", () => {
+  const common = { amount: "5000", method: "efectivo" };
+
+  it("acepta un servicio con su id", () => {
+    const result = walkInSaleSchema.safeParse({
+      ...common,
+      kind: "servicio",
+      serviceId: "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rechaza un servicio sin elegir", () => {
+    const result = walkInSaleSchema.safeParse({ ...common, kind: "servicio", serviceId: "" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path[0]).toBe("serviceId");
+  });
+
+  it("acepta un producto con nombre libre, sin servicio", () => {
+    const result = walkInSaleSchema.safeParse({ ...common, kind: "producto", productName: "  Cera  " });
+    expect(result.success).toBe(true);
+    if (result.success && result.data.kind === "producto") {
+      expect(result.data.productName).toBe("Cera");
+      expect(result.data.amount).toBe(5000);
+    }
+  });
+
+  it("rechaza un producto sin nombre", () => {
+    for (const productName of [undefined, "", "   "]) {
+      const result = walkInSaleSchema.safeParse({ ...common, kind: "producto", productName });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues[0]?.path[0]).toBe("productName");
+    }
+  });
+
+  it("rechaza un tipo de venta desconocido", () => {
+    const result = walkInSaleSchema.safeParse({ ...common, kind: "otro", productName: "Cera" });
+    expect(result.success).toBe(false);
   });
 });
