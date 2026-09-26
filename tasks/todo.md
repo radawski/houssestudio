@@ -132,4 +132,8 @@
 - [ ] T5 — Migración posterior que retire `opens_at`/`closes_at`/
       `opens_at_2`/`closes_at_2` de `business_hours` (sin producción, se
       puede hacer apenas se verifique)
-- [ ] T6 — Verde en horarios (hora verde + filete en la lista día de Agenda)
+- [x] T6 — Verde en horarios: `--hs-green` (#137a55, no el #178a5e del
+      plan: ese daba 3.98:1 sobre --hs-paper) y `--hs-green-soft`; hora
+      verde semibold 13px en GapRow y AgendaAppointmentRow, filete de 3px
+      solo en tarjetas con turno. Revisado en Chrome a 390px
+- [ ] T6 — **Verificación manual pendiente** en iPhone

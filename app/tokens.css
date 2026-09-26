@@ -41,6 +41,14 @@
   --hs-heat-3: #cbd0d5; /* facturación alta */
   --hs-surface-closed: #f7f8f9; /* celda de un día que el local no abre */
 
+  /* --- Verde de horarios · Agenda día (mobile) ----------------------------
+     Único color de acento del panel, solo en la lista del día. La hora usa
+     un verde más oscuro que el de la referencia (~#1e9e6e): ese no llega a
+     4.5:1 a 13px; este da 4.9:1 sobre --hs-paper y 5.3:1 sobre blanco. El
+     filete es decorativo y no necesita contraste de texto. */
+  --hs-green: #137a55; /* hora de cada fila */
+  --hs-green-soft: #9fdcc2; /* filete izquierdo de las tarjetas con turno */
+
   /* --- Superficies derivadas -------------------------------------------- */
   --hs-surface-raised: color-mix(in oklab, var(--hs-mist) 18%, var(--hs-paper));
   --hs-surface-hover: color-mix(in oklab, var(--hs-mist) 32%, var(--hs-paper));

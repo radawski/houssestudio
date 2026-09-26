@@ -30,7 +30,7 @@ function GapRow({ start, end }: { start: Date; end: Date }) {
 
   return (
     <div className="flex gap-2.5">
-      <span className="text-muted-foreground w-11 shrink-0 pt-0.5 text-right text-xs font-medium tabular-nums">
+      <span className="w-11 shrink-0 pt-0.5 text-right text-[13px] font-semibold text-[var(--hs-green)] tabular-nums">
         {formatTime(start)}
       </span>
       <div className="text-muted-foreground flex h-11 flex-1 items-center rounded-md border border-dashed border-[var(--hs-mist)] px-3 text-sm">
@@ -49,14 +49,14 @@ function GapRow({ start, end }: { start: Date; end: Date }) {
 function AgendaAppointmentRow({ appointment }: { appointment: AppointmentWithCustomer }) {
   return (
     <div className="flex gap-2.5">
-      <span className="text-muted-foreground w-11 shrink-0 pt-0.5 text-right text-xs font-medium tabular-nums">
+      <span className="w-11 shrink-0 pt-0.5 text-right text-[13px] font-semibold text-[var(--hs-green)] tabular-nums">
         {formatTime(appointment.starts_at)}
       </span>
       <Dialog>
         <DialogTrigger asChild>
           <button
             type="button"
-            className="bg-card min-w-0 flex-1 rounded-md border border-[var(--hs-border-card)] p-3 text-left"
+            className="bg-card min-w-0 flex-1 rounded-md border border-l-[3px] border-[var(--hs-border-card)] border-l-[var(--hs-green-soft)] p-3 text-left"
           >
             <div className="flex items-start justify-between gap-2.5">
               <p className="text-sm font-semibold tabular-nums">
