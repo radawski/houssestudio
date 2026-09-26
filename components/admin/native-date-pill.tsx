@@ -17,13 +17,14 @@ const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
  * depender de JavaScript propio. En escritorio, en cambio, un clic sobre el
  * texto del input (no sobre su ícono) solo lo enfoca en Chrome/Edge, y por eso
  * con mouse se llama además a `showPicker()`. Con el dedo no: iOS y Android
- * ya lo abren por su cuenta y una segunda llamada podría reabrirlo.
+ * ya lo abren por su cuenta y una segunda llamada podría reabrirlo. El tipo
+ * de puntero se toma del `pointerdown` y no del `click`, porque Safari de iOS
+ * entrega el toque como un `click` con `pointerType` "mouse".
  *
  * El input es no controlado (`defaultValue` + `key`) y la elección se
- * confirma tanto en `change` como en `blur` (el cierre del calendario): con
- * el input controlado y solo `onChange`, en Safari de iOS elegir otro día y
- * tocar "Listo" no navegaba. `lastSent` evita navegar dos veces por la misma
- * elección cuando llegan los dos eventos.
+ * confirma tanto en `change` como en `blur` (el cierre del calendario), por
+ * si algún navegador no dispara `change` al cerrar. `lastSent` evita navegar
+ * dos veces por la misma elección cuando llegan los dos eventos.
  *
  * `value` y lo que devuelve `onValueChange` son `yyyy-MM-dd` tal cual los da
  * el input, sin pasar por `Date`: convertirlos pasaría por UTC y en Argentina
@@ -45,6 +46,7 @@ export function NativeDatePill({
   className?: string;
 }) {
   const lastSent = useRef<{ from: string; to: string } | null>(null);
+  const lastPointerType = useRef<string | null>(null);
 
   function commit(event: React.SyntheticEvent<HTMLInputElement>) {
     const next = event.currentTarget.value;
@@ -59,7 +61,8 @@ export function NativeDatePill({
   }
 
   function handleClick(event: React.MouseEvent<HTMLInputElement>) {
-    const { pointerType } = event.nativeEvent as PointerEvent;
+    const pointerType = lastPointerType.current;
+    lastPointerType.current = null;
     if (pointerType === "touch" || pointerType === "pen") return;
     try {
       event.currentTarget.showPicker();
@@ -89,6 +92,7 @@ export function NativeDatePill({
         defaultValue={value}
         onChange={commit}
         onBlur={commit}
+        onPointerDown={(event) => (lastPointerType.current = event.pointerType)}
         onClick={handleClick}
         aria-label={`Elegir fecha. Fecha actual: ${label}`}
         // `text-base` (16px): con menos, Safari de iOS hace zoom al enfocarlo.

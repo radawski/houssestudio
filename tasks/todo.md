@@ -92,7 +92,12 @@
 - [x] T2 — Selector de fecha nativo en Caja (vista día):
       `components/admin/native-date-pill.tsx` (input date con opacidad 0
       sobre la píldora + `showPicker()` solo con mouse), en `CajaToolbar`
-- [ ] T2 — **Verificación manual pendiente** en iPhone 16 Pro y desktop
+- [x] T2 — Verificado en iPhone 16 Pro, iPhone 13 Pro y desktop. En el
+      celular no andaba porque la página no hidrataba: `next dev` bloqueaba
+      sus scripts al entrar por la IP de la red local. Arreglado con
+      `allowedDevOrigins` en `next.config.ts`; con eso el 13 Pro también
+      ejecuta JavaScript. Además, `showPicker()` ya no se llama con el dedo
+      (iOS entrega el toque como `click` con `pointerType` "mouse")
 - [ ] T3 — Portada oculta tras "Reservar turno" + scroll suave forzado
 - [ ] T4 — Venta suelta de productos (migración 0008), etiqueta en la lista de Caja
 - [ ] T5 — Horario con N bloques (antes/junto con Fase G)
