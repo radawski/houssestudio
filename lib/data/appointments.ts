@@ -51,7 +51,12 @@ export async function getPendingAppointments(): Promise<AppointmentWithCustomer[
   return (data ?? []) as unknown as AppointmentWithCustomer[];
 }
 
-/** Turnos que arrancan dentro de un rango absoluto de tiempo. */
+/**
+ * Turnos que arrancan dentro de un rango absoluto de tiempo, sin los
+ * cancelados: Hoy y Agenda (sus únicos lectores) no los muestran, a pedido
+ * del usuario — un turno cancelado ya no ocupa la agenda. El dato sigue en la
+ * base, y Caja no depende de esta lectura.
+ */
 export async function getAppointmentsBetween(
   start: Date,
   end: Date,
@@ -60,6 +65,7 @@ export async function getAppointmentsBetween(
   const { data, error } = await supabase
     .from("appointments")
     .select(WITH_CUSTOMER)
+    .neq("status", "cancelado")
     .gte("starts_at", start.toISOString())
     .lt("starts_at", end.toISOString())
     .order("starts_at", { ascending: true });
