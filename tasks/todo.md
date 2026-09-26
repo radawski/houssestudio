@@ -76,3 +76,21 @@
 - [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios,
       header "← + título" diferido de la Fase A)
 - [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)
+
+## Correcciones de la ronda de prueba (ver tasks/plan-correcciones.md)
+- [x] T1 — Logo sin animación, cancelados fuera de Hoy/Agenda, mes de Caja
+      → vista día, espacio blanco de la tab bar (sin `viewportFit: "cover"`:
+      el sitio se usa en Safari, no como app instalada; se bajó el piso de
+      22px a 6px). También: avisos del panel ahora sí sobre la tab bar en
+      mobile (`mobileOffset`, Sonner ignoraba `offset` bajo 600px)
+- [x] T1 — Verificado en iPhone: cancelados, mes → día, tab bar y avisos OK.
+      FAB "Venta suelta": `bottom-[84px]` y aviso en `80px` (sin `env()`,
+      que vale 0 sin `viewportFit: "cover"`). Verificado en iPhone 16 Pro.
+      En el iPhone 13 Pro del usuario (iOS 18.7.8) no corre JavaScript y el
+      FAB sale arriba; causa no confirmada (no es la versión de Safari).
+      El usuario decidió probar desde ahora en el 16 Pro
+- [ ] T2 — Selector de fecha nativo en Caja (vista día)
+- [ ] T3 — Portada oculta tras "Reservar turno" + scroll suave forzado
+- [ ] T4 — Venta suelta de productos (migración 0008), etiqueta en la lista de Caja
+- [ ] T5 — Horario con N bloques (antes/junto con Fase G)
+- [ ] T6 — Verde en horarios (hora verde + filete en la lista día de Agenda)
