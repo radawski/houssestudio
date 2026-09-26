@@ -119,5 +119,17 @@
 - [x] T4 — Verificado en iPhone. De la prueba salió: la nota opcional de la
       venta no se veía en ningún lado; ahora va entre comillas debajo del
       concepto, en la lista mobile y en la tabla de Caja
-- [ ] T5 — Horario con N bloques (antes/junto con Fase G)
+- [x] T5 — Horario con N bloques: migración 0009 (aditiva, aplicada):
+      `business_hour_ranges` con exclusión de solapamiento por día, copia
+      de los tramos viejos y `save_business_hours(p_days jsonb)` (una
+      transacción, acepta 1..7 días: la Fase G la reusa para guardar por
+      día). Motor con `ranges[]` (tests de horario partido sin cambiar sus
+      resultados + 3 bloques, bloque corto, desordenados), validación con
+      error por día y bloque, `DayRangesEditor` reutilizable. Comprobado:
+      bloques copiados bien, slots de lun/mar/mié para los 2 servicios
+      idénticos a antes, guardar sin cambios OK, solapamiento rechazado
+- [ ] T5 — **Verificación manual pendiente** en iPhone y desktop
+- [ ] T5 — Migración posterior que retire `opens_at`/`closes_at`/
+      `opens_at_2`/`closes_at_2` de `business_hours` (sin producción, se
+      puede hacer apenas se verifique)
 - [ ] T6 — Verde en horarios (hora verde + filete en la lista día de Agenda)

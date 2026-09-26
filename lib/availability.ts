@@ -20,16 +20,20 @@ export type TimeRange = {
   closesAt: string;
 };
 
-export type DayHours = TimeRange & {
+export type DayHours = {
   isClosed: boolean;
   /**
-   * Segundo tramo del dia (horario partido, ej. corte por almuerzo). Se
-   * suma como campo opcional en vez de reemplazar `opensAt`/`closesAt` por
-   * un arreglo: un dia sin horario partido sigue siendo exactamente el
-   * `DayHours` de siempre, sin tocar a quien ya lo construye.
+   * Bloques de atencion del dia (uno para horario corrido, varios para
+   * cortes por almuerzo u otros). Pueden venir en cualquier orden: el motor
+   * los ordena. Se asume que no se pisan (lo garantiza la base).
    */
-  secondRange?: TimeRange | null;
+  ranges: TimeRange[];
 };
+
+/** Bloques del dia en orden de apertura. */
+function sortedRanges(hours: DayHours): TimeRange[] {
+  return [...hours.ranges].sort((a, b) => a.opensAt.localeCompare(b.opensAt));
+}
 
 export type ComputeSlotsInput = {
   /** Dia a resolver, `yyyy-MM-dd` en hora local del local. */
@@ -170,16 +174,13 @@ export function computeFreeGaps({
 }: ComputeFreeGapsInput): Interval[] {
   if (!hours || hours.isClosed) return [];
 
-  const ranges: TimeRange[] = [
-    { opensAt: hours.opensAt, closesAt: hours.closesAt },
-    ...(hours.secondRange ? [hours.secondRange] : []),
-  ];
+  const ranges = sortedRanges(hours);
 
   const gaps: Interval[] = [];
 
-  // Mismo motivo que en `computeSlots`: cada tramo del horario partido resta
-  // sus propios ocupados por separado, para que el corte del mediodia no
-  // aparezca como un hueco libre gigante que atraviesa el almuerzo.
+  // Mismo motivo que en `computeSlots`: cada bloque resta sus propios
+  // ocupados por separado, para que el corte del mediodia no aparezca como un
+  // hueco libre gigante que atraviesa el almuerzo.
   for (const range of ranges) {
     const open = businessTimeToDate(dateKey, range.opensAt, timeZone);
     const close = businessTimeToDate(dateKey, range.closesAt, timeZone);
@@ -210,18 +211,15 @@ export function computeSlots({
   const durationMs = durationMinutes * MINUTE_MS;
   const earliestStart = now.getTime() + minLeadMinutes * MINUTE_MS;
 
-  const ranges: TimeRange[] = [
-    { opensAt: hours.opensAt, closesAt: hours.closesAt },
-    ...(hours.secondRange ? [hours.secondRange] : []),
-  ];
+  const ranges = sortedRanges(hours);
 
   const slots: Interval[] = [];
 
-  // Cada tramo encadena por su cuenta, del borde de SU rango: un horario
-  // partido no es un horario corrido con un hueco ocupado en el medio, es
-  // dos ventanas independientes. Si se tratara como una sola resta de
-  // intervalos, el encadenado del segundo tramo dependeria de donde termino
-  // el ultimo slot del primero en vez de arrancar limpio a su propia hora.
+  // Cada bloque encadena por su cuenta, del borde de SU rango: un horario
+  // partido no es un horario corrido con un hueco ocupado en el medio, son
+  // ventanas independientes. Si se tratara como una sola resta de
+  // intervalos, el encadenado de un bloque dependeria de donde termino el
+  // ultimo slot del anterior en vez de arrancar limpio a su propia hora.
   for (const range of ranges) {
     const open = businessTimeToDate(dateKey, range.opensAt, timeZone);
     const close = businessTimeToDate(dateKey, range.closesAt, timeZone);

@@ -34,14 +34,29 @@ export type Service = {
 export type BusinessHour = {
   weekday: number;
   is_closed: boolean;
+  /**
+   * @deprecated Desde la 0009 los bloques viven en `business_hour_ranges`.
+   * Estas cuatro columnas quedan sin uso hasta que una migración las retire.
+   */
+  opens_at: string;
+  /** @deprecated Ver `opens_at`. */
+  closes_at: string;
+  /** @deprecated Ver `opens_at`. */
+  opens_at_2: string | null;
+  /** @deprecated Ver `opens_at`. */
+  closes_at_2: string | null;
+  updated_at: string;
+};
+
+/** Un bloque de atención de un día de la semana (0009). */
+export type BusinessHourRange = {
+  id: string;
+  weekday: number;
   /** `HH:MM:SS` en hora local del local. */
   opens_at: string;
   /** `HH:MM:SS` en hora local del local. */
   closes_at: string;
-  /** Segundo tramo (horario partido). Van de a par: los dos o ninguno. */
-  opens_at_2: string | null;
-  closes_at_2: string | null;
-  updated_at: string;
+  created_at: string;
 };
 
 export type TimeBlock = {
@@ -159,6 +174,7 @@ export type Database = {
         Update: Partial<BusinessHour>;
         Relationships: [];
       };
+      business_hour_ranges: TableShape<BusinessHourRange>;
       time_blocks: TableShape<TimeBlock, "reason">;
       customers: TableShape<Customer, "email" | "notes">;
       appointments: TableShape<
@@ -187,6 +203,16 @@ export type Database = {
     Views: Record<never, never>;
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      save_business_hours: {
+        Args: {
+          p_days: {
+            weekday: number;
+            is_closed: boolean;
+            ranges: { opens_at: string; closes_at: string }[];
+          }[];
+        };
+        Returns: void;
+      };
       complete_appointment_with_payment: {
         Args: { p_appointment_id: string; p_amount: number; p_method: PaymentMethod };
         Returns: void;

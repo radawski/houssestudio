@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSettings } from "@/lib/data/availability";
+import { fetchBusinessDays, getSettings } from "@/lib/data/availability";
 import { dayRange, todayKey } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,8 +20,8 @@ export default async function AvailabilityPage() {
   const today = todayKey();
   const supabase = await createClient();
 
-  const [hoursResult, blocksResult, settings] = await Promise.all([
-    supabase.from("business_hours").select("*").order("weekday"),
+  const [days, blocksResult, settings] = await Promise.all([
+    fetchBusinessDays(supabase),
     supabase
       .from("time_blocks")
       .select("*")
@@ -31,9 +31,6 @@ export default async function AvailabilityPage() {
     getSettings(),
   ]);
 
-  if (hoursResult.error) {
-    throw new Error(`No se pudieron leer los horarios: ${hoursResult.error.message}`);
-  }
   if (blocksResult.error) {
     throw new Error(`No se pudieron leer los bloqueos: ${blocksResult.error.message}`);
   }
@@ -67,11 +64,12 @@ export default async function AvailabilityPage() {
         <CardHeader>
           <CardTitle className="text-base">Horario semanal</CardTitle>
           <CardDescription>
-            Define la franja en la que se generan turnos cada día de la semana.
+            Los bloques en los que se generan turnos cada día de la semana. Para
+            cortar al mediodía, agregá un segundo bloque.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <BusinessHoursForm hours={hoursResult.data} />
+          <BusinessHoursForm days={days} />
         </CardContent>
       </Card>
 

@@ -1,21 +1,52 @@
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import { computeSlots, weekdayOf, type DayHours, type Interval } from "@/lib/availability";
 import { BUSINESS_TIMEZONE } from "@/lib/config";
 import { addDaysToKey, todayKey } from "@/lib/dates";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { BusinessHour, Service, Settings } from "@/lib/supabase/database.types";
+import type { Database, Service, Settings } from "@/lib/supabase/database.types";
 
-/** `business_hours` -> `DayHours`, incluyendo el segundo tramo si lo tiene. */
-function toDayHours(row: BusinessHour): DayHours {
+/** Un día del horario semanal con sus bloques, en orden de apertura. */
+export type BusinessDay = {
+  weekday: number;
+  is_closed: boolean;
+  ranges: { opens_at: string; closes_at: string }[];
+};
+
+/**
+ * Horario semanal completo: `business_hours` con sus bloques embebidos.
+ *
+ * Recibe el cliente para servir a los dos caminos: el portal público
+ * (service_role) y el panel (sesión del admin, con RLS). El embed no tipa solo
+ * porque `database.types.ts` no declara relaciones, así que se castea (mismo
+ * criterio que `lib/data/cashbox.ts`).
+ */
+export async function fetchBusinessDays(
+  supabase: SupabaseClient<Database>,
+  weekday?: number,
+): Promise<BusinessDay[]> {
+  let query = supabase
+    .from("business_hours")
+    .select("weekday, is_closed, ranges:business_hour_ranges(opens_at, closes_at)")
+    .order("weekday");
+  if (weekday !== undefined) query = query.eq("weekday", weekday);
+
+  const { data, error } = await query;
+  if (error) throw new Error(`No se pudieron leer los horarios: ${error.message}`);
+
+  return (data as unknown as BusinessDay[]).map((day) => ({
+    ...day,
+    ranges: [...day.ranges].sort((a, b) => a.opens_at.localeCompare(b.opens_at)),
+  }));
+}
+
+/** `BusinessDay` -> `DayHours` del motor de disponibilidad. */
+export function toDayHours(day: BusinessDay): DayHours {
   return {
-    isClosed: row.is_closed,
-    opensAt: row.opens_at,
-    closesAt: row.closes_at,
-    secondRange:
-      row.opens_at_2 && row.closes_at_2
-        ? { opensAt: row.opens_at_2, closesAt: row.closes_at_2 }
-        : null,
+    isClosed: day.is_closed,
+    ranges: day.ranges.map((r) => ({ opensAt: r.opens_at, closesAt: r.closes_at })),
   };
 }
 
@@ -50,14 +81,8 @@ export function lastBookableDateKey(settings: Settings, now: Date = new Date()):
   return addDaysToKey(todayKey(now), settings.max_booking_days);
 }
 
-export async function getBusinessHours(): Promise<BusinessHour[]> {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("business_hours")
-    .select("*")
-    .order("weekday");
-  if (error) throw new Error(`No se pudieron leer los horarios: ${error.message}`);
-  return data;
+export async function getBusinessHours(): Promise<BusinessDay[]> {
+  return fetchBusinessDays(createAdminClient());
 }
 
 /** Franjas ocupadas dentro de un rango absoluto: bloqueos mas turnos vivos. */

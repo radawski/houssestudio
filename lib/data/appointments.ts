@@ -1,6 +1,7 @@
 import "server-only";
 
 import { weekdayOf, type DayHours, type Interval } from "@/lib/availability";
+import { fetchBusinessDays, toDayHours } from "@/lib/data/availability";
 import { dayRange } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import type { Appointment, Customer, Payment, Service } from "@/lib/supabase/database.types";
@@ -103,24 +104,8 @@ export async function getActiveServices(): Promise<Pick<Service, "id" | "name" |
  */
 export async function getBusinessHoursForDay(dateKey: string): Promise<DayHours | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("business_hours")
-    .select("*")
-    .eq("weekday", weekdayOf(dateKey))
-    .maybeSingle();
-
-  if (error) throw new Error(`No se pudieron leer los horarios: ${error.message}`);
-  if (!data) return null;
-
-  return {
-    isClosed: data.is_closed,
-    opensAt: data.opens_at,
-    closesAt: data.closes_at,
-    secondRange:
-      data.opens_at_2 && data.closes_at_2
-        ? { opensAt: data.opens_at_2, closesAt: data.closes_at_2 }
-        : null,
-  };
+  const [day] = await fetchBusinessDays(supabase, weekdayOf(dateKey));
+  return day ? toDayHours(day) : null;
 }
 
 /**

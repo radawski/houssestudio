@@ -20,12 +20,20 @@ function revalidateAvailability() {
   revalidatePath("/reservar");
 }
 
+const WEEKDAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
 /**
  * Guarda los siete dias de una sola vez.
  *
  * El horario semanal se lee y se decide como una unidad ("cierro los lunes,
  * sabado corto"), asi que guardarlo entero evita estados intermedios raros como
- * quedar cerrado toda la semana mientras se edita dia por dia.
+ * quedar cerrado toda la semana mientras se edita dia por dia. La escritura va
+ * por `save_business_hours`, una sola transaccion para los siete dias y sus
+ * bloques.
+ *
+ * Cada bloque llega como un par `opens-<dia>`/`closes-<dia>` repetido;
+ * `getAll` los devuelve en el orden del formulario, asi que el indice sirve
+ * para nombrar el bloque con error ("Lunes, bloque 2").
  */
 export async function saveBusinessHours(
   _prev: ActionState,
@@ -33,35 +41,38 @@ export async function saveBusinessHours(
 ): Promise<ActionState> {
   const { supabase } = await requireAdmin();
 
-  const rows = [];
+  const days = [];
   for (let weekday = 0; weekday < 7; weekday++) {
-    const hasSecondRange = formData.get(`split-${weekday}`) === "on";
+    const opens = formData.getAll(`opens-${weekday}`).map(String);
+    const closes = formData.getAll(`closes-${weekday}`).map(String);
+
     const parsed = businessHourSchema.safeParse({
       weekday,
       isClosed: formData.get(`closed-${weekday}`) === "on",
-      opensAt: formData.get(`opens-${weekday}`),
-      closesAt: formData.get(`closes-${weekday}`),
-      hasSecondRange,
-      opensAt2: formData.get(`opens2-${weekday}`) || undefined,
-      closesAt2: formData.get(`closes2-${weekday}`) || undefined,
+      ranges: opens.map((opensAt, index) => ({ opensAt, closesAt: closes[index] ?? "" })),
     });
 
-    if (!parsed.success) return validationError(parsed.error);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      const blockIndex = issue.path[1];
+      const where =
+        typeof blockIndex === "number"
+          ? `${WEEKDAY_NAMES[weekday]}, bloque ${blockIndex + 1}`
+          : WEEKDAY_NAMES[weekday];
+      return actionError(`${where}: ${issue.message}.`);
+    }
 
-    rows.push({
+    days.push({
       weekday: parsed.data.weekday,
       is_closed: parsed.data.isClosed,
-      opens_at: parsed.data.opensAt,
-      closes_at: parsed.data.closesAt,
-      // Sin horario partido el segundo tramo se limpia: no tiene sentido
-      // conservar horas que la interfaz ya no muestra ni deja editar.
-      opens_at_2: parsed.data.hasSecondRange ? parsed.data.opensAt2! : null,
-      closes_at_2: parsed.data.hasSecondRange ? parsed.data.closesAt2! : null,
-      updated_at: new Date().toISOString(),
+      ranges: parsed.data.ranges.map((range) => ({
+        opens_at: range.opensAt,
+        closes_at: range.closesAt,
+      })),
     });
   }
 
-  const { error } = await supabase.from("business_hours").upsert(rows);
+  const { error } = await supabase.rpc("save_business_hours", { p_days: days });
   if (error) return actionError(`No se pudieron guardar los horarios: ${error.message}`);
 
   revalidateAvailability();

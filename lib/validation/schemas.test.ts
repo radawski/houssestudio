@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   bookingSchema,
+  businessHourSchema,
   identifySchema,
   normalizeDni,
   normalizePhone,
@@ -132,5 +133,47 @@ describe("walkInSaleSchema", () => {
   it("rechaza un tipo de venta desconocido", () => {
     const result = walkInSaleSchema.safeParse({ ...common, kind: "otro", productName: "Cera" });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("businessHourSchema", () => {
+  const day = (ranges: { opensAt: string; closesAt: string }[], isClosed = false) =>
+    businessHourSchema.safeParse({ weekday: 1, isClosed, ranges });
+
+  it("acepta 3 bloques que no se pisan, aunque lleguen desordenados", () => {
+    const result = day([
+      { opensAt: "17:00", closesAt: "20:00" },
+      { opensAt: "09:00", closesAt: "12:00" },
+      { opensAt: "13:00", closesAt: "15:00" },
+    ]);
+    expect(result.success).toBe(true);
+  });
+
+  it("acepta un bloque que arranca justo cuando cierra otro", () => {
+    expect(day([{ opensAt: "09:00", closesAt: "12:00" }, { opensAt: "12:00", closesAt: "14:00" }]).success).toBe(true);
+  });
+
+  it("rechaza un dia abierto sin bloques, pero no uno cerrado", () => {
+    const open = day([]);
+    expect(open.success).toBe(false);
+    expect(open.error?.issues[0]?.path).toEqual(["ranges"]);
+    expect(day([], true).success).toBe(true);
+  });
+
+  it("rechaza un bloque que cierra antes de abrir y lo señala por su indice", () => {
+    const result = day([{ opensAt: "09:00", closesAt: "12:00" }, { opensAt: "15:00", closesAt: "14:00" }]);
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["ranges", 1]);
+  });
+
+  it("rechaza bloques que se pisan, sin importar el orden de carga", () => {
+    const result = day([{ opensAt: "11:00", closesAt: "14:00" }, { opensAt: "09:00", closesAt: "12:00" }]);
+    expect(result.success).toBe(false);
+    // Ordenados, el que empieza despues (11:00) es el que pisa: indice 0.
+    expect(result.error?.issues[0]?.path).toEqual(["ranges", 0]);
+  });
+
+  it("rechaza una hora incompleta", () => {
+    expect(day([{ opensAt: "", closesAt: "12:00" }]).success).toBe(false);
   });
 });

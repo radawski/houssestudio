@@ -100,60 +100,59 @@ export const serviceSchema = z.object({
 const timeFormat = /^\d{2}:\d{2}$/;
 
 /**
- * `hasSecondRange` decide si `opensAt2`/`closesAt2` importan: sin horario
- * partido, esos dos campos ni se validan aunque lleguen vacios del form.
- * Un solo `superRefine` en vez de varios `refine` encadenados porque las
- * reglas del segundo tramo dependen unas de otras (no hay apertura sin
- * cierre, no hay segundo tramo sin que el primero sea valido).
+ * Un día del horario semanal con su lista de bloques.
+ *
+ * Un día cerrado conserva sus bloques (para que reabrirlo devuelva el horario
+ * que tenía), así que se validan igual, pero puede no tener ninguno; uno
+ * abierto necesita al menos uno. Los bloques pueden llegar desordenados: se
+ * ordenan antes de comparar vecinos, y así un solapamiento se detecta sin
+ * importar el orden en que se cargaron. `path` lleva el índice del bloque
+ * (en el orden en que llegaron) para poder nombrarlo en el mensaje.
  */
 export const businessHourSchema = z
   .object({
     weekday: z.coerce.number<number>().int().min(0).max(6),
     isClosed: z.boolean(),
-    /** `HH:MM` en hora local del local. */
-    opensAt: z.string().regex(timeFormat, "Formato invalido"),
-    closesAt: z.string().regex(timeFormat, "Formato invalido"),
-    /** Horario partido (segundo tramo, ej. corte por almuerzo). */
-    hasSecondRange: z.boolean(),
-    opensAt2: z.string().regex(timeFormat, "Formato invalido").optional(),
-    closesAt2: z.string().regex(timeFormat, "Formato invalido").optional(),
+    ranges: z.array(
+      z.object({
+        /** `HH:MM` en hora local del local. */
+        opensAt: z.string().regex(timeFormat, "Completá la hora de apertura"),
+        closesAt: z.string().regex(timeFormat, "Completá la hora de cierre"),
+      }),
+    ),
   })
   .superRefine((v, ctx) => {
-    if (v.isClosed) return;
-
-    if (v.closesAt <= v.opensAt) {
+    if (!v.isClosed && v.ranges.length === 0) {
       ctx.addIssue({
         code: "custom",
-        message: "El cierre tiene que ser posterior a la apertura",
-        path: ["closesAt"],
-      });
-    }
-
-    if (!v.hasSecondRange) return;
-
-    if (!v.opensAt2 || !v.closesAt2) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Completá el segundo tramo o desactivá el horario partido",
-        path: ["opensAt2"],
+        message: "Agregá al menos un bloque o marcá el día cerrado",
+        path: ["ranges"],
       });
       return;
     }
 
-    if (v.closesAt2 <= v.opensAt2) {
-      ctx.addIssue({
-        code: "custom",
-        message: "El cierre del segundo tramo tiene que ser posterior a su apertura",
-        path: ["closesAt2"],
-      });
-    }
+    v.ranges.forEach((range, index) => {
+      if (range.closesAt <= range.opensAt) {
+        ctx.addIssue({
+          code: "custom",
+          message: "El cierre tiene que ser posterior a la apertura",
+          path: ["ranges", index],
+        });
+      }
+    });
 
-    if (v.opensAt2 <= v.closesAt) {
-      ctx.addIssue({
-        code: "custom",
-        message: "El segundo tramo tiene que empezar después de que cierra el primero",
-        path: ["opensAt2"],
-      });
+    const order = v.ranges
+      .map((range, index) => ({ range, index }))
+      .sort((a, b) => a.range.opensAt.localeCompare(b.range.opensAt));
+
+    for (let i = 1; i < order.length; i++) {
+      if (order[i].range.opensAt < order[i - 1].range.closesAt) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Se pisa con otro bloque del mismo día",
+          path: ["ranges", order[i].index],
+        });
+      }
     }
   });
 

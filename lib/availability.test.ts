@@ -10,7 +10,7 @@ import {
   type Interval,
 } from "@/lib/availability";
 
-const OPEN_9_TO_19 = { isClosed: false, opensAt: "09:00", closesAt: "19:00" };
+const OPEN_9_TO_19 = { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "19:00" }] };
 
 /** Fecha de referencia: martes 18 de agosto de 2026. */
 const TUESDAY = "2026-08-18";
@@ -119,7 +119,7 @@ describe("computeSlots", () => {
       computeSlots({
         dateKey: TUESDAY,
         durationMinutes: 45,
-        hours: { isClosed: true, opensAt: "09:00", closesAt: "19:00" },
+        hours: { isClosed: true, ranges: [{ opensAt: "09:00", closesAt: "19:00" }] },
         now: LONG_BEFORE,
       }),
     ).toEqual([]);
@@ -140,7 +140,7 @@ describe("computeSlots", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 45,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "12:00" }] },
       now: LONG_BEFORE,
     });
 
@@ -152,7 +152,7 @@ describe("computeSlots", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 60,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "11:30" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "11:30" }] },
       now: LONG_BEFORE,
     });
 
@@ -164,7 +164,7 @@ describe("computeSlots", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 45,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "14:00" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "14:00" }] },
       busy: [at(TUESDAY, "11:00", "11:45")],
       now: LONG_BEFORE,
     });
@@ -178,7 +178,7 @@ describe("computeSlots", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 60,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "12:00" }] },
       busy: [at(TUESDAY, "09:30", "11:30")],
       now: LONG_BEFORE,
     });
@@ -190,7 +190,7 @@ describe("computeSlots", () => {
   it("ofrece horarios distintos segun el servicio elegido", () => {
     const base = {
       dateKey: TUESDAY,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "12:00" }] },
       now: LONG_BEFORE,
     };
 
@@ -235,7 +235,7 @@ describe("computeSlots", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 60,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "14:00" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "14:00" }] },
       // 10:20 hora local.
       now: businessTimeToDate(TUESDAY, "10:20"),
       minLeadMinutes: 60,
@@ -249,7 +249,7 @@ describe("computeSlots", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 50,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "13:00" },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "13:00" }] },
       now: LONG_BEFORE,
     });
 
@@ -265,9 +265,10 @@ describe("computeSlots: horario partido", () => {
       durationMinutes: 60,
       hours: {
         isClosed: false,
-        opensAt: "07:00",
-        closesAt: "12:00",
-        secondRange: { opensAt: "15:00", closesAt: "20:00" },
+        ranges: [
+          { opensAt: "07:00", closesAt: "12:00" },
+          { opensAt: "15:00", closesAt: "20:00" },
+        ],
       },
       now: LONG_BEFORE,
     });
@@ -287,9 +288,10 @@ describe("computeSlots: horario partido", () => {
       durationMinutes: 60,
       hours: {
         isClosed: false,
-        opensAt: "07:00",
-        closesAt: "12:00",
-        secondRange: { opensAt: "15:00", closesAt: "20:00" },
+        ranges: [
+          { opensAt: "07:00", closesAt: "12:00" },
+          { opensAt: "15:00", closesAt: "20:00" },
+        ],
       },
       busy: [at(TUESDAY, "16:00", "17:00")],
       now: LONG_BEFORE,
@@ -301,15 +303,82 @@ describe("computeSlots: horario partido", () => {
     ]);
   });
 
-  it("sin segundo tramo se comporta exactamente como horario corrido", () => {
+  it("un solo bloque se comporta exactamente como horario corrido", () => {
     const slots = computeSlots({
       dateKey: TUESDAY,
       durationMinutes: 60,
-      hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00", secondRange: null },
+      hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "12:00" }] },
       now: LONG_BEFORE,
     });
 
     expect(times(slots)).toEqual(["09:00", "10:00", "11:00"]);
+  });
+});
+
+describe("computeSlots: N bloques", () => {
+  it("encadena cada uno de 3 bloques desde su propio borde", () => {
+    const slots = computeSlots({
+      dateKey: TUESDAY,
+      durationMinutes: 45,
+      hours: {
+        isClosed: false,
+        ranges: [
+          { opensAt: "08:00", closesAt: "10:00" },
+          { opensAt: "12:10", closesAt: "13:40" },
+          { opensAt: "17:00", closesAt: "18:30" },
+        ],
+      },
+      now: LONG_BEFORE,
+    });
+
+    // 08:00-10:00 entran dos de 45 (el tercero pasaria de las 10:00); el
+    // segundo bloque arranca en su borde, 12:10, no en la grilla del primero.
+    expect(times(slots)).toEqual(["08:00", "08:45", "12:10", "12:55", "17:00", "17:45"]);
+  });
+
+  it("un bloque mas corto que el servicio no ofrece nada, los demas si", () => {
+    const slots = computeSlots({
+      dateKey: TUESDAY,
+      durationMinutes: 60,
+      hours: {
+        isClosed: false,
+        ranges: [
+          { opensAt: "09:00", closesAt: "11:00" },
+          { opensAt: "13:00", closesAt: "13:30" },
+          { opensAt: "16:00", closesAt: "17:00" },
+        ],
+      },
+      now: LONG_BEFORE,
+    });
+
+    expect(times(slots)).toEqual(["09:00", "10:00", "16:00"]);
+  });
+
+  it("bloques cargados desordenados dan los mismos slots, en orden", () => {
+    const ordered = [
+      { opensAt: "07:00", closesAt: "12:00" },
+      { opensAt: "15:00", closesAt: "20:00" },
+    ];
+    const run = (ranges: typeof ordered) =>
+      computeSlots({
+        dateKey: TUESDAY,
+        durationMinutes: 60,
+        hours: { isClosed: false, ranges },
+        now: LONG_BEFORE,
+      });
+
+    expect(run([...ordered].reverse())).toEqual(run(ordered));
+  });
+
+  it("un dia abierto sin bloques no ofrece nada", () => {
+    expect(
+      computeSlots({
+        dateKey: TUESDAY,
+        durationMinutes: 60,
+        hours: { isClosed: false, ranges: [] },
+        now: LONG_BEFORE,
+      }),
+    ).toEqual([]);
   });
 });
 
@@ -367,9 +436,10 @@ describe("computeFreeGaps", () => {
       dateKey: TUESDAY,
       hours: {
         isClosed: false,
-        opensAt: "07:00",
-        closesAt: "12:00",
-        secondRange: { opensAt: "15:00", closesAt: "20:00" },
+        ranges: [
+          { opensAt: "07:00", closesAt: "12:00" },
+          { opensAt: "15:00", closesAt: "20:00" },
+        ],
       },
       busy: [at(TUESDAY, "16:00", "17:00")],
     });
@@ -382,12 +452,33 @@ describe("computeFreeGaps", () => {
       at(TUESDAY, "17:00", "20:00"),
     ]);
   });
+
+  it("3 bloques desordenados: huecos en orden y sin cruzar los cortes", () => {
+    const gaps = computeFreeGaps({
+      dateKey: TUESDAY,
+      hours: {
+        isClosed: false,
+        ranges: [
+          { opensAt: "17:00", closesAt: "19:00" },
+          { opensAt: "08:00", closesAt: "10:00" },
+          { opensAt: "12:00", closesAt: "14:00" },
+        ],
+      },
+      busy: [at(TUESDAY, "09:00", "13:00")],
+    });
+
+    expect(gaps).toEqual([
+      at(TUESDAY, "08:00", "09:00"),
+      at(TUESDAY, "13:00", "14:00"),
+      at(TUESDAY, "17:00", "19:00"),
+    ]);
+  });
 });
 
 describe("computeSlots: limite de anticipacion", () => {
   const base = {
     durationMinutes: 60,
-    hours: { isClosed: false, opensAt: "09:00", closesAt: "12:00" },
+    hours: { isClosed: false, ranges: [{ opensAt: "09:00", closesAt: "12:00" }] },
     now: LONG_BEFORE,
   };
 
