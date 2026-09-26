@@ -89,7 +89,10 @@
       En el iPhone 13 Pro del usuario (iOS 18.7.8) no corre JavaScript y el
       FAB sale arriba; causa no confirmada (no es la versión de Safari).
       El usuario decidió probar desde ahora en el 16 Pro
-- [ ] T2 — Selector de fecha nativo en Caja (vista día)
+- [x] T2 — Selector de fecha nativo en Caja (vista día):
+      `components/admin/native-date-pill.tsx` (input date con opacidad 0
+      sobre la píldora + `showPicker()` solo con mouse), en `CajaToolbar`
+- [ ] T2 — **Verificación manual pendiente** en iPhone 16 Pro y desktop
 - [ ] T3 — Portada oculta tras "Reservar turno" + scroll suave forzado
 - [ ] T4 — Venta suelta de productos (migración 0008), etiqueta en la lista de Caja
 - [ ] T5 — Horario con N bloques (antes/junto con Fase G)
