@@ -62,20 +62,13 @@ export function BookingStepper({
   const slotsRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
   // Qué mostrar después del próximo render. Se desplaza en un efecto y no en
-  // el handler porque los horarios recién existen en el DOM tras el render.
-  const revealNext = useRef<"slots" | "footer" | null>(null);
+  // el handler porque lo que hay que mostrar recién existe (o recién tiene su
+  // alto final) cuando el render terminó.
+  const revealNext = useRef<"top" | "slots" | "footer" | null>(null);
 
-  // Continuar y Volver cambian el contenido sin navegar: si el tope del stepper
-  // quedó arriba, fuera de pantalla, se sube suavemente hasta él para que el
-  // paso nuevo se lea desde el principio (con el indicador de pasos a la
-  // vista). Suave aunque el sistema pida menos movimiento, igual que
-  // `HeroCta`: es corto y lo inicia el visitante.
   function goToStep(next: StepNumber) {
     setStep(next);
-    const section = sectionRef.current;
-    if (section && section.getBoundingClientRect().top < 0) {
-      section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    revealNext.current = "top";
   }
 
   // Los horarios ofrecidos dependen del servicio (los slots se encadenan según
@@ -105,16 +98,28 @@ export function BookingStepper({
     revealNext.current = "footer";
   }
 
-  // En el celular el calendario ocupa casi toda la pantalla: sin esto, elegir
-  // un día no muestra los horarios y elegir un horario no muestra "Continuar".
-  // Los horarios suben al tope solo si arrancan en la parte baja de la
-  // pantalla (en escritorio suelen verse enteros); "Continuar" usa
-  // `nearest`, que no mueve nada si ya está a la vista. Suave aunque el
-  // sistema pida menos movimiento, igual que `HeroCta`.
+  // Desplazamientos suaves que acompañan al visitante, aunque el sistema pida
+  // menos movimiento (igual que `HeroCta`: son cortos y los inicia él).
+  //
+  // - "top": Continuar y Volver cambian el contenido sin navegar; si el tope
+  //   del stepper quedó arriba, fuera de pantalla, se sube hasta él para leer
+  //   el paso nuevo desde el principio. Va después del render y no en el
+  //   handler: si el paso nuevo es más corto, la página se achica al pintarlo
+  //   y Safari cortaba la animación ya empezada (pasaba de 2 a 3).
+  // - "slots": en el celular el calendario ocupa casi toda la pantalla; los
+  //   horarios suben al tope solo si arrancan en la parte baja (en escritorio
+  //   suelen verse enteros).
+  // - "footer": elegir horario deja "Continuar" a la vista; `nearest` no
+  //   mueve nada si ya se ve.
   useEffect(() => {
     const target = revealNext.current;
     revealNext.current = null;
-    if (target === "slots") {
+    if (target === "top") {
+      const section = sectionRef.current;
+      if (section && section.getBoundingClientRect().top < 0) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else if (target === "slots") {
       const el = slotsRef.current;
       if (el && el.getBoundingClientRect().top > window.innerHeight * 0.6) {
         el.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -122,7 +127,7 @@ export function BookingStepper({
     } else if (target === "footer") {
       footerRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [date, slot]);
+  }, [step, date, slot]);
 
   useEffect(() => {
     if (!service) return;
