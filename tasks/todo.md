@@ -128,7 +128,7 @@
       error por día y bloque, `DayRangesEditor` reutilizable. Comprobado:
       bloques copiados bien, slots de lun/mar/mié para los 2 servicios
       idénticos a antes, guardar sin cambios OK, solapamiento rechazado
-- [ ] T5 — **Verificación manual pendiente** en iPhone y desktop
+- [x] T5 — Verificado por el usuario en iPhone y desktop
 - [ ] T5 — Migración posterior que retire `opens_at`/`closes_at`/
       `opens_at_2`/`closes_at_2` de `business_hours` (sin producción, se
       puede hacer apenas se verifique)
