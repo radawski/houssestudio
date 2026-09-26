@@ -1,8 +1,11 @@
 "use client";
 
+import { useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { NativeDatePill } from "@/components/admin/native-date-pill";
 import { Button } from "@/components/ui/button";
 import { addDaysToKey, todayKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
@@ -31,6 +34,8 @@ export function CajaToolbar({
   title: string;
 }) {
   const step = STEP_DAYS[view];
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
@@ -48,9 +53,24 @@ export function CajaToolbar({
         <Button asChild variant="ghost" size="sm" className="order-last h-9 md:order-none md:h-7">
           <Link href={hrefFor(view, todayKey())}>Hoy</Link>
         </Button>
-        <h1 className="ml-1 flex-1 truncate text-base font-semibold first-letter:uppercase md:ml-2 md:flex-none">
-          {title}
-        </h1>
+        {view === "dia" ? (
+          // En la vista día el título es además el selector: tocarlo abre el
+          // calendario nativo para saltar a cualquier fecha sin ir de a una.
+          <h1 className="ml-1 flex min-w-0 flex-1 text-base font-semibold md:ml-2 md:flex-none md:text-sm">
+            <NativeDatePill
+              value={dateKey}
+              label={title}
+              pending={pending}
+              onValueChange={(next) =>
+                startTransition(() => router.push(hrefFor("dia", next)))
+              }
+            />
+          </h1>
+        ) : (
+          <h1 className="ml-1 flex-1 truncate text-base font-semibold first-letter:uppercase md:ml-2 md:flex-none">
+            {title}
+          </h1>
+        )}
       </div>
 
       <div
