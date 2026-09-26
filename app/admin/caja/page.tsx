@@ -145,7 +145,12 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
                         {formatDateTime(movement.at)}
                       </TableCell>
                       <TableCell>{ORIGIN_LABEL[movement.origin]}</TableCell>
-                      <TableCell>{movement.serviceName}</TableCell>
+                      <TableCell className="whitespace-normal">
+                        {movement.serviceName}
+                        {movement.note ? (
+                          <p className="text-muted-foreground mt-0.5 text-xs">“{movement.note}”</p>
+                        ) : null}
+                      </TableCell>
                       <TableCell>{METHOD_LABEL[movement.method]}</TableCell>
                       <TableCell className="text-right tabular-nums">
                         {formatCurrency(movement.amount)}

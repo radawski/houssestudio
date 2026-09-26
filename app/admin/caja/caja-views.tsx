@@ -78,6 +78,9 @@ export function MovementsList({ movements }: { movements: CashboxMovement[] }) {
             <p className="text-muted-foreground mt-0.5 text-xs tabular-nums">
               {formatTime(movement.at)} · {ORIGIN_LABEL[movement.origin]}
             </p>
+            {movement.note ? (
+              <p className="text-muted-foreground mt-1 text-xs break-words">“{movement.note}”</p>
+            ) : null}
           </div>
           <div className="shrink-0 text-right">
             <p className="text-[15px] font-semibold tabular-nums">{formatCurrency(movement.amount)}</p>

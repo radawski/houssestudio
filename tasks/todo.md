@@ -116,6 +116,8 @@
       segmentado Servicio/Producto en el diálogo, etiqueta "Producto" en
       Caja (lista mobile y tabla, columna renombrada a "Concepto"), SPEC §2.
       Comprobado en desktop: la venta de producto aparece y suma en el total
-- [ ] T4 — **Verificación manual pendiente** en iPhone
+- [x] T4 — Verificado en iPhone. De la prueba salió: la nota opcional de la
+      venta no se veía en ningún lado; ahora va entre comillas debajo del
+      concepto, en la lista mobile y en la tabla de Caja
 - [ ] T5 — Horario con N bloques (antes/junto con Fase G)
 - [ ] T6 — Verde en horarios (hora verde + filete en la lista día de Agenda)

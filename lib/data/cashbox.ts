@@ -13,6 +13,8 @@ export type CashboxMovement = {
   method: PaymentMethod;
   /** `paid_at` o `sold_at`: cuándo se cobró, no cuándo se atendió al cliente. */
   at: string;
+  /** Nota opcional de una venta suelta; los cobros de turnos no llevan. */
+  note: string | null;
 };
 
 /**
@@ -42,7 +44,7 @@ export async function getCashboxSummary(range: {
       .lt("paid_at", range.end),
     supabase
       .from("walk_in_sales")
-      .select("id, kind, service_name, amount, method, sold_at")
+      .select("id, kind, service_name, amount, method, sold_at, note")
       .gte("sold_at", range.start)
       .lt("sold_at", range.end),
   ]);
@@ -70,6 +72,7 @@ export async function getCashboxSummary(range: {
       amount: row.amount,
       method: row.method,
       at: row.paid_at,
+      note: null,
     }));
 
   const saleMovements: CashboxMovement[] = salesResult.data.map((row) => ({
@@ -79,6 +82,7 @@ export async function getCashboxSummary(range: {
     amount: row.amount,
     method: row.method,
     at: row.sold_at,
+    note: row.note,
   }));
 
   const movements = [...paymentMovements, ...saleMovements].sort(
