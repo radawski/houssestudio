@@ -68,7 +68,7 @@
    ===========================================================================
 
    Tres capas superpuestas sobre el negro de la portada: un resplandor que se
-   desplaza, una grilla que deriva en diagonal y el logo respirando de fondo.
+   desplaza, una grilla que deriva en diagonal y el logo quieto de fondo.
 
    Viven acá y no como estilos en línea porque usan máscaras y degradados
    repetidos que en utilidades de Tailwind quedarían ilegibles. Los colores son
@@ -96,18 +96,6 @@
     background-position:
       56px 56px,
       56px 56px;
-  }
-}
-
-@keyframes hs-logo-breathe {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.055;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.02);
-    opacity: 0.09;
   }
 }
 
@@ -161,29 +149,24 @@
      solo el trazo, sin necesidad de un PNG recortado. */
   mix-blend-mode: screen;
   pointer-events: none;
-  /* Estado base igual al fotograma 0: sin esto el logo aparece descentrado
-     durante el primer cuadro, antes de que arranque la animación. */
+  /* Quieto a pedido del usuario: el "respirar" (escala + opacidad) se quitó,
+     el glow y la grilla siguen moviéndose detrás. 0.07 es el punto medio del
+     ciclo que tenía, el mismo valor que ya se veía con movimiento reducido. */
   transform: translate(-50%, -50%);
-  opacity: 0.055;
-  animation: hs-logo-breathe 11s ease-in-out infinite;
+  opacity: 0.07;
 }
 
-/* Tres animaciones infinitas simultáneas son justo el tipo de movimiento que
+/* Dos animaciones infinitas simultáneas son justo el tipo de movimiento que
    molesta a quien pidió reducirlo. Se congela el fotograma, no se oculta la
    capa: la composición se mantiene igual, solo deja de moverse. */
 @media (prefers-reduced-motion: reduce) {
   .hs-hero-glow,
-  .hs-hero-grid,
-  .hs-hero-logo {
+  .hs-hero-grid {
     animation: none;
   }
 
   .hs-hero-glow {
     transform: translate(-40%, -55%);
-  }
-
-  .hs-hero-logo {
-    opacity: 0.07;
   }
 }
 
