@@ -136,4 +136,6 @@
       plan: ese daba 3.98:1 sobre --hs-paper) y `--hs-green-soft`; hora
       verde semibold 13px en GapRow y AgendaAppointmentRow, filete de 3px
       solo en tarjetas con turno. Revisado en Chrome a 390px
-- [ ] T6 — **Verificación manual pendiente** en iPhone
+- [x] T6 — Verificado en iPhone (hizo falta borrar los datos del sitio en
+      Safari: en `next dev` el CSS conserva el mismo nombre y quedó una copia
+      vieja)
