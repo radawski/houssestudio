@@ -13,12 +13,19 @@ const Toaster = ({ ...props }: ToasterProps) => {
   // n-estados): los avisos van arriba de esa barra, no arriba de la
   // pantalla como en el portal público, que no tiene ese chrome.
   const isAdmin = pathname?.startsWith("/admin") ?? false
+  // Alto de la tab bar (6 + 56 + 6, ver admin-tab-bar.tsx) más 12 de aire.
+  // Sin `env()`, mismo criterio que el FAB de venta suelta. Va también en
+  // `mobileOffset`: por
+  // debajo de 600px Sonner ignora `offset` y usa ese otro valor (16px por
+  // defecto), que dejaba el aviso encima de la tab bar.
+  const adminBottom = "80px"
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       position={isAdmin ? "bottom-center" : "top-center"}
-      offset={isAdmin ? 96 : undefined}
+      offset={isAdmin ? { bottom: adminBottom } : undefined}
+      mobileOffset={isAdmin ? { bottom: adminBottom } : undefined}
       className="toaster group"
       icons={{
         success: (

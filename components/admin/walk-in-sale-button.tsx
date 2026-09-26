@@ -98,11 +98,13 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
       </DialogTrigger>
 
       {/* FAB (design/admin-iphone n-Agenda): mismo diálogo, disparador propio
-          para mobile, fijo por encima de la tab bar inferior. */}
+          para mobile, fijo por encima de la tab bar inferior. 84 = alto de
+          la tab bar (6 + 56 + 6) + 16 de aire; sin `env()` porque el layout
+          no usa `viewportFit: "cover"` y en Safari vale 0 igual. */}
       <DialogTrigger asChild>
         <Button
           size="touch-lg"
-          className="fixed right-4 bottom-[calc(78px+max(env(safe-area-inset-bottom),22px))] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
+          className="fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
         >
           <Plus className="size-[18px]" />
           Venta suelta

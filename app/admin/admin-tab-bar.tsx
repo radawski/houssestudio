@@ -27,10 +27,14 @@ const MAS_PREFIXES = ["/admin/mas", "/admin/servicios", "/admin/disponibilidad"]
 export function AdminTabBar({ pendingCount }: { pendingCount: number }) {
   const pathname = usePathname();
 
+  // El layout no declara `viewportFit: "cover"`, así que en Safari
+  // `env(safe-area-inset-bottom)` vale 0 (el navegador ya deja su propio
+  // margen abajo) y lo que manda es el piso: con 22px quedaba una franja
+  // blanca de más bajo los íconos. 6px la deja simétrica con el `pt-1.5`.
   return (
     <nav
       aria-label="Secciones del panel"
-      className="bg-popover flex shrink-0 items-start border-t pt-1.5 pb-[max(env(safe-area-inset-bottom),22px)] md:hidden"
+      className="bg-popover flex shrink-0 items-start border-t pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] md:hidden"
     >
       {LINKS.map(({ href, label, icon: Icon }) => {
         const active =
