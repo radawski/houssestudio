@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { CalendarDays } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -17,6 +18,12 @@ const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
  * texto del input (no sobre su ícono) solo lo enfoca en Chrome/Edge, y por eso
  * con mouse se llama además a `showPicker()`. Con el dedo no: iOS y Android
  * ya lo abren por su cuenta y una segunda llamada podría reabrirlo.
+ *
+ * El input es no controlado (`defaultValue` + `key`) y la elección se
+ * confirma tanto en `change` como en `blur` (el cierre del calendario): con
+ * el input controlado y solo `onChange`, en Safari de iOS elegir otro día y
+ * tocar "Listo" no navegaba. `lastSent` evita navegar dos veces por la misma
+ * elección cuando llegan los dos eventos.
  *
  * `value` y lo que devuelve `onValueChange` son `yyyy-MM-dd` tal cual los da
  * el input, sin pasar por `Date`: convertirlos pasaría por UTC y en Argentina
@@ -37,11 +44,17 @@ export function NativeDatePill({
   pending?: boolean;
   className?: string;
 }) {
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const next = event.target.value;
-    // iOS permite "Borrar" la fecha (valor vacío), y al tipear con teclado el
-    // input puede pasar por años parciales como 0002: ninguno es una elección.
-    if (!DATE_KEY_PATTERN.test(next) || next < "2000-01-01" || next === value) return;
+  const lastSent = useRef<{ from: string; to: string } | null>(null);
+
+  function commit(event: React.SyntheticEvent<HTMLInputElement>) {
+    const next = event.currentTarget.value;
+    // iOS permite "Restablecer" la fecha (valor vacío), y al tipear con
+    // teclado el input puede pasar por años parciales como 0002: ninguno es
+    // una elección.
+    if (!DATE_KEY_PATTERN.test(next) || next < "2000-01-01") return;
+    if (next === value) return;
+    if (lastSent.current?.from === value && lastSent.current.to === next) return;
+    lastSent.current = { from: value, to: next };
     onValueChange(next);
   }
 
@@ -69,9 +82,13 @@ export function NativeDatePill({
         {label}
       </span>
       <input
+        // Remonta el input cuando llega la fecha nueva desde la URL, así su
+        // valor interno vuelve a coincidir con `value` sin controlarlo.
+        key={value}
         type="date"
-        value={value}
-        onChange={handleChange}
+        defaultValue={value}
+        onChange={commit}
+        onBlur={commit}
         onClick={handleClick}
         aria-label={`Elegir fecha. Fecha actual: ${label}`}
         // `text-base` (16px): con menos, Safari de iOS hace zoom al enfocarlo.
