@@ -5,6 +5,21 @@ import { usePathname } from "next/navigation"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
 
+/**
+ * Avisos del panel (design/admin-iphone n-ToastExito / n-ToastError): éxito
+ * en tinta sólida; error en blanco con borde e ícono rojos y "Reintentar"
+ * adentro (ver `lib/toast-error.ts`). El portal público conserva los colores
+ * de `richColors`.
+ */
+const ADMIN_TOAST_CLASSES: NonNullable<ToasterProps["toastOptions"]>["classNames"] = {
+  toast: "cn-toast !rounded-md !px-3.5 !py-3 !text-sm",
+  success: "!bg-[var(--hs-ink)] !text-[var(--hs-paper)] !border-[var(--hs-ink)]",
+  error:
+    "!bg-popover !text-foreground !border-destructive [&_[data-icon]]:!text-destructive",
+  actionButton:
+    "!ml-auto !h-8 !bg-transparent !px-2 !text-[13px] !font-semibold !text-foreground",
+}
+
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
   const pathname = usePathname()
@@ -53,11 +68,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
         } as React.CSSProperties
       }
       toastOptions={{
-        classNames: {
-          toast: "cn-toast",
-        },
+        classNames: isAdmin ? ADMIN_TOAST_CLASSES : { toast: "cn-toast" },
       }}
       {...props}
+      richColors={isAdmin ? false : props.richColors}
     />
   )
 }

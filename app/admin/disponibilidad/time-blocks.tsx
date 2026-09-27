@@ -12,6 +12,7 @@ import { createTimeBlock, deleteTimeBlock } from "@/lib/actions/availability";
 import { idleState } from "@/lib/actions/result";
 import { formatLongDate, formatTime } from "@/lib/format";
 import type { TimeBlock } from "@/lib/supabase/database.types";
+import { toastActionError, toastError } from "@/lib/toast-error";
 
 function AddButton() {
   const { pending } = useFormStatus();
@@ -41,7 +42,9 @@ export function TimeBlockForm({
       formRef.current?.reset();
       notifySaved();
     }
-    if (state.status === "error") toast.error(state.message);
+    // Sin "Reintentar": casi siempre es una regla del negocio (se pisa con un
+    // turno, el fin antes del inicio) que hay que corregir en el formulario.
+    if (state.status === "error") toastError(state.message ?? "No se pudo crear el bloqueo.");
   }, [state]);
 
   return (
@@ -104,18 +107,16 @@ export function TimeBlockList({ blocks }: { blocks: TimeBlock[] }) {
             variant="ghost"
             size="sm"
             disabled={pending}
-            onClick={() =>
+            onClick={function run() {
               startTransition(async () => {
                 try {
                   await deleteTimeBlock(block.id);
                   toast.success("Bloqueo eliminado.");
                 } catch (error) {
-                  toast.error(
-                    error instanceof Error ? error.message : "No se pudo eliminar.",
-                  );
+                  toastActionError(error, "No se pudo eliminar el bloqueo.", run);
                 }
-              })
-            }
+              });
+            }}
           >
             <Trash2 className="text-destructive size-4" />
             <span className="sr-only">Eliminar bloqueo</span>

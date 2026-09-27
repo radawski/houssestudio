@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useEffectEvent, useState } from "react";
+import { useActionState, useEffect, useEffectEvent, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { idleState } from "@/lib/actions/result";
 import { saveBookingWindow } from "@/lib/actions/settings";
+import { toastError } from "@/lib/toast-error";
 
 const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   weekday: "long",
@@ -50,6 +51,7 @@ export function BookingWindowForm({
   onSaved?: () => void;
 }) {
   const [state, formAction] = useActionState(saveBookingWindow, idleState);
+  const formRef = useRef<HTMLFormElement>(null);
   const [days, setDays] = useState(String(maxBookingDays));
   // Evento y no dependencia: el efecto responde a cada resultado del guardado,
   // no a que el padre pase otra función.
@@ -60,14 +62,19 @@ export function BookingWindowForm({
       toast.success(state.message);
       notifySaved();
     }
-    if (state.status === "error" && !state.fieldErrors) toast.error(state.message);
+    // Sin errores por campo, la falla es del guardado y vale reintentar.
+    if (state.status === "error" && !state.fieldErrors) {
+      toastError(state.message ?? "No se pudo guardar la ventana.", () =>
+        formRef.current?.requestSubmit(),
+      );
+    }
   }, [state]);
 
   const parsedDays = Number(days);
   const showsPreview = Number.isInteger(parsedDays) && parsedDays >= 1 && parsedDays <= 365;
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="maxBookingDays">Se puede reservar hasta (días)</Label>

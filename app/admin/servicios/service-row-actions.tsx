@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { deleteService, toggleServiceActive } from "@/lib/actions/services";
 import type { Service } from "@/lib/supabase/database.types";
+import { toastActionError } from "@/lib/toast-error";
 
 /**
  * `size="lg"` es el switch táctil de la tarjeta mobile: dibuja 44×26 y su
@@ -28,16 +29,16 @@ export function ServiceVisibilityToggle({
       checked={service.is_active}
       disabled={pending}
       aria-label={`Mostrar ${service.name} en el portal público`}
-      onCheckedChange={(checked) =>
+      onCheckedChange={function run(checked: boolean) {
         startTransition(async () => {
           try {
             await toggleServiceActive(service.id, checked);
             toast.success(checked ? "Servicio visible." : "Servicio oculto.");
           } catch (error) {
-            toast.error(error instanceof Error ? error.message : "No se pudo actualizar.");
+            toastActionError(error, "No se pudo cambiar la visibilidad.", () => run(checked));
           }
-        })
-      }
+        });
+      }}
     />
   );
 }
@@ -56,14 +57,16 @@ export function ServiceDeleteButton({ service }: { service: Service }) {
         // borrar el servicio no altera el historico ni los reportes.
         if (!confirm(`¿Eliminar "${service.name}" del catálogo?`)) return;
 
-        startTransition(async () => {
-          try {
-            await deleteService(service.id);
-            toast.success("Servicio eliminado.");
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "No se pudo eliminar.");
-          }
-        });
+        const remove = () =>
+          startTransition(async () => {
+            try {
+              await deleteService(service.id);
+              toast.success("Servicio eliminado.");
+            } catch (error) {
+              toastActionError(error, "No se pudo eliminar el servicio.", remove);
+            }
+          });
+        remove();
       }}
     >
       <Trash2 className="text-destructive size-4" />

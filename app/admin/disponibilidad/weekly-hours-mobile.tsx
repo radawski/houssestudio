@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { saveBusinessDay, setBusinessDayOpen } from "@/lib/actions/availability";
 import type { BusinessDay } from "@/lib/data/availability";
 import { cn } from "@/lib/utils";
+import { toastActionError, toastError } from "@/lib/toast-error";
 
 const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 /** Para "se aplica a todos los <día>". */
@@ -60,20 +61,28 @@ function DaySheet({ day, onClose }: { day: BusinessDay; onClose: () => void }) {
   const [pending, startTransition] = useTransition();
 
   function save(copyToAll: boolean) {
+    const retry = () => save(copyToAll);
     startTransition(async () => {
-      const result = await saveBusinessDay(
-        {
-          weekday: day.weekday,
-          isClosed: !isOpen,
-          ranges: ranges.map(({ opensAt, closesAt }) => ({ opensAt, closesAt })),
-        },
-        { copyToAll },
-      );
-      if (result.status === "success") {
-        toast.success(result.message);
-        onClose();
-      } else {
-        toast.error(result.message);
+      try {
+        const result = await saveBusinessDay(
+          {
+            weekday: day.weekday,
+            isClosed: !isOpen,
+            ranges: ranges.map(({ opensAt, closesAt }) => ({ opensAt, closesAt })),
+          },
+          { copyToAll },
+        );
+        if (result.status === "success") {
+          toast.success(result.message);
+          onClose();
+        } else {
+          // Un error de validación (bloques que se pisan) se corrige a mano:
+          // sin "Reintentar", que volvería a fallar igual.
+          toastError(result.message ?? "No se pudo guardar el horario.");
+          setConfirmCopy(false);
+        }
+      } catch (error) {
+        toastActionError(error, "No se pudo guardar el horario.", retry);
         setConfirmCopy(false);
       }
     });
@@ -151,14 +160,18 @@ function DayOpenSwitch({ day }: { day: BusinessDay }) {
         checked={open}
         disabled={pending}
         aria-label={`${DAY_NAMES[day.weekday]} abierto`}
-        onCheckedChange={(next) =>
+        onCheckedChange={function run(next: boolean) {
           startTransition(async () => {
             setOpen(next);
-            const result = await setBusinessDayOpen(day.weekday, next);
-            if (result.status === "success") toast.success(result.message);
-            else toast.error(result.message);
-          })
-        }
+            try {
+              const result = await setBusinessDayOpen(day.weekday, next);
+              if (result.status === "success") toast.success(result.message);
+              else toastError(result.message ?? "No se pudo actualizar el día.");
+            } catch (error) {
+              toastActionError(error, "No se pudo actualizar el día.", () => run(next));
+            }
+          });
+        }}
       />
     </div>
   );

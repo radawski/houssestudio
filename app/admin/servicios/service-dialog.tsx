@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { saveService } from "@/lib/actions/services";
 import { idleState } from "@/lib/actions/result";
 import type { Service } from "@/lib/supabase/database.types";
+import { toastActionError, toastError } from "@/lib/toast-error";
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -51,7 +52,13 @@ export function ServiceDialog({
   // efecto que observe el estado provocaría renders en cascada.
   function submit(formData: FormData) {
     startTransition(async () => {
-      const result = await saveService(idleState, formData);
+      let result;
+      try {
+        result = await saveService(idleState, formData);
+      } catch (error) {
+        toastActionError(error, "No se pudo guardar el servicio.", () => submit(formData));
+        return;
+      }
 
       if (result.status === "success") {
         toast.success(result.message);
@@ -61,7 +68,7 @@ export function ServiceDialog({
       }
 
       setFieldErrors(result.fieldErrors);
-      if (!result.fieldErrors) toast.error(result.message);
+      if (!result.fieldErrors) toastError(result.message ?? "No se pudo guardar el servicio.", () => submit(formData));
     });
   }
 

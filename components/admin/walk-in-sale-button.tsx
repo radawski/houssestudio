@@ -29,6 +29,7 @@ import { recordWalkInSale } from "@/lib/actions/sales";
 import { formatCurrency } from "@/lib/format";
 import type { PaymentMethod, WalkInSaleKind } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
+import { toastActionError, toastError } from "@/lib/toast-error";
 
 type ServiceOption = { id: string; name: string; price: number };
 
@@ -84,7 +85,13 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
 
   function submit(formData: FormData) {
     startTransition(async () => {
-      const result = await recordWalkInSale(idleState, formData);
+      let result;
+      try {
+        result = await recordWalkInSale(idleState, formData);
+      } catch (error) {
+        toastActionError(error, "No se pudo registrar la venta.", () => submit(formData));
+        return;
+      }
 
       if (result.status === "success") {
         toast.success(result.message);
@@ -94,7 +101,7 @@ export function WalkInSaleButton({ services }: { services: ServiceOption[] }) {
       }
 
       setFieldErrors(result.fieldErrors);
-      if (!result.fieldErrors) toast.error(result.message);
+      if (!result.fieldErrors) toastError(result.message ?? "No se pudo registrar la venta.", () => submit(formData));
     });
   }
 

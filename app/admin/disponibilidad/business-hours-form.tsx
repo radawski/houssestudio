@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { saveBusinessHours } from "@/lib/actions/availability";
 import { idleState } from "@/lib/actions/result";
 import type { BusinessDay } from "@/lib/data/availability";
+import { toastError } from "@/lib/toast-error";
 
 const WEEKDAY_NAMES = [
   "Domingo",
@@ -95,7 +96,8 @@ export function BusinessHoursForm({ days }: { days: BusinessDay[] }) {
 
   useEffect(() => {
     if (state.status === "success") toast.success(state.message);
-    if (state.status === "error") toast.error(state.message);
+    // Sin "Reintentar": los errores nombran el día y el bloque a corregir.
+    if (state.status === "error") toastError(state.message ?? "No se pudieron guardar los horarios.");
   }, [state]);
 
   // Lunes primero: es como se lee una semana laboral.

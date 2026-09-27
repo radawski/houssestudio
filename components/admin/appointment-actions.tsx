@@ -23,6 +23,7 @@ import {
   markNoShow,
 } from "@/lib/actions/appointments";
 import { formatCurrency, formatDateTime, formatDayAndTime } from "@/lib/format";
+import { toastActionError } from "@/lib/toast-error";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -34,16 +35,16 @@ export function ConfirmAppointmentButton({ id }: { id: string }) {
       size="touch"
       className="flex-1"
       disabled={pending}
-      onClick={() =>
+      onClick={function run() {
         startTransition(async () => {
           try {
             await confirmAppointment(id);
             toast.success("Turno confirmado.");
           } catch (error) {
-            toast.error(error instanceof Error ? error.message : "No se pudo confirmar.");
+            toastActionError(error, "No se pudo aceptar el turno.", run);
           }
-        })
-      }
+        });
+      }}
     >
       <Check className="size-4" />
       Aceptar
@@ -135,7 +136,7 @@ export function CancelAppointmentButton({
               size="touch-xl"
               className="bg-destructive hover:bg-destructive/90 text-white"
               disabled={pending}
-              onClick={() =>
+              onClick={function run() {
                 startTransition(async () => {
                   try {
                     await cancelAppointment(id, reason);
@@ -143,12 +144,14 @@ export function CancelAppointmentButton({
                     setOpen(false);
                     setReason("");
                   } catch (error) {
-                    toast.error(
-                      error instanceof Error ? error.message : "No se pudo cancelar.",
+                    toastActionError(
+                      error,
+                      label === "Rechazar" ? "No se pudo rechazar el turno." : "No se pudo cancelar el turno.",
+                      run,
                     );
                   }
-                })
-              }
+                });
+              }}
             >
               <X className="size-4" />
               {pending ? (label === "Rechazar" ? "Rechazando…" : "Cancelando…") : title}
@@ -245,17 +248,17 @@ export function CompleteAppointmentButton({
             <Button
               size="touch-xl"
               disabled={pending || !amount}
-              onClick={() =>
+              onClick={function run() {
                 startTransition(async () => {
                   try {
                     await completeAppointment(id, { amount: Number(amount), method });
                     toast.success(`Turno cobrado · ${formatCurrency(Number(amount))} en ${method}.`);
                     setOpen(false);
                   } catch (error) {
-                    toast.error(error instanceof Error ? error.message : "No se pudo cobrar.");
+                    toastActionError(error, "No se pudo cobrar el turno.", run);
                   }
-                })
-              }
+                });
+              }}
             >
               {pending ? "Cobrando…" : "Cobrar y completar"}
             </Button>
@@ -332,16 +335,16 @@ export function MarkNoShowButton({
       className="flex-1"
       variant="outline"
       disabled={pending}
-      onClick={() =>
+      onClick={function run() {
         startTransition(async () => {
           try {
             await markNoShow(id);
             toast.success("Turno marcado como ausente.");
           } catch (error) {
-            toast.error(error instanceof Error ? error.message : "No se pudo marcar.");
+            toastActionError(error, "No se pudo marcar el turno como ausente.", run);
           }
-        })
-      }
+        });
+      }}
     >
       <UserX className="size-4" />
       No vino
