@@ -185,8 +185,14 @@
 ## Emails con la estética de la web (ver tasks/plan-emails.md)
 - [x] Decisiones: token derivado con HMAC para el link; "Ver solicitudes" →
       `/admin/solicitudes`
-- [ ] Sumar `Emails.dc.html` a `design/` (lo aporta el usuario)
-- [ ] E1 — Layout y helpers de email (tablas, estilos inline, escape, ventana)
+- [x] `design/Emails.dc.html` sumado por el usuario
+- [x] E1 — `lib/email/layout.ts`: documento (fondo, tarjeta fluida de 600px
+      con tabla fantasma para Outlook, preheader oculto, headers cliente/panel,
+      footers), badge, título, saludo, fecha + horario (tachada si cancelado,
+      badge a la derecha en el panel), tabla de detalle, botón bulletproof,
+      nota, `escapeHtml`, `cancellationNote` (0 → "hasta el horario del
+      turno"). Detalles tomados de `Emails.dc.html`: saludo 15px, rótulo del
+      panel, footers, flecha en los botones. 14 tests
 - [ ] E2 — Logo con transparencia para email (`sharp`)
 - [ ] E3 — 1a, 2a, 1c y 2b en HTML + texto
 - [ ] E4 — Email 1b al aceptar (migración 0011 + link según decisión)

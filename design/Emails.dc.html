@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#eceef1;font-family:Roboto,Helvetica,Arial,sans-serif;color:#111315;-webkit-font-smoothing:antialiased}a{color:#111315}a:hover{color:#4a4f55}</style>
+</helmet>
+
+<section data-screen-label="Cliente" style="padding:48px 32px 24px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <p style="margin:0;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#4a4f55">Emails · Cliente</p>
+    <h2 style="margin:0;font-size:32px;font-weight:300;letter-spacing:-0.02em">Lo que recibe quien reserva</h2>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <!-- 1a Solicitud recibida -->
+    <div id="1a" style="width:390px;max-width:100%;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:'Roboto Mono',monospace;font-size:12px;color:#4a4f55">
+        <span style="background:#111315;color:#f4f5f7;padding:3px 8px;border-radius:3px">1a</span>
+        <span>Asunto: Recibimos tu solicitud de turno — HOUSSESTUDIO</span>
+      </div>
+      <div style="background:#f4f5f7;border:1px solid #dde0e4;padding:12px">
+        <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border:1px solid #dde0e4">
+          <div style="background:#050505;color:#ffffff;padding:28px 24px;display:flex;align-items:center;gap:16px">
+            <img src="assets/logo.png" alt="HOUSSESTUDIO" width="46" height="52" style="display:block;width:46px;height:52px;mix-blend-mode:screen">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:20px;font-weight:500;letter-spacing:0.02em;line-height:1">HOUSSESTUDIO</span>
+              <span style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55)">Peluquería</span>
+            </div>
+          </div>
+          <div style="padding:32px 24px 28px">
+            <span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;border:1px solid #fde68a;background:#fef3c7;color:#78350f;font-size:12px;font-weight:500"><span style="width:6px;height:6px;border-radius:50%;background:#b45309"></span>Pendiente</span>
+            <h1 style="margin:20px 0 0;font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.15">Turno solicitado</h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#4a4f55;text-wrap:pretty">Hola Martín, recibimos tu solicitud. Te vamos a escribir por acá en cuanto quede confirmada.</p>
+            <div style="margin-top:32px">
+              <p style="margin:0;font-size:22px;font-weight:300">Sábado 15 de agosto</p>
+              <p style="margin:4px 0 0;font-size:15px;color:#4a4f55;font-variant-numeric:tabular-nums">14:30 – 15:15 h</p>
+            </div>
+            <div style="margin-top:20px;border-bottom:1px solid #b8bdc3">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Servicio</span><span style="font-size:15px">Corte + barba</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Precio</span><span style="font-size:15px">$ 8.000</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">A nombre de</span><span style="font-size:15px">Martín Gómez</span></div>
+            </div>
+            <a href="#" style="margin-top:32px;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;box-sizing:border-box;background:#111315;color:#f4f5f7;padding:16px 22px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none">Seguir mi turno →</a>
+            <p style="margin:14px 0 0;font-size:13px;color:#4a4f55">Sin seña: pagás en el local.</p>
+          </div>
+          <div style="border-top:1px solid #eceef1;padding:20px 24px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#4a4f55">
+            <span style="letter-spacing:0.18em;text-transform:uppercase">HOUSSESTUDIO</span>
+            <span>Recibís este email porque pediste un turno.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b Turno confirmado -->
+    <div id="1b" style="width:390px;max-width:100%;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:'Roboto Mono',monospace;font-size:12px;color:#4a4f55">
+        <span style="background:#111315;color:#f4f5f7;padding:3px 8px;border-radius:3px">1b</span>
+        <span>Asunto: Tu turno está confirmado — HOUSSESTUDIO</span>
+        <span style="border:1px solid #b8bdc3;padding:2px 6px;border-radius:3px">nuevo</span>
+      </div>
+      <div style="background:#f4f5f7;border:1px solid #dde0e4;padding:12px">
+        <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border:1px solid #dde0e4">
+          <div style="background:#050505;color:#ffffff;padding:28px 24px;display:flex;align-items:center;gap:16px">
+            <img src="assets/logo.png" alt="HOUSSESTUDIO" width="46" height="52" style="display:block;width:46px;height:52px;mix-blend-mode:screen">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:20px;font-weight:500;letter-spacing:0.02em;line-height:1">HOUSSESTUDIO</span>
+              <span style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55)">Peluquería</span>
+            </div>
+          </div>
+          <div style="padding:32px 24px 28px">
+            <span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;border:1px solid #a7f3d0;background:#d1fae5;color:#064e3b;font-size:12px;font-weight:500"><span style="width:6px;height:6px;border-radius:50%;background:#059669"></span>Confirmado</span>
+            <h1 style="margin:20px 0 0;font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.15">¡Te esperamos!</h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#4a4f55;text-wrap:pretty">Hola Martín, tu turno está confirmado.</p>
+            <div style="margin-top:32px">
+              <p style="margin:0;font-size:22px;font-weight:300">Sábado 15 de agosto</p>
+              <p style="margin:4px 0 0;font-size:15px;color:#4a4f55;font-variant-numeric:tabular-nums">14:30 – 15:15 h</p>
+            </div>
+            <div style="margin-top:20px;border-bottom:1px solid #b8bdc3">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Servicio</span><span style="font-size:15px">Corte + barba</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Precio</span><span style="font-size:15px">$ 8.000</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">A nombre de</span><span style="font-size:15px">Martín Gómez</span></div>
+            </div>
+            <a href="#" style="margin-top:32px;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;box-sizing:border-box;background:#111315;color:#f4f5f7;padding:16px 22px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none">Ver mi turno →</a>
+            <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:#4a4f55;text-wrap:pretty">¿No podés venir? Cancelalo desde el mismo link hasta {{ cancelWindow }} antes.</p>
+          </div>
+          <div style="border-top:1px solid #eceef1;padding:20px 24px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#4a4f55">
+            <span style="letter-spacing:0.18em;text-transform:uppercase">HOUSSESTUDIO</span>
+            <span>Recibís este email porque pediste un turno.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1c Turno cancelado (cliente) -->
+    <div id="1c" style="width:390px;max-width:100%;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:'Roboto Mono',monospace;font-size:12px;color:#4a4f55">
+        <span style="background:#111315;color:#f4f5f7;padding:3px 8px;border-radius:3px">1c</span>
+        <span>Asunto: Turno cancelado — HOUSSESTUDIO</span>
+      </div>
+      <div style="background:#f4f5f7;border:1px solid #dde0e4;padding:12px">
+        <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border:1px solid #dde0e4">
+          <div style="background:#050505;color:#ffffff;padding:28px 24px;display:flex;align-items:center;gap:16px">
+            <img src="assets/logo.png" alt="HOUSSESTUDIO" width="46" height="52" style="display:block;width:46px;height:52px;mix-blend-mode:screen">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:20px;font-weight:500;letter-spacing:0.02em;line-height:1">HOUSSESTUDIO</span>
+              <span style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55)">Peluquería</span>
+            </div>
+          </div>
+          <div style="padding:32px 24px 28px">
+            <span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;border:1px solid #e5e5e5;background:#f5f5f5;color:#525252;font-size:12px;font-weight:500"><span style="width:6px;height:6px;border-radius:50%;background:#a3a3a3"></span>Cancelado</span>
+            <h1 style="margin:20px 0 0;font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.15">Turno cancelado</h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#4a4f55;text-wrap:pretty">Hola Martín, tu turno fue cancelado.</p>
+            <div style="margin-top:32px">
+              <p style="margin:0;font-size:22px;font-weight:300;color:#4a4f55;text-decoration:line-through;text-decoration-color:#b8bdc3">Sábado 15 de agosto</p>
+              <p style="margin:4px 0 0;font-size:15px;color:#4a4f55;font-variant-numeric:tabular-nums">14:30 – 15:15 h</p>
+            </div>
+            <div style="margin-top:20px;border-bottom:1px solid #b8bdc3">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Servicio</span><span style="font-size:15px">Corte + barba</span></div>
+              <sc-if value="{{ showReason }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Motivo</span><span style="font-size:15px;text-align:right">Me surgió un viaje de trabajo</span></div>
+              </sc-if>
+            </div>
+            <a href="#" style="margin-top:32px;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;box-sizing:border-box;border:1px solid #b8bdc3;color:#111315;padding:15px 21px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none">Reservar otro turno →</a>
+          </div>
+          <div style="border-top:1px solid #eceef1;padding:20px 24px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#4a4f55">
+            <span style="letter-spacing:0.18em;text-transform:uppercase">HOUSSESTUDIO</span>
+            <span>Recibís este email porque pediste un turno.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section data-screen-label="Peluquero" style="padding:24px 32px 64px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <p style="margin:0;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#4a4f55">Emails · Peluquero</p>
+    <h2 style="margin:0;font-size:32px;font-weight:300;letter-spacing:-0.02em">Avisos internos</h2>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <!-- 2a Nueva solicitud -->
+    <div id="2a" style="width:390px;max-width:100%;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:'Roboto Mono',monospace;font-size:12px;color:#4a4f55">
+        <span style="background:#111315;color:#f4f5f7;padding:3px 8px;border-radius:3px">2a</span>
+        <span>Asunto: Nueva solicitud — Corte + barba</span>
+      </div>
+      <div style="background:#f4f5f7;border:1px solid #dde0e4;padding:12px">
+        <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border:1px solid #dde0e4">
+          <div style="background:#050505;color:#ffffff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <img src="assets/logo.png" alt="HOUSSESTUDIO" width="28" height="31" style="display:block;width:28px;height:31px;mix-blend-mode:screen">
+              <span style="font-size:13px;font-weight:500;letter-spacing:0.18em">HOUSSESTUDIO</span>
+            </div>
+            <span style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55)">Panel</span>
+          </div>
+          <div style="padding:28px 24px">
+            <p style="margin:0;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#4a4f55">Nueva solicitud</p>
+            <h1 style="margin:12px 0 0;font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.15">Martín Gómez pidió un turno</h1>
+            <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+              <div>
+                <p style="margin:0;font-size:22px;font-weight:300">Sábado 15 de agosto</p>
+                <p style="margin:4px 0 0;font-size:15px;color:#4a4f55;font-variant-numeric:tabular-nums">14:30 – 15:15 h</p>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;border:1px solid #fde68a;background:#fef3c7;color:#78350f;font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:#b45309"></span>Pendiente</span>
+            </div>
+            <div style="margin-top:20px;border-bottom:1px solid #b8bdc3">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Servicio</span><span style="font-size:15px">Corte + barba</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Precio</span><span style="font-size:15px">$ 8.000</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Teléfono</span><a href="#" style="font-size:15px;color:#111315;font-variant-numeric:tabular-nums">+54 9 11 5555-1234</a></div>
+            </div>
+            <a href="#" style="margin-top:28px;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;box-sizing:border-box;background:#111315;color:#f4f5f7;padding:16px 22px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none">Ver solicitudes →</a>
+          </div>
+          <div style="border-top:1px solid #eceef1;padding:16px 24px;font-size:12px;color:#4a4f55">Aviso automático del panel de turnos.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2b Turno cancelado (peluquero) -->
+    <div id="2b" style="width:390px;max-width:100%;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-family:'Roboto Mono',monospace;font-size:12px;color:#4a4f55">
+        <span style="background:#111315;color:#f4f5f7;padding:3px 8px;border-radius:3px">2b</span>
+        <span>Asunto: Turno cancelado — Corte + barba</span>
+      </div>
+      <div style="background:#f4f5f7;border:1px solid #dde0e4;padding:12px">
+        <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border:1px solid #dde0e4">
+          <div style="background:#050505;color:#ffffff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <img src="assets/logo.png" alt="HOUSSESTUDIO" width="28" height="31" style="display:block;width:28px;height:31px;mix-blend-mode:screen">
+              <span style="font-size:13px;font-weight:500;letter-spacing:0.18em">HOUSSESTUDIO</span>
+            </div>
+            <span style="font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55)">Panel</span>
+          </div>
+          <div style="padding:28px 24px">
+            <p style="margin:0;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#4a4f55">Turno cancelado</p>
+            <h1 style="margin:12px 0 0;font-size:26px;font-weight:300;letter-spacing:-0.02em;line-height:1.15">{{ cancelTitle }}</h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#4a4f55">El horario quedó libre en la agenda.</p>
+            <div style="margin-top:28px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+              <div>
+                <p style="margin:0;font-size:22px;font-weight:300;color:#4a4f55;text-decoration:line-through;text-decoration-color:#b8bdc3">Sábado 15 de agosto</p>
+                <p style="margin:4px 0 0;font-size:15px;color:#4a4f55;font-variant-numeric:tabular-nums">14:30 – 15:15 h</p>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:10px;border:1px solid #e5e5e5;background:#f5f5f5;color:#525252;font-size:12px;font-weight:500;white-space:nowrap"><span style="width:6px;height:6px;border-radius:50%;background:#a3a3a3"></span>Cancelado</span>
+            </div>
+            <div style="margin-top:20px;border-bottom:1px solid #b8bdc3">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Cliente</span><span style="font-size:15px">Martín Gómez</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Servicio</span><span style="font-size:15px">Corte + barba</span></div>
+              <sc-if value="{{ showReason }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #b8bdc3;padding:12px 0"><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#4a4f55">Motivo</span><span style="font-size:15px;text-align:right">Me surgió un viaje de trabajo</span></div>
+              </sc-if>
+            </div>
+            <a href="#" style="margin-top:28px;display:flex;justify-content:center;align-items:center;gap:10px;min-height:48px;box-sizing:border-box;border:1px solid #b8bdc3;color:#111315;padding:15px 21px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none">Abrir agenda →</a>
+          </div>
+          <div style="border-top:1px solid #eceef1;padding:16px 24px;font-size:12px;color:#4a4f55">Aviso automático del panel de turnos.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;cancellationWindowHours&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:0,&quot;max&quot;:72,&quot;tsType&quot;:&quot;number&quot;,&quot;unit&quot;:&quot;h&quot;,&quot;section&quot;:&quot;Configuración&quot;},&quot;cancelledBy&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;cliente&quot;,&quot;barbero&quot;],&quot;default&quot;:&quot;cliente&quot;,&quot;tsType&quot;:&quot;'cliente' | 'barbero'&quot;,&quot;section&quot;:&quot;Cancelación&quot;},&quot;showReason&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Cancelación&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const by = this.props.cancelledBy ?? "cliente";
+    const hrs = this.props.cancellationWindowHours ?? 2;
+    return {
+      cancelWindow: hrs === 1 ? "1 hora" : hrs + " horas",
+      showReason: this.props.showReason ?? true,
+      cancelTitle: by === "cliente" ? "Martín Gómez canceló su turno" : "Cancelaste el turno de Martín Gómez",
+    };
+  }
+}
+</script>
+</body>
+</html>
