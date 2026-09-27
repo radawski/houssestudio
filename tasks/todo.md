@@ -79,8 +79,16 @@
       a ancho completo. `formatDni`/`formatDayAndTime` con tests
 - [x] E — Verificado en iPhone: tarjeta, chip de teléfono (ofrece llamar),
       motivo de un toque, botón rojo, Volver y rechazo real
-- [ ] F — Servicios mobile (FAB, switch en botón 48×44, `<select>` de duración,
-      header "← + título" diferido de la Fase A)
+- [x] F — Servicios mobile: `components/admin/back-header.tsx` ("← +
+      título", también para la Fase G), tarjeta mobile con switch `lg`
+      (44×26, área 48×44; tamaño nuevo en `components/ui/switch.tsx`),
+      chips de precio/duración, editar y eliminar de 44. FAB "Nuevo
+      servicio". Hoja con `<select>` de duración en todos los tamaños
+      (15/30/45/60/75/90/120 + el valor actual si es otro: el catálogo tiene
+      un corte de 15 que la lista del diseño perdía), precio con "$", fila
+      "Visible en el portal". Vacío con "+ Crear el primero". Escritorio
+      con su lista de siempre. Comprobado en Chrome a 390px y guardado real
+- [ ] F — **Verificación manual pendiente** en iPhone
 - [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios,
       header "← + título" diferido de la Fase A)
 - [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)

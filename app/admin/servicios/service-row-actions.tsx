@@ -9,11 +9,22 @@ import { Switch } from "@/components/ui/switch";
 import { deleteService, toggleServiceActive } from "@/lib/actions/services";
 import type { Service } from "@/lib/supabase/database.types";
 
-export function ServiceVisibilityToggle({ service }: { service: Service }) {
+/**
+ * `size="lg"` es el switch táctil de la tarjeta mobile: dibuja 44×26 y su
+ * área táctil llega a 48×44 (design/admin-iphone n-Servicios).
+ */
+export function ServiceVisibilityToggle({
+  service,
+  size,
+}: {
+  service: Service;
+  size?: "default" | "lg";
+}) {
   const [pending, startTransition] = useTransition();
 
   return (
     <Switch
+      size={size}
       checked={service.is_active}
       disabled={pending}
       aria-label={`Mostrar ${service.name} en el portal público`}
@@ -37,7 +48,8 @@ export function ServiceDeleteButton({ service }: { service: Service }) {
   return (
     <Button
       variant="ghost"
-      size="sm"
+      size="icon-touch"
+      className="md:size-8"
       disabled={pending}
       onClick={() => {
         // Los turnos ya tomados conservan nombre y precio propios, asi que
