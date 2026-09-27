@@ -27,6 +27,18 @@ cp .env.local.example .env.local
 Completar `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y
 `SUPABASE_SERVICE_ROLE_KEY`.
 
+Generar también `MANAGE_TOKEN_SECRET`, con el que se derivan los links de
+autogestión (`/turno/[token]`) a partir del id de cada turno:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+> `MANAGE_TOKEN_SECRET` tiene que tener **el mismo valor** en `.env.local` y en
+> Vercel: los dos entornos usan la misma base, y un turno reservado en uno
+> puede recibir emails armados en el otro. Si cambia, los links de los turnos
+> ya reservados dejan de coincidir.
+
 > `SUPABASE_SERVICE_ROLE_KEY` saltea todas las políticas de seguridad de la base.
 > Nunca se commitea ni se expone al navegador: los módulos que la usan importan
 > `server-only`, así que el build falla si alguna vez terminan alcanzados por
