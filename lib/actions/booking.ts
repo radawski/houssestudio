@@ -260,6 +260,7 @@ export async function createBooking(
       fullName: contact.fullName,
       serviceName: service.name,
       startsAt: startDate.toISOString(),
+      endsAt: endDate.toISOString(),
       price: service.price,
       manageUrl: `${siteUrl()}/turno/${token}`,
     }),
@@ -268,6 +269,7 @@ export async function createBooking(
       phone: contact.phone,
       serviceName: service.name,
       startsAt: startDate.toISOString(),
+      endsAt: endDate.toISOString(),
       price: service.price,
     }),
   ]);
@@ -284,6 +286,7 @@ type CancelledByTokenAppointment = {
   id: string;
   service_name_at_booking: string;
   starts_at: string;
+  ends_at: string;
   cancellation_reason: string | null;
   customer: { full_name: string; email: string | null } | null;
 };
@@ -339,7 +342,7 @@ export async function cancelByToken(
     .in("status", ["pendiente", "confirmado"])
     .gt("starts_at", earliestCancelableStart.toISOString())
     .select(
-      "id, service_name_at_booking, starts_at, cancellation_reason, customer:customers(full_name, email)",
+      "id, service_name_at_booking, starts_at, ends_at, cancellation_reason, customer:customers(full_name, email)",
     )
     .maybeSingle();
 
@@ -384,6 +387,7 @@ export async function cancelByToken(
       fullName: appointment.customer.full_name,
       serviceName: appointment.service_name_at_booking,
       startsAt: appointment.starts_at,
+      endsAt: appointment.ends_at,
       reason: appointment.cancellation_reason,
       cancelledBy: "cliente",
     });

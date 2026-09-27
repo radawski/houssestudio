@@ -13,7 +13,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { EmailType } from "@/lib/supabase/database.types";
 
 /**
- * Envío de los tres emails transaccionales de Fase 2.
+ * Envío de los emails transaccionales, en HTML (design/Emails.dc.html) y con
+ * su versión en texto plano para los clientes que no muestran HTML.
  *
  * Ninguna de estas funciones lanza: un fallo de Resend, o de la propia
  * escritura en `email_log`, queda registrado (o, para los avisos internos,
@@ -46,18 +47,20 @@ export async function sendBookingConfirmation(params: {
   fullName: string;
   serviceName: string;
   startsAt: string;
+  endsAt: string;
   price: number;
   manageUrl: string;
 }): Promise<void> {
   if (!params.toEmail) return;
 
-  const { subject, text } = buildBookingConfirmationEmail(params);
+  const { subject, html, text } = buildBookingConfirmationEmail(params);
 
   try {
     const { data, error } = await getResendClient().emails.send({
       from: emailFrom(),
       to: params.toEmail,
       subject,
+      html,
       text,
     });
     if (error) throw new Error(error.message);
@@ -91,15 +94,17 @@ export async function sendNewRequestAlert(params: {
   phone: string;
   serviceName: string;
   startsAt: string;
+  endsAt: string;
   price: number;
 }): Promise<void> {
-  const { subject, text } = buildNewRequestAlertEmail(params);
+  const { subject, html, text } = buildNewRequestAlertEmail(params);
 
   try {
     const { error } = await getResendClient().emails.send({
       from: emailFrom(),
       to: adminEmail(),
       subject,
+      html,
       text,
     });
     if (error) throw new Error(error.message);
@@ -112,12 +117,13 @@ export async function sendCancellationNotice(
   params: CancellationData & { appointmentId: string; toEmail: string | null },
 ): Promise<void> {
   if (params.toEmail) {
-    const { subject, text } = buildCancellationClientEmail(params);
+    const { subject, html, text } = buildCancellationClientEmail(params);
     try {
       const { data, error } = await getResendClient().emails.send({
         from: emailFrom(),
         to: params.toEmail,
         subject,
+        html,
         text,
       });
       if (error) throw new Error(error.message);
@@ -141,12 +147,13 @@ export async function sendCancellationNotice(
     }
   }
 
-  const { subject, text } = buildCancellationAdminEmail(params);
+  const { subject, html, text } = buildCancellationAdminEmail(params);
   try {
     const { error } = await getResendClient().emails.send({
       from: emailFrom(),
       to: adminEmail(),
       subject,
+      html,
       text,
     });
     if (error) throw new Error(error.message);

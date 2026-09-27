@@ -197,7 +197,12 @@
       glifo blanco con la luminancia como alfa, `public/email/logo-92.png` y
       `logo-56.png` (2× de 46×52 y 28×31). Revisado sobre `#050505`: sin
       recuadro. Se sirven sin sesión
-- [ ] E3 — 1a, 2a, 1c y 2b en HTML + texto
+- [x] E3 — 1a, 2a, 1c y 2b en HTML + texto plano + preheader
+      (`lib/email/templates.ts`), con las mismas funciones y datos más
+      `endsAt` (para "14:30 – 15:15 h"); `send.ts` manda `html` y `text`.
+      "Ver solicitudes" → `/admin/solicitudes`, "Abrir agenda" → el día del
+      turno, "Reservar otro turno" → portada. Tests por mail (título,
+      detalle, CTA, motivo opcional, escape). Revisados en Chrome a 375px
 - [ ] E4 — Email 1b al aceptar (migración 0011 + link según decisión)
 - [ ] E5 — Template del recordatorio (el envío sigue en Fase 3)
 - [ ] E6 — Preview en dev (`/dev/emails`, 375px y 600px)

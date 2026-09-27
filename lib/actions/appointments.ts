@@ -15,6 +15,7 @@ import { paymentSchema } from "@/lib/validation/schemas";
 type CancelledAppointment = {
   service_name_at_booking: string;
   starts_at: string;
+  ends_at: string;
   cancellation_reason: string | null;
   customer: { full_name: string; email: string | null } | null;
 };
@@ -116,7 +117,7 @@ export async function cancelAppointment(id: string, reason: string) {
     .eq("id", id)
     .in("status", ["pendiente", "confirmado"])
     .select(
-      "service_name_at_booking, starts_at, cancellation_reason, customer:customers(full_name, email)",
+      "service_name_at_booking, starts_at, ends_at, cancellation_reason, customer:customers(full_name, email)",
     )
     .single();
 
@@ -134,6 +135,7 @@ export async function cancelAppointment(id: string, reason: string) {
       fullName: appointment.customer.full_name,
       serviceName: appointment.service_name_at_booking,
       startsAt: appointment.starts_at,
+      endsAt: appointment.ends_at,
       reason: appointment.cancellation_reason,
       cancelledBy: "barbero",
     });
