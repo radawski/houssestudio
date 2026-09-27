@@ -20,21 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveService } from "@/lib/actions/services";
 import { idleState } from "@/lib/actions/result";
-import { formatDuration } from "@/lib/format";
 import type { Service } from "@/lib/supabase/database.types";
-
-/**
- * Duraciones que ofrece el `<select>` (design/admin-iphone n-SheetServicio:
- * no un input libre de minutos). La lista del diseño arrancaba en 30 min,
- * pero el catálogo real tiene un corte de 15, así que se suma. Si un servicio
- * guardado tiene otra duración, se agrega a la lista para no perderla.
- */
-const DURATION_OPTIONS = [15, 30, 45, 60, 75, 90, 120];
-
-function durationOptions(current?: number) {
-  if (current === undefined || DURATION_OPTIONS.includes(current)) return DURATION_OPTIONS;
-  return [...DURATION_OPTIONS, current].sort((a, b) => a - b);
-}
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
@@ -183,18 +169,25 @@ export function ServiceDialog({
 
             <div className="min-w-0 flex-1 space-y-1.5">
               <Label htmlFor="durationMinutes">Duración</Label>
-              <select
-                id="durationMinutes"
-                name="durationMinutes"
-                defaultValue={service?.duration_minutes ?? 45}
-                className="border-input bg-transparent focus-visible:border-ring focus-visible:ring-ring/50 h-12 w-full rounded-md border px-3 text-base outline-none focus-visible:ring-3 md:h-9 md:text-sm"
-              >
-                {durationOptions(service?.duration_minutes).map((minutes) => (
-                  <option key={minutes} value={minutes}>
-                    {formatDuration(minutes)}
-                  </option>
-                ))}
-              </select>
+              {/* Campo libre y no un `<select>`: el catálogo necesita
+                  duraciones como 20 o 40 min que una lista fija no cubre. */}
+              <div className="relative">
+                <Input
+                  id="durationMinutes"
+                  name="durationMinutes"
+                  type="number"
+                  min={5}
+                  max={480}
+                  step={1}
+                  inputMode="numeric"
+                  defaultValue={service?.duration_minutes ?? 45}
+                  className="h-12 pr-12 text-base tabular-nums md:h-9 md:text-sm"
+                  required
+                />
+                <span className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-base md:text-sm">
+                  min
+                </span>
+              </div>
               <FieldError message={fieldErrors?.durationMinutes} />
             </div>
           </div>

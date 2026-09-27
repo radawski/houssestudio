@@ -83,12 +83,12 @@
       título", también para la Fase G), tarjeta mobile con switch `lg`
       (44×26, área 48×44; tamaño nuevo en `components/ui/switch.tsx`),
       chips de precio/duración, editar y eliminar de 44. FAB "Nuevo
-      servicio". Hoja con `<select>` de duración en todos los tamaños
-      (15/30/45/60/75/90/120 + el valor actual si es otro: el catálogo tiene
-      un corte de 15 que la lista del diseño perdía), precio con "$", fila
+      servicio". Hoja con duración como campo libre de minutos (5 a 480;
+      el `<select>` del diseño se descartó a pedido del usuario: no permitía
+      20 o 40 min), precio con "$", fila
       "Visible en el portal". Vacío con "+ Crear el primero". Escritorio
       con su lista de siempre. Comprobado en Chrome a 390px y guardado real
-- [ ] F — **Verificación manual pendiente** en iPhone
+- [x] F — Verificado en iPhone (salvo la duración libre, cambiada después)
 - [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios,
       header "← + título" diferido de la Fase A)
 - [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)
