@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useEffectEvent, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 
@@ -42,15 +42,24 @@ function SaveButton() {
 export function BookingWindowForm({
   maxBookingDays,
   minLeadMinutes,
+  onSaved,
 }: {
   maxBookingDays: number;
   minLeadMinutes: number;
+  /** Lo usa la hoja mobile para cerrarse después de guardar. */
+  onSaved?: () => void;
 }) {
   const [state, formAction] = useActionState(saveBookingWindow, idleState);
   const [days, setDays] = useState(String(maxBookingDays));
+  // Evento y no dependencia: el efecto responde a cada resultado del guardado,
+  // no a que el padre pase otra función.
+  const notifySaved = useEffectEvent(() => onSaved?.());
 
   useEffect(() => {
-    if (state.status === "success") toast.success(state.message);
+    if (state.status === "success") {
+      toast.success(state.message);
+      notifySaved();
+    }
     if (state.status === "error" && !state.fieldErrors) toast.error(state.message);
   }, [state]);
 

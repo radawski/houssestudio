@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useTransition } from "react";
+import { useActionState, useEffect, useEffectEvent, useRef, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -22,14 +22,24 @@ function AddButton() {
   );
 }
 
-export function TimeBlockForm({ todayKey }: { todayKey: string }) {
+export function TimeBlockForm({
+  todayKey,
+  onSaved,
+}: {
+  todayKey: string;
+  /** Lo usa la hoja mobile para cerrarse después de bloquear. */
+  onSaved?: () => void;
+}) {
   const [state, formAction] = useActionState(createTimeBlock, idleState);
   const formRef = useRef<HTMLFormElement>(null);
+  // Ver `BookingWindowForm`: evento, no dependencia del efecto.
+  const notifySaved = useEffectEvent(() => onSaved?.());
 
   useEffect(() => {
     if (state.status === "success") {
       toast.success(state.message);
       formRef.current?.reset();
+      notifySaved();
     }
     if (state.status === "error") toast.error(state.message);
   }, [state]);

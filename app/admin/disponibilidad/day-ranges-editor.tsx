@@ -53,11 +53,14 @@ export function DayRangesEditor({
   dayName,
   ranges,
   onChange,
+  disabled = false,
 }: {
   weekday: number;
   dayName: string;
   ranges: EditableRange[];
   onChange: (ranges: EditableRange[]) => void;
+  /** Día cerrado en la hoja mobile: los bloques se ven pero no se editan. */
+  disabled?: boolean;
 }) {
   function update(key: string, patch: Partial<EditableRange>) {
     onChange(ranges.map((range) => (range.key === key ? { ...range, ...patch } : range)));
@@ -74,6 +77,7 @@ export function DayRangesEditor({
             onChange={(event) => update(range.key, { opensAt: event.target.value })}
             className="w-32"
             aria-label={`${dayName}, apertura del bloque ${index + 1}`}
+            disabled={disabled}
             required
           />
           <span className="text-muted-foreground text-sm">a</span>
@@ -84,11 +88,12 @@ export function DayRangesEditor({
             onChange={(event) => update(range.key, { closesAt: event.target.value })}
             className="w-32"
             aria-label={`${dayName}, cierre del bloque ${index + 1}`}
+            disabled={disabled}
             required
           />
           {/* Con un solo bloque no se ofrece quitarlo: un día sin bloques se
               expresa marcándolo cerrado. */}
-          {ranges.length > 1 ? (
+          {ranges.length > 1 && !disabled ? (
             <Button
               type="button"
               variant="ghost"
@@ -107,6 +112,7 @@ export function DayRangesEditor({
         variant="ghost"
         size="sm"
         className="text-muted-foreground -ml-2"
+        disabled={disabled}
         onClick={() => onChange([...ranges, suggestedRange(ranges)])}
       >
         <Plus className="size-4" />

@@ -8,8 +8,8 @@
 - [x] `Toaster`: bottom-center + offset 96 en `/admin`, público sin cambios
 - [x] Tab bar inferior (`AdminTabBar`) + shell con scroll propio + `/admin/mas`
 - [ ] **Verificación manual pendiente** (ver mensaje al usuario)
-- [ ] Header "← + título" de Servicios/Disponibilidad en mobile — diferido a
-      Fases F/G (es específico de esas pantallas)
+- [x] Header "← + título" de Servicios/Disponibilidad en mobile — hecho en
+      F/G (`components/admin/back-header.tsx`)
 
 ## Fase B — Hoy + Ficha del turno
 - [x] `lib/appointment-timeline.ts`: historial puro, con tests
@@ -89,8 +89,17 @@
       "Visible en el portal". Vacío con "+ Crear el primero". Escritorio
       con su lista de siempre. Comprobado en Chrome a 390px y guardado real
 - [x] F — Verificado en iPhone (salvo la duración libre, cambiada después)
-- [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios,
-      header "← + título" diferido de la Fase A)
+- [x] G — Disponibilidad mobile: "← Disponibilidad", ventana de reserva
+      colapsada con su hoja, 7 filas de 52px (resumen de bloques que abre la
+      hoja del día + switch abierto/cerrado aparte), "+ Bloquear un rango"
+      en hoja y lista de bloqueos. Todo guarda al instante (decisión del
+      usuario: sin barra de cambios pendientes). Acciones nuevas
+      `saveBusinessDay` (un día, o `copyToAll` a los 7 respetando
+      abiertos/cerrados — decisión del usuario) y `setBusinessDayOpen` (no
+      abre un día sin bloques), las dos sobre `save_business_hours` o
+      `business_hours`. Escritorio intacto. Comprobado en Chrome a 390px:
+      guardar un día y abrir/cerrar el domingo, el horario quedó igual
+- [ ] G — **Verificación manual pendiente** en iPhone
 - [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)
 
 ## Correcciones de la ronda de prueba (ver tasks/plan-correcciones.md)
