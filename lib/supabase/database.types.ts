@@ -31,20 +31,10 @@ export type Service = {
   sort_order: number;
 } & Timestamps;
 
+/** Un día del horario semanal. Sus bloques están en `business_hour_ranges`. */
 export type BusinessHour = {
   weekday: number;
   is_closed: boolean;
-  /**
-   * @deprecated Desde la 0009 los bloques viven en `business_hour_ranges`.
-   * Estas cuatro columnas quedan sin uso hasta que una migración las retire.
-   */
-  opens_at: string;
-  /** @deprecated Ver `opens_at`. */
-  closes_at: string;
-  /** @deprecated Ver `opens_at`. */
-  opens_at_2: string | null;
-  /** @deprecated Ver `opens_at`. */
-  closes_at_2: string | null;
   updated_at: string;
 };
 

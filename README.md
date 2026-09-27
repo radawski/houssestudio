@@ -40,6 +40,18 @@ En el **SQL Editor** de Supabase, ejecutar en orden los archivos de
 1. `0001_schema.sql` — tablas, tipos y la restricción anti-solapamiento.
 2. `0002_rls.sql` — Row Level Security.
 3. `0003_seed.sql` — servicios y horario comercial iniciales.
+4. `0004_dni.sql` — DNI como identidad del cliente.
+5. `0005_ventana_de_reserva.sql` — ventana de reserva configurable.
+6. `0006_horario_partido.sql` — segundo tramo horario (reemplazado por la 0009).
+7. `0007_ventas_sueltas.sql` — ventas sueltas y cobro atómico de turnos.
+8. `0008_ventas_productos.sql` — venta de productos además de servicios.
+9. `0009_horario_bloques.sql` — horario con N bloques por día.
+10. `0010_retira_columnas_horario.sql` — retira las columnas de horario
+    anteriores a la 0009.
+
+Cada archivo depende de los anteriores: la 0009 copia a bloques el horario
+que dejan cargado la 0003 y la 0006, y la 0010 recién después borra esas
+columnas.
 
 ### 4. Crear el usuario del barbero
 

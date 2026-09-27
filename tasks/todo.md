@@ -129,9 +129,10 @@
       bloques copiados bien, slots de lun/mar/mié para los 2 servicios
       idénticos a antes, guardar sin cambios OK, solapamiento rechazado
 - [x] T5 — Verificado por el usuario en iPhone y desktop
-- [ ] T5 — Migración posterior que retire `opens_at`/`closes_at`/
-      `opens_at_2`/`closes_at_2` de `business_hours` (sin producción, se
-      puede hacer apenas se verifique)
+- [x] T5 — Migración 0010 (aplicada): retira `opens_at`/`closes_at`/
+      `opens_at_2`/`closes_at_2` de `business_hours`. Comprobado: columnas
+      fuera, bloques intactos, Disponibilidad guarda, Agenda y reserva
+      pública respetan 3 bloques. README con las 10 migraciones
 - [x] T6 — Verde en horarios: `--hs-green` (#137a55, no el #178a5e del
       plan: ese daba 3.98:1 sobre --hs-paper) y `--hs-green-soft`; hora
       verde semibold 13px en GapRow y AgendaAppointmentRow, filete de 3px
