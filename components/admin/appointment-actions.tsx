@@ -22,7 +22,7 @@ import {
   confirmAppointment,
   markNoShow,
 } from "@/lib/actions/appointments";
-import { formatCurrency, formatDateTime } from "@/lib/format";
+import { formatCurrency, formatDateTime, formatDayAndTime } from "@/lib/format";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -51,16 +51,32 @@ export function ConfirmAppointmentButton({ id }: { id: string }) {
   );
 }
 
+/** Motivos de un toque (design/admin-iphone n-SheetRechazar): escribir con una mano es lo que deja el campo vacío. */
+const QUICK_REASONS = ["Me surgió un imprevisto", "Ese día no abro", "Horario ya ocupado"] as const;
+
+/**
+ * Rechaza una solicitud o cancela un turno confirmado. Nunca actúa directo:
+ * abre la hoja de confirmación, que es el único lugar del panel con rojo
+ * sólido (n-SheetRechazar).
+ */
 export function CancelAppointmentButton({
   id,
   label = "Rechazar",
+  clientName,
+  startsAt,
 }: {
   id: string;
   label?: string;
+  clientName?: string;
+  startsAt?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [pending, startTransition] = useTransition();
+  const title = `${label} turno`;
+  const context = [clientName, startsAt ? formatDayAndTime(startsAt) : null]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <>
@@ -72,10 +88,10 @@ export function CancelAppointmentButton({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Cancelar turno</DialogTitle>
+            <DialogTitle>{title}</DialogTitle>
             <DialogDescription>
-              El horario vuelve a quedar disponible al instante. El motivo se le
-              envía al cliente.
+              {context ? `${context}. ` : null}El horario vuelve a quedar disponible al
+              instante.
             </DialogDescription>
           </DialogHeader>
 
@@ -83,25 +99,47 @@ export function CancelAppointmentButton({
             <Label htmlFor={`reason-${id}`}>Motivo (opcional)</Label>
             <Textarea
               id={`reason-${id}`}
-              rows={3}
+              className="min-h-[88px] text-base md:text-sm"
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               placeholder="Se me superpuso con otro compromiso…"
             />
+            <p className="text-muted-foreground text-xs">
+              Se lo mandamos al cliente junto con el aviso.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {QUICK_REASONS.map((quick) => (
+                <button
+                  key={quick}
+                  type="button"
+                  aria-pressed={reason === quick}
+                  onClick={() => setReason(quick)}
+                  className={cn(
+                    "h-9 rounded-full border px-3.5 text-[13px] transition-colors",
+                    reason === quick
+                      ? "border-foreground text-foreground"
+                      : "text-muted-foreground border-[var(--hs-border-card)] hover:text-foreground",
+                  )}
+                >
+                  {quick}
+                </button>
+              ))}
+            </div>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)} disabled={pending}>
+            <Button variant="ghost" size="touch-lg" onClick={() => setOpen(false)} disabled={pending}>
               Volver
             </Button>
             <Button
-              variant="destructive"
+              size="touch-xl"
+              className="bg-destructive hover:bg-destructive/90 text-white"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
                   try {
                     await cancelAppointment(id, reason);
-                    toast.success("Turno cancelado.");
+                    toast.success(label === "Rechazar" ? "Solicitud rechazada." : "Turno cancelado.");
                     setOpen(false);
                     setReason("");
                   } catch (error) {
@@ -112,7 +150,8 @@ export function CancelAppointmentButton({
                 })
               }
             >
-              {pending ? "Cancelando…" : "Cancelar turno"}
+              <X className="size-4" />
+              {pending ? (label === "Rechazar" ? "Rechazando…" : "Cancelando…") : title}
             </Button>
           </DialogFooter>
         </DialogContent>

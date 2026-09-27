@@ -70,7 +70,16 @@
 - [ ] **Verificación manual pendiente** (ver mensaje al usuario)
 
 ## Fases E–H (pendientes, ver tasks/plan.md)
-- [ ] E — Solicitudes mobile (chips, hoja de rechazo con motivos)
+- [x] E — Solicitudes mobile: `app/admin/solicitudes/request-card.tsx`
+      (fecha larga, rango, chips DNI/teléfono con `tel:`, nota, Aceptar y
+      Rechazar), escritorio intacto detrás de `hidden md:grid`. Hoja de
+      rechazo/cancelación (`CancelAppointmentButton`, también en Hoy y
+      Agenda): título "Rechazar/Cancelar turno", cliente y día en el
+      subtítulo, 3 chips de motivo que llenan el textarea, botón rojo sólido
+      a ancho completo. `formatDni`/`formatDayAndTime` con tests
+- [ ] E — **Verificación manual pendiente** en iPhone (hace falta una
+      solicitud pendiente: reservar un turno de prueba desde la página
+      pública)
 - [ ] F — Servicios mobile (FAB, switch en botón 48×44, `<select>` de duración,
       header "← + título" diferido de la Fase A)
 - [ ] G — Disponibilidad mobile (hoja por día, copiar horario, barra de cambios,

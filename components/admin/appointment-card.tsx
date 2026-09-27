@@ -122,6 +122,8 @@ export function AppointmentCard({
           <CancelAppointmentButton
             id={appointment.id}
             label={status === "pendiente" ? "Rechazar" : "Cancelar"}
+            clientName={customer?.full_name ?? "Cliente eliminado"}
+            startsAt={appointment.starts_at}
           />
         </div>
       ) : null}

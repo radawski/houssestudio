@@ -39,6 +39,16 @@ export function formatLongDate(date: Date | string): string {
   return formatInTz(date, "EEEE d 'de' MMMM");
 }
 
+/** Ej: `sábado 15, 14:30`: día y hora en una línea corta (subtítulo de hoja). */
+export function formatDayAndTime(date: Date | string): string {
+  return formatInTz(date, "EEEE d, HH:mm");
+}
+
+/** Ej: `44306546` -> `44.306.546`. Lo que no son dígitos se devuelve tal cual. */
+export function formatDni(dni: string): string {
+  return /^\d+$/.test(dni) ? dni.replace(/\B(?=(\d{3})+(?!\d))/g, ".") : dni;
+}
+
 /** Ej: `sábado 15 de agosto, 14:30`. */
 export function formatDateTime(date: Date | string): string {
   return `${formatLongDate(date)}, ${formatTime(date)}`;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inbox } from "lucide-react";
 
+import { RequestCard } from "@/app/admin/solicitudes/request-card";
 import { AppointmentCard } from "@/components/admin/appointment-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPendingAppointments } from "@/lib/data/appointments";
@@ -29,11 +30,18 @@ export default async function RequestsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-3">
-          {pending.map((appointment) => (
-            <AppointmentCard key={appointment.id} appointment={appointment} showDate />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-3 md:hidden">
+            {pending.map((appointment) => (
+              <RequestCard key={appointment.id} appointment={appointment} />
+            ))}
+          </div>
+          <div className="hidden grid-cols-1 gap-3 md:grid">
+            {pending.map((appointment) => (
+              <AppointmentCard key={appointment.id} appointment={appointment} showDate />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
