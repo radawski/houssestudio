@@ -181,3 +181,17 @@
 - [x] T6 — Verificado en iPhone (hizo falta borrar los datos del sitio en
       Safari: en `next dev` el CSS conserva el mismo nombre y quedó una copia
       vieja)
+
+## Emails con la estética de la web (ver tasks/plan-emails.md)
+- [ ] Decisiones: link de "Ver mi turno" fuera de la reserva, `Emails.dc.html`,
+      destino de "Ver solicitudes"
+- [ ] E1 — Layout y helpers de email (tablas, estilos inline, escape, ventana)
+- [ ] E2 — Logo con transparencia para email (`sharp`)
+- [ ] E3 — 1a, 2a, 1c y 2b en HTML + texto
+- [ ] E4 — Email 1b al aceptar (migración 0011 + link según decisión)
+- [ ] E5 — Template del recordatorio (el envío sigue en Fase 3)
+- [ ] E6 — Preview en dev (`/dev/emails`, 375px y 600px)
+- [ ] E7 — Verificación en Gmail, Mail del iPhone y Outlook
+
+## Fase 3 (sin especificar todavía)
+- [ ] CRM, reportes y recordatorios automáticos (estos usan E4/E5)
