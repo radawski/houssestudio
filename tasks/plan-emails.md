@@ -148,7 +148,17 @@ nueva: sus recordatorios usan el template y el link de este plan.
   también ahí.
 - Typecheck, lint, tests y build.
 
-## Decisiones a confirmar antes de tocar código
+## Decisiones confirmadas
+
+- **Link fuera de la reserva: token derivado (a).** El token de los turnos
+  nuevos se calcula como `HMAC(MANAGE_TOKEN_SECRET, id del turno)`; se sigue
+  guardando solo su hash. Los turnos reservados antes del cambio conservan su
+  link de 1a, y su 1b sale sin botón.
+- **"Ver solicitudes"** lleva a `/admin/solicitudes`.
+- **`Emails.dc.html`**: pendiente de que el usuario lo sume a `design/`; si no,
+  se maqueta con la especificación del pedido.
+
+## Decisiones que se consultaron (registro)
 
 1. **Cómo armar el link de "Ver mi turno" fuera de la reserva** (1b y
    recordatorio).

@@ -183,8 +183,9 @@
       vieja)
 
 ## Emails con la estética de la web (ver tasks/plan-emails.md)
-- [ ] Decisiones: link de "Ver mi turno" fuera de la reserva, `Emails.dc.html`,
-      destino de "Ver solicitudes"
+- [x] Decisiones: token derivado con HMAC para el link; "Ver solicitudes" →
+      `/admin/solicitudes`
+- [ ] Sumar `Emails.dc.html` a `design/` (lo aporta el usuario)
 - [ ] E1 — Layout y helpers de email (tablas, estilos inline, escape, ventana)
 - [ ] E2 — Logo con transparencia para email (`sharp`)
 - [ ] E3 — 1a, 2a, 1c y 2b en HTML + texto
