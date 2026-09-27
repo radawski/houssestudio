@@ -111,7 +111,12 @@
       pulso de 1.6s quieto con "Reducir movimiento". Hoy pasó a
       `app/admin/(hoy)/` para que su esqueleto no aparezca al entrar a
       Servicios, Disponibilidad o Más
-- [ ] H (3/3) — `error.tsx` por pestaña con Reintentar (`retry()`)
+- [x] H (3/3) — `error.tsx` en Hoy, Agenda, Solicitudes, Caja, Servicios y
+      Disponibilidad con `components/admin/load-error.tsx` (Reintentar =
+      `retry()` de Next 16, que vuelve a pedir los datos; identificador y
+      hora para reportar). Hoy conserva el h1 con la fecha. Probado con una
+      ruta que falla a propósito (ya borrada)
+- [ ] H — **Verificación manual pendiente** en iPhone
 
 ## Correcciones de la ronda de prueba (ver tasks/plan-correcciones.md)
 - [x] T1 — Logo sin animación, cancelados fuera de Hoy/Agenda, mes de Caja
