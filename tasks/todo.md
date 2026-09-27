@@ -7,7 +7,7 @@
 - [x] `Dialog` → bottom sheet en mobile, centrado sin cambios en desktop
 - [x] `Toaster`: bottom-center + offset 96 en `/admin`, público sin cambios
 - [x] Tab bar inferior (`AdminTabBar`) + shell con scroll propio + `/admin/mas`
-- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
+- [x] **Verificación manual** — confirmada por el usuario en iPhone
 - [x] Header "← + título" de Servicios/Disponibilidad en mobile — hecho en
       F/G (`components/admin/back-header.tsx`)
 
@@ -67,7 +67,7 @@
       quedan intactas detrás de `hidden md:grid`/`hidden md:block`
 - [x] `app/admin/caja/caja-toolbar.tsx`: segmentado a todo el ancho en mobile,
       mismo patrón que `agenda-toolbar.tsx` sin FAB ni tira de días
-- [ ] **Verificación manual pendiente** (ver mensaje al usuario)
+- [x] **Verificación manual** — confirmada por el usuario en iPhone (día, semana y mes)
 
 ## Fases E–H (pendientes, ver tasks/plan.md)
 - [x] E — Solicitudes mobile: `app/admin/solicitudes/request-card.tsx`
