@@ -99,7 +99,9 @@
       abre un día sin bloques), las dos sobre `save_business_hours` o
       `business_hours`. Escritorio intacto. Comprobado en Chrome a 390px:
       guardar un día y abrir/cerrar el domingo, el horario quedó igual
-- [ ] G — **Verificación manual pendiente** en iPhone
+- [x] G — Verificado en iPhone. De la prueba salió: las hojas ya no enfocan
+      el primer campo al abrirse en mobile (abría el teclado o el selector
+      de fecha); `DialogContent` manda el foco a la hoja por debajo de 640px
 - [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)
 
 ## Correcciones de la ronda de prueba (ver tasks/plan-correcciones.md)

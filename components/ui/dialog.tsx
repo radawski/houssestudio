@@ -50,14 +50,30 @@ function DialogOverlay({
   )
 }
 
+/** Mismo corte que el `sm:` de abajo: por debajo, el diálogo es hoja inferior. */
+const SHEET_QUERY = "(max-width: 639.98px)"
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onOpenAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // Como hoja (celular), Radix enfocaba el primer campo al abrir y eso abría
+  // el teclado o el selector de fecha antes de que la persona eligiera qué
+  // completar. Ahí el foco va a la hoja misma: sigue dentro del diálogo para
+  // lectores de pantalla, sin abrir nada. En escritorio queda el foco en el
+  // primer campo, que sí ayuda a quien usa teclado.
+  function handleOpenAutoFocus(event: Event) {
+    onOpenAutoFocus?.(event)
+    if (event.defaultPrevented || !window.matchMedia(SHEET_QUERY).matches) return
+    event.preventDefault()
+    ;(event.currentTarget as HTMLElement | null)?.focus({ preventScroll: true })
+  }
+
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -73,6 +89,7 @@ function DialogContent({
           "sm:top-1/2 sm:left-1/2 sm:max-h-none sm:w-full sm:max-w-sm sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-visible sm:rounded-xl sm:border-t-0 sm:bg-popover sm:p-4 sm:ring-1 sm:ring-foreground/10 sm:data-open:zoom-in-95 sm:data-open:fade-in-0 sm:data-open:slide-in-from-bottom-0 sm:data-closed:zoom-out-95 sm:data-closed:fade-out-0 sm:data-closed:slide-out-to-bottom-0",
           className
         )}
+        onOpenAutoFocus={handleOpenAutoFocus}
         {...props}
       >
         {/* Grabber: solo en la presentación de hoja (mobile). */}
