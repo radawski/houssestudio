@@ -16,7 +16,11 @@ export type AppointmentStatus =
   | "no_show";
 
 export type PaymentMethod = "efectivo" | "transferencia";
-export type EmailType = "confirmacion" | "cancelacion" | "recordatorio";
+/**
+ * `confirmacion` es el email de solicitud recibida (1a); `aceptacion`, el de
+ * turno confirmado por el peluquero (1b, migración 0011).
+ */
+export type EmailType = "confirmacion" | "aceptacion" | "cancelacion" | "recordatorio";
 export type EmailStatus = "enviado" | "error";
 
 type Timestamps = { created_at: string; updated_at: string };

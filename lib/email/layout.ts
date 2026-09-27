@@ -63,12 +63,17 @@ export function formatCancellationWindow(hours: number): string | null {
   return hours === 1 ? "1 hora" : `${hours} horas`;
 }
 
-/** Nota de 1b y del recordatorio: "¿No podés venir? Cancelalo … hasta N antes." */
-export function cancellationNote(hours: number): string {
+/**
+ * Nota de 1b y del recordatorio: "¿No podés venir? Cancelalo … hasta N antes."
+ * `where` nombra el link: "el mismo link" cuando el mail trae el botón, "el
+ * link de tu reserva" cuando no puede traerlo (turnos anteriores a los tokens
+ * derivados, ver `lib/tokens.ts`).
+ */
+export function cancellationNote(hours: number, where = "el mismo link"): string {
   const window = formatCancellationWindow(hours);
   return window
-    ? `¿No podés venir? Cancelalo desde el mismo link hasta ${window} antes.`
-    : "¿No podés venir? Cancelalo desde el mismo link hasta el horario del turno.";
+    ? `¿No podés venir? Cancelalo desde ${where} hasta ${window} antes.`
+    : `¿No podés venir? Cancelalo desde ${where} hasta el horario del turno.`;
 }
 
 /** "Sábado 15 de agosto", en la zona del local. */

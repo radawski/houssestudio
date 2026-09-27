@@ -203,7 +203,16 @@
       "Ver solicitudes" → `/admin/solicitudes`, "Abrir agenda" → el día del
       turno, "Reservar otro turno" → portada. Tests por mail (título,
       detalle, CTA, motivo opcional, escape). Revisados en Chrome a 375px
-- [ ] E4 — Email 1b al aceptar (migración 0011 + link según decisión)
+- [x] E4 — Token derivado: `lib/tokens.ts` (`deriveManageToken` = HMAC de
+      `MANAGE_TOKEN_SECRET` sobre "manage:" + id, `manageTokenMatches`), con
+      tests; `createBooking` genera el id antes del insert. Email 1b
+      (`buildAppointmentConfirmedEmail`, `sendAppointmentConfirmed`) desde
+      `confirmAppointment`, con el plazo leído al enviar; sin botón para
+      turnos anteriores al cambio. Migración `0011_email_aceptacion.sql`
+- [ ] E4 — **Antes de subir a Vercel**: el usuario carga `MANAGE_TOKEN_SECRET`
+      (el mismo valor que `.env.local`) y confirma `NEXT_PUBLIC_SITE_URL` en
+      Vercel, y aplica la 0011 en Supabase. Después: prueba real (reservar y
+      aceptar) y recién ahí el push
 - [ ] E5 — Template del recordatorio (el envío sigue en Fase 3)
 - [ ] E6 — Preview en dev (`/dev/emails`, 375px y 600px)
 - [ ] E7 — Verificación en Gmail, Mail del iPhone y Outlook

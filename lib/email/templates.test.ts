@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatCurrency } from "@/lib/format";
 import {
+  buildAppointmentConfirmedEmail,
   buildBookingConfirmationEmail,
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
@@ -146,5 +147,54 @@ describe("escape de datos del usuario", () => {
       expect(html).not.toContain("<script>");
       expect(html).toContain("&lt;script&gt;");
     }
+  });
+});
+
+describe("1b · buildAppointmentConfirmedEmail", () => {
+  const confirmed = (overrides: Partial<Parameters<typeof buildAppointmentConfirmedEmail>[0]> = {}) =>
+    buildAppointmentConfirmedEmail({
+      ...TIME,
+      fullName: "Ana Pérez",
+      serviceName: "Corte clásico",
+      price: 8000,
+      manageUrl: "https://houssestudio.com/turno/abc123",
+      cancellationWindowHours: 2,
+      ...overrides,
+    });
+
+  it("asunto, título, badge confirmado, detalle y CTA al turno", () => {
+    const email = confirmed();
+    expect(email.subject).toBe("Tu turno está confirmado — HOUSSESTUDIO");
+    expect(email.html).toContain("¡Te esperamos!");
+    expect(email.html).toContain("Hola Ana, tu turno está confirmado.");
+    expect(email.html).toContain("#d1fae5");
+    for (const part of ["Corte clásico", formatCurrency(8000), "Ana Pérez"]) {
+      expect(email.html).toContain(part);
+    }
+    expect(email.html).toContain('href="https://houssestudio.com/turno/abc123"');
+    expect(email.html).toContain("Ver mi turno");
+    expectWellFormed(email);
+  });
+
+  it("la nota usa el plazo configurado: 0, 1 y 3 horas", () => {
+    expect(confirmed({ cancellationWindowHours: 3 }).html).toContain(
+      "Cancelalo desde el mismo link hasta 3 horas antes.",
+    );
+    expect(confirmed({ cancellationWindowHours: 1 }).text).toContain("hasta 1 hora antes.");
+    expect(confirmed({ cancellationWindowHours: 0 }).html).toContain(
+      "Cancelalo desde el mismo link hasta el horario del turno.",
+    );
+  });
+
+  it("sin link (turno anterior a los tokens derivados): sin botón y la nota no promete uno", () => {
+    const email = confirmed({ manageUrl: null });
+    expect(email.html).not.toContain("Ver mi turno");
+    expect(email.html).not.toContain("/turno/");
+    expect(email.html).toContain("Cancelalo desde el link de tu reserva hasta 2 horas antes.");
+    expect(email.text).not.toContain("Ver mi turno");
+  });
+
+  it("el nombre llega escapado", () => {
+    expect(confirmed({ fullName: HOSTILE }).html).not.toContain("<script>");
   });
 });

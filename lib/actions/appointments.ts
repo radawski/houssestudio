@@ -2,7 +2,10 @@
 
 import { revalidateAgenda } from "@/lib/cache";
 import { requireAdmin } from "@/lib/auth";
-import { sendCancellationNotice } from "@/lib/email/send";
+import { siteUrl } from "@/lib/config";
+import { getSettings } from "@/lib/data/availability";
+import { sendAppointmentConfirmed, sendCancellationNotice } from "@/lib/email/send";
+import { deriveManageToken, manageTokenMatches } from "@/lib/tokens";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
 import { paymentSchema } from "@/lib/validation/schemas";
 
@@ -20,18 +23,74 @@ type CancelledAppointment = {
   customer: { full_name: string; email: string | null } | null;
 };
 
+type ConfirmedAppointment = {
+  service_name_at_booking: string;
+  price_at_booking: number;
+  starts_at: string;
+  ends_at: string;
+  manage_token_hash: string;
+  customer: { full_name: string; email: string | null } | null;
+};
+
+/**
+ * Link de autogestión para un email posterior a la reserva, o `null` si no se
+ * puede armar: turno anterior a los tokens derivados, o falta
+ * `MANAGE_TOKEN_SECRET`. En ese último caso el turno ya quedó confirmado, así
+ * que se avisa por consola y el email sale sin botón en vez de fallar.
+ */
+function manageUrlFor(id: string, storedHash: string): string | null {
+  try {
+    return manageTokenMatches(id, storedHash) ? `${siteUrl()}/turno/${deriveManageToken(id)}` : null;
+  } catch (error) {
+    console.error(`No se pudo armar el link del turno: ${error instanceof Error ? error.message : error}`);
+    return null;
+  }
+}
+
+/**
+ * Acepta una solicitud y le avisa al cliente con el email de turno
+ * confirmado (1b).
+ *
+ * Si el UPDATE no encuentra fila (doble toque, o el turno ya no estaba
+ * pendiente) no se manda nada ni se lanza: el estado ya es el que se pedía y
+ * así tampoco sale un email duplicado.
+ */
 export async function confirmAppointment(id: string) {
   const { supabase } = await requireAdmin();
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("appointments")
     .update({ status: "confirmado", confirmed_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("status", "pendiente");
+    .eq("status", "pendiente")
+    .select(
+      "service_name_at_booking, price_at_booking, starts_at, ends_at, manage_token_hash, customer:customers(full_name, email)",
+    )
+    .maybeSingle();
 
   if (error) throw new Error(`No se pudo confirmar el turno: ${error.message}`);
 
   revalidateAgenda();
+
+  const appointment = data as unknown as ConfirmedAppointment | null;
+  if (!appointment?.customer) return;
+
+  // El plazo se lee en el momento del envío, igual que `app/turno/[token]`:
+  // si el peluquero lo cambió desde la reserva, el email dice el vigente.
+  const settings = await getSettings();
+
+  // Nunca lanza: un fallo de envío no puede tumbar una confirmación ya guardada.
+  await sendAppointmentConfirmed({
+    appointmentId: id,
+    toEmail: appointment.customer.email,
+    fullName: appointment.customer.full_name,
+    serviceName: appointment.service_name_at_booking,
+    price: appointment.price_at_booking,
+    startsAt: appointment.starts_at,
+    endsAt: appointment.ends_at,
+    manageUrl: manageUrlFor(id, appointment.manage_token_hash),
+    cancellationWindowHours: settings.cancellation_window_hours,
+  });
 }
 
 /**

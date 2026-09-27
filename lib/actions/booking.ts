@@ -1,5 +1,7 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -25,7 +27,7 @@ import { formatTime } from "@/lib/format";
 import { isLocalPhone } from "@/lib/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateManageToken, hashManageToken } from "@/lib/tokens";
+import { deriveManageToken, hashManageToken } from "@/lib/tokens";
 import { bookingSchema, cancelByTokenSchema, identifySchema } from "@/lib/validation/schemas";
 
 /** Código de Postgres para violación de restricción de exclusión. */
@@ -227,11 +229,15 @@ export async function createBooking(
     contact = { fullName: customer.full_name, phone: customer.phone, email: customer.email };
   }
 
-  const { token, hash } = generateManageToken();
+  // El id se genera acá y no en la base porque el token del link se deriva de
+  // él (ver `lib/tokens.ts`): así los emails posteriores pueden rearmarlo.
+  const appointmentId = randomUUID();
+  const token = deriveManageToken(appointmentId);
 
   const { data: appointment, error } = await supabase
     .from("appointments")
     .insert({
+      id: appointmentId,
       customer_id: customerId,
       service_id: service.id,
       service_name_at_booking: service.name,
@@ -239,7 +245,7 @@ export async function createBooking(
       duration_minutes_at_booking: service.duration_minutes,
       starts_at: startDate.toISOString(),
       ends_at: endDate.toISOString(),
-      manage_token_hash: hash,
+      manage_token_hash: hashManageToken(token),
       customer_note: note ?? null,
     })
     .select("id")

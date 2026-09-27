@@ -2,6 +2,7 @@ import { BUSINESS_NAME, siteUrl } from "@/lib/config";
 import {
   badge,
   button,
+  cancellationNote,
   dateBlock,
   detailTable,
   emailDocument,
@@ -245,4 +246,77 @@ export function buildCancellationAdminEmail(data: CancellationData): EmailConten
       `Abrir agenda: ${url}`,
     ].join("\n"),
   };
+}
+
+// ---------------------------------------------------------------------------
+// 1b · Turno confirmado (cliente) — y su variante de recordatorio (E5)
+// ---------------------------------------------------------------------------
+
+export type ConfirmedData = AppointmentTime & {
+  fullName: string;
+  serviceName: string;
+  price: number;
+  /**
+   * Link de autogestión, o `null` para un turno reservado antes de derivar
+   * los tokens (ver `lib/tokens.ts`): ahí el mail sale sin botón y la nota
+   * remite al link de la reserva.
+   */
+  manageUrl: string | null;
+  /** `settings.cancellation_window_hours`, leído al momento del envío. */
+  cancellationWindowHours: number;
+};
+
+/** Layout de 1b; el recordatorio lo reusa cambiando asunto, título y saludo. */
+function confirmedStyleEmail(
+  data: ConfirmedData,
+  copy: { subject: string; heading: string; greeting: string; preheaderPrefix: string },
+): EmailContent {
+  const preheader = `${copy.preheaderPrefix}${when(data)} · ${data.serviceName}`;
+  const rows: DetailRow[] = [
+    { label: "Servicio", value: data.serviceName },
+    { label: "Precio", value: formatCurrency(data.price) },
+    { label: "A nombre de", value: data.fullName },
+  ];
+  const cancelNote = cancellationNote(
+    data.cancellationWindowHours,
+    data.manageUrl ? "el mismo link" : "el link de tu reserva",
+  );
+
+  return {
+    subject: copy.subject,
+    preheader,
+    html: emailDocument({
+      subject: copy.subject,
+      preheader,
+      audience: "cliente",
+      baseUrl: siteUrl(),
+      body: [
+        badge("confirmado"),
+        title(copy.heading),
+        intro(copy.greeting),
+        dateBlock(data),
+        detailTable(rows),
+        data.manageUrl ? button({ label: "Ver mi turno", href: data.manageUrl }) : "",
+        note(cancelNote),
+      ].join(""),
+    }),
+    text: [
+      copy.greeting,
+      "",
+      when(data),
+      ...textRows(rows),
+      ...(data.manageUrl ? ["", `Ver mi turno: ${data.manageUrl}`] : []),
+      "",
+      cancelNote,
+    ].join("\n"),
+  };
+}
+
+export function buildAppointmentConfirmedEmail(data: ConfirmedData): EmailContent {
+  return confirmedStyleEmail(data, {
+    subject: `Tu turno está confirmado — ${BUSINESS_NAME}`,
+    heading: "¡Te esperamos!",
+    greeting: `Hola ${firstName(data.fullName)}, tu turno está confirmado.`,
+    preheaderPrefix: "Confirmado: ",
+  });
 }

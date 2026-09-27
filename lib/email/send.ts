@@ -3,11 +3,13 @@ import "server-only";
 import { adminEmail, emailFrom } from "@/lib/email/env";
 import { getResendClient } from "@/lib/email/resend";
 import {
+  buildAppointmentConfirmedEmail,
   buildBookingConfirmationEmail,
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
   buildNewRequestAlertEmail,
   type CancellationData,
+  type ConfirmedData,
 } from "@/lib/email/templates";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { EmailType } from "@/lib/supabase/database.types";
@@ -77,6 +79,47 @@ export async function sendBookingConfirmation(params: {
     await logEmail({
       appointment_id: params.appointmentId,
       type: "confirmacion",
+      to_email: params.toEmail,
+      status: "error",
+      error: messageFrom(error),
+    });
+  }
+}
+
+/**
+ * 1b: el peluquero aceptó el turno. Se registra en `email_log` como
+ * `aceptacion` (migración 0011). Si esa migración todavía no se aplicó, el
+ * mail sale igual y solo falla el registro, que ya se informa por consola.
+ */
+export async function sendAppointmentConfirmed(
+  params: ConfirmedData & { appointmentId: string; toEmail: string | null },
+): Promise<void> {
+  if (!params.toEmail) return;
+
+  const { subject, html, text } = buildAppointmentConfirmedEmail(params);
+
+  try {
+    const { data, error } = await getResendClient().emails.send({
+      from: emailFrom(),
+      to: params.toEmail,
+      subject,
+      html,
+      text,
+    });
+    if (error) throw new Error(error.message);
+
+    await logEmail({
+      appointment_id: params.appointmentId,
+      type: "aceptacion",
+      to_email: params.toEmail,
+      status: "enviado",
+      provider_id: data?.id ?? null,
+    });
+  } catch (error) {
+    console.error(`No se pudo enviar el aviso de turno confirmado: ${messageFrom(error)}`);
+    await logEmail({
+      appointment_id: params.appointmentId,
+      type: "aceptacion",
       to_email: params.toEmail,
       status: "error",
       error: messageFrom(error),
