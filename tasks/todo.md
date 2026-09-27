@@ -116,7 +116,7 @@
       `retry()` de Next 16, que vuelve a pedir los datos; identificador y
       hora para reportar). Hoy conserva el h1 con la fecha. Probado con una
       ruta que falla a propósito (ya borrada)
-- [ ] H — **Verificación manual pendiente** en iPhone
+- [x] H — Verificado en iPhone
 
 ## Correcciones de la ronda de prueba (ver tasks/plan-correcciones.md)
 - [x] T1 — Logo sin animación, cancelados fuera de Hoy/Agenda, mes de Caja
