@@ -49,6 +49,9 @@
   --hs-green: #137a55; /* hora de cada fila */
   --hs-green-soft: #9fdcc2; /* filete izquierdo de las tarjetas con turno */
 
+  /* --- Esqueleto de carga (design/admin-iphone n-estados) ---------------- */
+  --hs-skeleton: #e3e6e9; /* barras con la forma del contenido que viene */
+
   /* --- Superficies derivadas -------------------------------------------- */
   --hs-surface-raised: color-mix(in oklab, var(--hs-mist) 18%, var(--hs-paper));
   --hs-surface-hover: color-mix(in oklab, var(--hs-mist) 32%, var(--hs-paper));

@@ -102,7 +102,16 @@
 - [x] G — Verificado en iPhone. De la prueba salió: las hojas ya no enfocan
       el primer campo al abrirse en mobile (abría el teclado o el selector
       de fecha); `DialogContent` manda el foco a la hoja por debajo de 640px
-- [ ] H — Estados transversales (loading.tsx, error.tsx, toast con reintento)
+- [x] H (1/3) — Avisos: `lib/toast-error.ts` con "Reintentar" en todas las
+      acciones del panel que fallan por red (no en errores de validación),
+      `friendlyErrorMessage` reemplaza errores de red y el mensaje genérico
+      de producción de Next; éxito en tinta y error blanco con borde rojo
+- [x] H (2/3) — `loading.tsx` en Hoy, Agenda, Solicitudes y Caja
+      (`components/admin/loading-skeletons.tsx`), con `--hs-skeleton` y
+      pulso de 1.6s quieto con "Reducir movimiento". Hoy pasó a
+      `app/admin/(hoy)/` para que su esqueleto no aparezca al entrar a
+      Servicios, Disponibilidad o Más
+- [ ] H (3/3) — `error.tsx` por pestaña con Reintentar (`retry()`)
 
 ## Correcciones de la ronda de prueba (ver tasks/plan-correcciones.md)
 - [x] T1 — Logo sin animación, cancelados fuera de Hoy/Agenda, mes de Caja
