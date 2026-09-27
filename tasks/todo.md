@@ -193,7 +193,10 @@
       nota, `escapeHtml`, `cancellationNote` (0 → "hasta el horario del
       turno"). Detalles tomados de `Emails.dc.html`: saludo 15px, rótulo del
       panel, footers, flecha en los botones. 14 tests
-- [ ] E2 — Logo con transparencia para email (`sharp`)
+- [x] E2 — `npm run email:logo` (`scripts/generar-logo-email.mjs`, `sharp`):
+      glifo blanco con la luminancia como alfa, `public/email/logo-92.png` y
+      `logo-56.png` (2× de 46×52 y 28×31). Revisado sobre `#050505`: sin
+      recuadro. Se sirven sin sesión
 - [ ] E3 — 1a, 2a, 1c y 2b en HTML + texto
 - [ ] E4 — Email 1b al aceptar (migración 0011 + link según decisión)
 - [ ] E5 — Template del recordatorio (el envío sigue en Fase 3)

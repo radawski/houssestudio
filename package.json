@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "admin:credenciales": "node scripts/cambiar-credenciales-admin.mjs"
+    "admin:credenciales": "node scripts/cambiar-credenciales-admin.mjs",
+    "email:logo": "node scripts/generar-logo-email.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
