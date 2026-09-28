@@ -221,7 +221,10 @@
       redondeadas, así se ve en los dos modos
 - [x] E5 — `buildReminderEmail` ("Mañana te esperamos"): layout de 1b,
       misma nota y plazo. Solo el template y tests; el envío sigue en Fase 3
-- [ ] E6 — Preview en dev (`/dev/emails`, 375px y 600px)
+- [x] E6 — `app/dev/emails/page.tsx`: los 6 mails (más variantes: 1b sin
+      link y plazo 0, 1c sin motivo, 2b por el peluquero, nombre con
+      caracteres especiales) a 375px y 600px con asunto, preheader y texto
+      plano. 404 en producción (comprobado con `next start`)
 - [ ] E7 — Verificación en Gmail, Mail del iPhone y Outlook
 
 ## Fase 3 (sin especificar todavía)
