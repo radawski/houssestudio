@@ -209,10 +209,14 @@
       (`buildAppointmentConfirmedEmail`, `sendAppointmentConfirmed`) desde
       `confirmAppointment`, con el plazo leído al enviar; sin botón para
       turnos anteriores al cambio. Migración `0011_email_aceptacion.sql`
-- [ ] E4 — **Antes de subir a Vercel**: el usuario carga `MANAGE_TOKEN_SECRET`
-      (el mismo valor que `.env.local`) y confirma `NEXT_PUBLIC_SITE_URL` en
-      Vercel, y aplica la 0011 en Supabase. Después: prueba real (reservar y
-      aceptar) y recién ahí el push
+- [x] E4 — Prueba local: reservar y aceptar mandó 1a, 2a y 1b (registrados
+      en `email_log`, incluido `aceptacion`); el link derivado abre el turno.
+      `MANAGE_TOKEN_SECRET` cargado en Vercel y 0011 aplicada
+- [ ] E4 — Falta confirmar `NEXT_PUBLIC_SITE_URL` en Vercel (tipo Config,
+      `https://houssestudio.vercel.app`) antes del push
+- [x] E2 (ajuste) — Gmail en modo oscuro (iPhone) invierte el header a
+      blanco: el logo pasa a llevar su propio cuadrado `#050505` con esquinas
+      redondeadas, así se ve en los dos modos
 - [ ] E5 — Template del recordatorio (el envío sigue en Fase 3)
 - [ ] E6 — Preview en dev (`/dev/emails`, 375px y 600px)
 - [ ] E7 — Verificación en Gmail, Mail del iPhone y Outlook
