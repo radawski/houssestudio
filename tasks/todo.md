@@ -212,12 +212,15 @@
 - [x] E4 — Prueba local: reservar y aceptar mandó 1a, 2a y 1b (registrados
       en `email_log`, incluido `aceptacion`); el link derivado abre el turno.
       `MANAGE_TOKEN_SECRET` cargado en Vercel y 0011 aplicada
-- [ ] E4 — Falta confirmar `NEXT_PUBLIC_SITE_URL` en Vercel (tipo Config,
-      `https://houssestudio.vercel.app`) antes del push
+- [x] E4 — Publicado y verificado en producción por el usuario (reservar,
+      aceptar, cancelar; botones y logo). Hizo falta cargar en Vercel
+      `NEXT_PUBLIC_SITE_URL` (tipo Config), `RESEND_API_KEY`, `EMAIL_FROM` y
+      `ADMIN_EMAIL`: en producción los mails nunca se habían enviado
 - [x] E2 (ajuste) — Gmail en modo oscuro (iPhone) invierte el header a
       blanco: el logo pasa a llevar su propio cuadrado `#050505` con esquinas
       redondeadas, así se ve en los dos modos
-- [ ] E5 — Template del recordatorio (el envío sigue en Fase 3)
+- [x] E5 — `buildReminderEmail` ("Mañana te esperamos"): layout de 1b,
+      misma nota y plazo. Solo el template y tests; el envío sigue en Fase 3
 - [ ] E6 — Preview en dev (`/dev/emails`, 375px y 600px)
 - [ ] E7 — Verificación en Gmail, Mail del iPhone y Outlook
 

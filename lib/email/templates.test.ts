@@ -7,6 +7,7 @@ import {
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
   buildNewRequestAlertEmail,
+  buildReminderEmail,
   type CancellationData,
   type EmailContent,
 } from "@/lib/email/templates";
@@ -196,5 +197,36 @@ describe("1b · buildAppointmentConfirmedEmail", () => {
 
   it("el nombre llega escapado", () => {
     expect(confirmed({ fullName: HOSTILE }).html).not.toContain("<script>");
+  });
+});
+
+describe("recordatorio · buildReminderEmail", () => {
+  const reminder = (overrides: Partial<Parameters<typeof buildReminderEmail>[0]> = {}) =>
+    buildReminderEmail({
+      ...TIME,
+      fullName: "Ana Pérez",
+      serviceName: "Corte clásico",
+      price: 8000,
+      manageUrl: "https://houssestudio.com/turno/abc123",
+      cancellationWindowHours: 2,
+      ...overrides,
+    });
+
+  it("layout de 1b con el título del recordatorio", () => {
+    const email = reminder();
+    expect(email.subject).toBe("Mañana te esperamos — HOUSSESTUDIO");
+    expect(email.html).toContain("Mañana te esperamos");
+    expect(email.html).toContain("Hola Ana, te recordamos tu turno de mañana.");
+    expect(email.html).toContain("#d1fae5");
+    expect(email.html).toContain("Ver mi turno");
+    expect(email.preheader).toMatch(/^Mañana: Sábado 15 de agosto/);
+    expectWellFormed(email);
+  });
+
+  it("misma nota y mismo plazo que 1b", () => {
+    const data = { cancellationWindowHours: 3 };
+    expect(reminder(data).html).toContain("hasta 3 horas antes.");
+    expect(reminder({ cancellationWindowHours: 0 }).html).toContain("hasta el horario del turno.");
+    expect(reminder({ manageUrl: null }).html).toContain("desde el link de tu reserva");
   });
 });

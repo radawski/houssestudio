@@ -320,3 +320,17 @@ export function buildAppointmentConfirmedEmail(data: ConfirmedData): EmailConten
     preheaderPrefix: "Confirmado: ",
   });
 }
+
+/**
+ * Recordatorio del día anterior: el layout de 1b con otro título, y la misma
+ * nota con el mismo plazo. Solo el contenido; el envío programado (cron con
+ * `CRON_SECRET` e índice de idempotencia en `email_log`) es de la Fase 3.
+ */
+export function buildReminderEmail(data: ConfirmedData): EmailContent {
+  return confirmedStyleEmail(data, {
+    subject: `Mañana te esperamos — ${BUSINESS_NAME}`,
+    heading: "Mañana te esperamos",
+    greeting: `Hola ${firstName(data.fullName)}, te recordamos tu turno de mañana.`,
+    preheaderPrefix: "Mañana: ",
+  });
+}
