@@ -225,7 +225,8 @@
       link y plazo 0, 1c sin motivo, 2b por el peluquero, nombre con
       caracteres especiales) a 375px y 600px con asunto, preheader y texto
       plano. 404 en producción (comprobado con `next start`)
-- [ ] E7 — Verificación en Gmail, Mail del iPhone y Outlook
+- [x] E7 — Verificado por el usuario en Gmail (iPhone, modo claro y oscuro)
+      con envíos reales de producción. Mail del iPhone y Outlook sin revisar
 
 ## Fase 3 (sin especificar todavía)
 - [ ] CRM, reportes y recordatorios automáticos (estos usan E4/E5)
