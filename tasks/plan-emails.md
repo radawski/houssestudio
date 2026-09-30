@@ -182,11 +182,11 @@ nueva: sus recordatorios usan el template y el link de este plan.
 
 ## Resto del plan (sin cambios)
 
-- **Fase 3**: CRM (lista y ficha de clientes con historial y notas),
+- **Fase 3**: solo recordatorios automáticos (decisión del usuario). Usan el
+  template del recordatorio (E5) y el link derivado (E4).
+- **A futuro, quizás**: CRM (ficha de cliente con historial y notas) y
   reportes (comparativas, servicios más vendidos, horarios pico, ausencias,
-  clientes nuevos o recurrentes) y recordatorios automáticos. Estos últimos
-  pasan a depender de E4/E5: usan el template del recordatorio y el link
-  derivado.
+  clientes nuevos o recurrentes). Sin fecha ni especificación.
 - **Fuera de alcance, a decidir aparte**: pago online, reprogramación de
   turnos, gastos de caja.
 - **Pendientes sueltos**: dominio propio en Resend (una variable de

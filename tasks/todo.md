@@ -228,5 +228,18 @@
 - [x] E7 — Verificado por el usuario en Gmail (iPhone, modo claro y oscuro)
       con envíos reales de producción. Mail del iPhone y Outlook sin revisar
 
-## Fase 3 (sin especificar todavía)
-- [ ] CRM, reportes y recordatorios automáticos (estos usan E4/E5)
+## Fase 3 — Recordatorios automáticos (decisión del usuario: solo esto)
+- [ ] Especificar y construir el envío del recordatorio del día anterior
+      (tarea programada con `CRON_SECRET`, sin duplicados vía `email_log`),
+      usando `buildReminderEmail` (E5) y el link derivado (E4). Depende del
+      dominio propio en Resend para llegarle a clientes reales
+
+## Dominio propio para los emails (en curso)
+- [ ] Elegir y comprar el dominio, verificarlo en Resend (DNS), cambiar
+      `EMAIL_FROM` en Vercel y probar un envío a una casilla que no sea la
+      dueña de la cuenta de Resend
+
+## A futuro (quizás; sin fecha ni especificación)
+- CRM: ficha de cliente con historial de turnos, gasto, ausencias y notas
+- Reportes: comparativas entre meses, servicios más vendidos, horarios
+  pico, ausencias, clientes nuevos vs. recurrentes
