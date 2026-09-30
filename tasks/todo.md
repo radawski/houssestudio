@@ -235,9 +235,16 @@
       dominio propio en Resend para llegarle a clientes reales
 
 ## Dominio propio para los emails (en curso)
-- [ ] Elegir y comprar el dominio, verificarlo en Resend (DNS), cambiar
-      `EMAIL_FROM` en Vercel y probar un envío a una casilla que no sea la
-      dueña de la cuenta de Resend
+- [x] Decisión: `houssestudio.com.ar` (NIC Argentina), para el sitio y los
+      mails (`houssestudio.com` está tomado desde 2018)
+- [ ] D1 — El usuario registra el dominio en nic.ar
+- [ ] D2 — Agregar el dominio en Vercel y delegarlo en NIC a los DNS de
+      Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`)
+- [ ] D3 — Agregar el dominio en Resend y cargar sus registros DNS en Vercel
+- [ ] D4 — `EMAIL_FROM` → `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en
+      Vercel y `.env.local`; prueba a una casilla ajena
+- [ ] D5 — Sitio en `houssestudio.com.ar`: dominio de producción en Vercel,
+      `NEXT_PUBLIC_SITE_URL` actualizado, redeploy
 
 ## A futuro (quizás; sin fecha ni especificación)
 - CRM: ficha de cliente con historial de turnos, gasto, ausencias y notas
