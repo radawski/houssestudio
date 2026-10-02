@@ -237,7 +237,10 @@
 ## Dominio propio para los emails (en curso)
 - [x] Decisión: `houssestudio.com.ar` (NIC Argentina), para el sitio y los
       mails (`houssestudio.com` está tomado desde 2018)
-- [ ] D1 — El usuario registra el dominio en nic.ar
+- [ ] D0 — Esperando que el cliente acepte el acuerdo de mantenimiento
+      (doc: https://claude.ai/code/artifact/33294188-21b6-47dc-9827-51d453fd940c)
+- [ ] D1 — Registrar el dominio en nic.ar **a nombre del cliente (su CUIT)**:
+      lo paga él ($8.500/año); el usuario lo administra
 - [ ] D2 — Agregar el dominio en Vercel y delegarlo en NIC a los DNS de
       Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`)
 - [ ] D3 — Agregar el dominio en Resend y cargar sus registros DNS en Vercel
@@ -245,6 +248,11 @@
       Vercel y `.env.local`; prueba a una casilla ajena
 - [ ] D5 — Sitio en `houssestudio.com.ar`: dominio de producción en Vercel,
       `NEXT_PUBLIC_SITE_URL` actualizado, redeploy
+
+## Al arrancar el abono (antes de usarla con clientes reales)
+- [ ] Pasar el proyecto de Vercel a Pro (USD 20/mes): Hobby prohíbe uso comercial
+- [ ] Copias de seguridad automáticas propias de Supabase (el plan gratis no
+      tiene backups y pausa el proyecto tras 7 días sin uso)
 
 ## A futuro (quizás; sin fecha ni especificación)
 - CRM: ficha de cliente con historial de turnos, gasto, ausencias y notas
