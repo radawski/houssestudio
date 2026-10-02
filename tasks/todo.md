@@ -269,7 +269,16 @@
       (6 tests, con conservación del total) y movimientos de Caja con categoría
 - [x] P1 — 0012 aplicada: 6 ventas viejas con cantidad 1 y precio = monto,
       tablas nuevas y función OK; Caja de septiembre igual ($126.300)
-- [ ] P2 — Productos: gestión (escritorio dos columnas, iPhone en 3 pasos), Más y nav
+- [x] P2 — `/admin/productos`: escritorio en dos columnas (categorías + alta
+      en línea, editar y borrar por fila), iPhone en 3 pasos (categorías →
+      detalle con menú de opciones → hoja Nuevo/Editar producto). Acciones en
+      `lib/actions/products.ts` (nombre repetido y categoría con productos
+      con mensajes propios), Más con "Productos · NUEVO", pestaña en la nav,
+      tab bar con Más activo. Además: los campos de precio/monto usaban
+      `step={100}` y el navegador bloqueaba en silencio montos como $12.050
+      (servicios y cobro de turno corregidos). Probado en Chrome a 390 y
+      1200 px con datos de prueba (borrados)
+- [ ] P2 — **Verificación manual pendiente** en iPhone
 - [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
 - [ ] P4 — Caja por categoría en el iPhone
 - [ ] P5 — Caja por categoría en escritorio

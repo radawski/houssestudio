@@ -6,12 +6,20 @@ import { ArrowLeft } from "lucide-react";
  * Disponibilidad), solo mobile (design/admin-iphone n-sistema). En escritorio
  * esas pantallas siguen con su h1 y la navegación superior.
  */
-export function BackHeader({ title, href = "/admin/mas" }: { title: string; href?: string }) {
+export function BackHeader({
+  title,
+  href = "/admin/mas",
+  backLabel = "Volver a Más",
+}: {
+  title: string;
+  href?: string;
+  backLabel?: string;
+}) {
   return (
     <div className="-ml-2 flex items-center gap-1 md:hidden">
       <Link
         href={href}
-        aria-label="Volver a Más"
+        aria-label={backLabel}
         className="hover:bg-accent flex size-11 items-center justify-center rounded-md"
       >
         <ArrowLeft className="size-5" strokeWidth={1.75} />

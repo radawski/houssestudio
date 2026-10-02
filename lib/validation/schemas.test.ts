@@ -6,6 +6,8 @@ import {
   identifySchema,
   normalizeDni,
   normalizePhone,
+  productCategorySchema,
+  productSchema,
   walkInSaleSchema,
 } from "@/lib/validation/schemas";
 
@@ -175,5 +177,27 @@ describe("businessHourSchema", () => {
 
   it("rechaza una hora incompleta", () => {
     expect(day([{ opensAt: "", closesAt: "12:00" }]).success).toBe(false);
+  });
+});
+
+describe("productCategorySchema / productSchema", () => {
+  it("categoría: recorta espacios y exige un nombre", () => {
+    expect(productCategorySchema.parse({ name: "  Ceras  " }).name).toBe("Ceras");
+    expect(productCategorySchema.safeParse({ name: "   " }).success).toBe(false);
+  });
+
+  it("producto: categoría, nombre y precio no negativo", () => {
+    const ok = productSchema.safeParse({
+      categoryId: "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b",
+      name: " Coca-Cola ",
+      price: "2300",
+    });
+    expect(ok.success && ok.data).toEqual({
+      categoryId: "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b",
+      name: "Coca-Cola",
+      price: 2300,
+    });
+    expect(productSchema.safeParse({ categoryId: "x", name: "Agua", price: 100 }).success).toBe(false);
+    expect(productSchema.safeParse({ categoryId: "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b", name: "Agua", price: -1 }).success).toBe(false);
   });
 });

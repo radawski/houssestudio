@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, Clock, Scissors } from "lucide-react";
+import { ChevronRight, Clock, Package, Scissors } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,13 @@ const LINKS = [
     label: "Servicios",
     description: "Catálogo, precios y duración.",
     icon: Scissors,
+  },
+  {
+    href: "/admin/productos",
+    label: "Productos",
+    description: "Categorías, productos y precios.",
+    icon: Package,
+    isNew: true,
   },
   {
     href: "/admin/disponibilidad",
@@ -46,7 +53,7 @@ export default async function MasPage() {
 
       <Card className="py-0">
         <CardContent className="divide-y divide-[var(--hs-divider)] p-0">
-          {LINKS.map(({ href, label, description, icon: Icon }) => (
+          {LINKS.map(({ href, label, description, icon: Icon, ...link }) => (
             <Link
               key={href}
               href={href}
@@ -54,7 +61,14 @@ export default async function MasPage() {
             >
               <Icon className="text-muted-foreground size-5 shrink-0" strokeWidth={1.75} />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{label}</p>
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  {label}
+                  {"isNew" in link && link.isNew ? (
+                    <span className="rounded-full border border-[var(--hs-border-card)] px-1.5 text-[10px] font-medium tracking-[0.08em] text-muted-foreground uppercase">
+                      Nuevo
+                    </span>
+                  ) : null}
+                </p>
                 <p className="text-muted-foreground text-xs">{description}</p>
               </div>
               <ChevronRight className="text-muted-foreground size-4.5 shrink-0" />

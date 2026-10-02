@@ -227,6 +227,29 @@ export const walkInSaleSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+/** Categoría de productos (Más › Productos). */
+export const productCategorySchema = z.object({
+  name: z
+    .string("Escribí un nombre")
+    .trim()
+    .min(1, "Escribí un nombre")
+    .max(40, "El nombre es demasiado largo"),
+});
+
+/** Producto del catálogo: solo catálogo, el precio de la venta sale de acá. */
+export const productSchema = z.object({
+  categoryId: z.uuid("Elegí una categoría"),
+  name: z
+    .string("Escribí un nombre")
+    .trim()
+    .min(1, "Escribí un nombre")
+    .max(60, "El nombre es demasiado largo"),
+  price: z.coerce
+    .number<number>("Escribí un precio")
+    .min(0, "El precio no puede ser negativo")
+    .max(10_000_000, "El precio es demasiado alto"),
+});
+
 export type BookingInput = z.infer<typeof bookingSchema>;
 export type CancelByTokenInput = z.infer<typeof cancelByTokenSchema>;
 export type ServiceInput = z.infer<typeof serviceSchema>;

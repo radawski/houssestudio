@@ -164,7 +164,7 @@ export function ServiceDialog({
                   name="price"
                   type="number"
                   min={0}
-                  step={100}
+                  step={1}
                   inputMode="numeric"
                   defaultValue={service?.price ?? ""}
                   className="h-12 pl-[26px] text-base tabular-nums md:h-9 md:text-sm"

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * Tab bar inferior, solo mobile (design/admin-iphone n-sistema). Convive con
  * `AdminNav`, que sigue siendo la navegación en desktop — no la reemplaza.
  *
- * Servicios y Disponibilidad no tienen ítem propio: seis pestañas no entran
+ * Servicios, Productos y Disponibilidad no tienen ítem propio: seis pestañas no entran
  * en una barra inferior, así que cuelgan de "Más" y esa pestaña queda
  * activa mientras se navega dentro de cualquiera de las dos.
  */
@@ -22,7 +22,7 @@ const LINKS = [
   { href: "/admin/mas", label: "Más", icon: MoreHorizontal },
 ] as const;
 
-const MAS_PREFIXES = ["/admin/mas", "/admin/servicios", "/admin/disponibilidad"];
+const MAS_PREFIXES = ["/admin/mas", "/admin/servicios", "/admin/productos", "/admin/disponibilidad"];
 
 export function AdminTabBar({ pendingCount }: { pendingCount: number }) {
   const pathname = usePathname();
