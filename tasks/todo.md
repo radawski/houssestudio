@@ -279,7 +279,14 @@
       (servicios y cobro de turno corregidos). Probado en Chrome a 390 y
       1200 px con datos de prueba (borrados)
 - [x] P2 — Verificado por el usuario en iPhone
-- [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
+- [x] P3 — Venta suelta con carrito (`walk-in-sale-button.tsx`): buscador,
+      Cortes + categorías con productos activos desplegables ("n elegidos"),
+      Agregar / − n +, medio de pago, nota, pie fijo con unidades y total.
+      `recordWalkInSale` recibe ítems (sin precios) y llama a
+      `record_walk_in_sale`; `getSaleCatalog` arma el catálogo. Probado en
+      Chrome a 390px: corte + 2 cocas por transferencia → 2 filas con el mismo
+      `sale_id`, $17.000, Caja del día $17.000 (venta de prueba borrada)
+- [ ] P3 — **Verificación manual pendiente** en iPhone
 - [ ] P4 — Caja por categoría en el iPhone
 - [ ] P5 — Caja por categoría en escritorio
 - [ ] P6 — Cierre: SPEC, README

@@ -4,11 +4,11 @@ import { AgendaToolbar, type AgendaView } from "@/app/admin/agenda/agenda-toolba
 import { DayView, MonthView, WeekView } from "@/app/admin/agenda/agenda-views";
 import { computeFreeGaps } from "@/lib/availability";
 import {
-  getActiveServices,
   getAppointmentsBetween,
   getBusinessHoursForDay,
   getTimeBlocksForDay,
 } from "@/lib/data/appointments";
+import { getSaleCatalog } from "@/lib/data/products";
 import { dayRange, monthRange, todayKey, weekRange } from "@/lib/dates";
 import { formatInTz, formatLongDate } from "@/lib/format";
 import type { AppointmentStatus } from "@/lib/supabase/database.types";
@@ -38,7 +38,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
   const dateKey =
     typeof fecha === "string" && DATE_KEY_PATTERN.test(fecha) ? fecha : todayKey();
 
-  const services = await getActiveServices();
+  const catalog = await getSaleCatalog();
 
   if (view === "dia") {
     const { start, end } = dayRange(dateKey);
@@ -65,7 +65,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
           view={view}
           dateKey={dateKey}
           title={formatLongDate(start)}
-          services={services}
+          catalog={catalog}
         />
         <DayView appointments={appointments} gaps={gaps} />
       </div>
@@ -82,7 +82,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
           view={view}
           dateKey={dateKey}
           title={`${formatInTz(start, "d 'de' MMMM")} – ${formatInTz(dayRange(days[6]).start, "d 'de' MMMM")}`}
-          services={services}
+          catalog={catalog}
         />
         <WeekView days={days} appointments={appointments} />
       </div>
@@ -98,7 +98,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
         view={view}
         dateKey={dateKey}
         title={formatInTz(dayRange(`${monthKey}-01`).start, "MMMM yyyy")}
-        services={services}
+        catalog={catalog}
       />
       <MonthView days={days} monthKey={monthKey} dateKey={dateKey} appointments={appointments} />
     </div>

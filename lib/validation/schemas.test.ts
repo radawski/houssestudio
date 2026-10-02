@@ -98,43 +98,52 @@ describe("normalizePhone (regresion)", () => {
 });
 
 describe("walkInSaleSchema", () => {
-  const common = { amount: "5000", method: "efectivo" };
+  const CORTE = "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b";
+  const COCA = "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d";
+  const base = { method: "efectivo", note: "  " };
 
-  it("acepta un servicio con su id", () => {
+  it("acepta servicios y productos con su cantidad, sin precios", () => {
     const result = walkInSaleSchema.safeParse({
-      ...common,
-      kind: "servicio",
-      serviceId: "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b",
+      ...base,
+      items: [
+        { kind: "servicio", id: CORTE, quantity: 1 },
+        { kind: "producto", id: COCA, quantity: "2" },
+      ],
     });
     expect(result.success).toBe(true);
-  });
-
-  it("rechaza un servicio sin elegir", () => {
-    const result = walkInSaleSchema.safeParse({ ...common, kind: "servicio", serviceId: "" });
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.path[0]).toBe("serviceId");
-  });
-
-  it("acepta un producto con nombre libre, sin servicio", () => {
-    const result = walkInSaleSchema.safeParse({ ...common, kind: "producto", productName: "  Cera  " });
-    expect(result.success).toBe(true);
-    if (result.success && result.data.kind === "producto") {
-      expect(result.data.productName).toBe("Cera");
-      expect(result.data.amount).toBe(5000);
+    if (result.success) {
+      expect(result.data.items[1].quantity).toBe(2);
+      expect(result.data.note).toBe("");
+      expect(JSON.stringify(result.data)).not.toContain("price");
     }
   });
 
-  it("rechaza un producto sin nombre", () => {
-    for (const productName of [undefined, "", "   "]) {
-      const result = walkInSaleSchema.safeParse({ ...common, kind: "producto", productName });
-      expect(result.success).toBe(false);
-      expect(result.error?.issues[0]?.path[0]).toBe("productName");
-    }
+  it("rechaza una venta vacía, cantidades inválidas y un ítem repetido", () => {
+    expect(walkInSaleSchema.safeParse({ ...base, items: [] }).success).toBe(false);
+    expect(
+      walkInSaleSchema.safeParse({ ...base, items: [{ kind: "producto", id: COCA, quantity: 0 }] }).success,
+    ).toBe(false);
+    expect(
+      walkInSaleSchema.safeParse({ ...base, items: [{ kind: "producto", id: COCA, quantity: 1.5 }] }).success,
+    ).toBe(false);
+    expect(
+      walkInSaleSchema.safeParse({
+        ...base,
+        items: [
+          { kind: "producto", id: COCA, quantity: 1 },
+          { kind: "producto", id: COCA, quantity: 2 },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
-  it("rechaza un tipo de venta desconocido", () => {
-    const result = walkInSaleSchema.safeParse({ ...common, kind: "otro", productName: "Cera" });
-    expect(result.success).toBe(false);
+  it("rechaza un tipo de ítem desconocido o un id que no es uuid", () => {
+    expect(
+      walkInSaleSchema.safeParse({ ...base, items: [{ kind: "otro", id: COCA, quantity: 1 }] }).success,
+    ).toBe(false);
+    expect(
+      walkInSaleSchema.safeParse({ ...base, items: [{ kind: "producto", id: "coca", quantity: 1 }] }).success,
+    ).toBe(false);
   });
 });
 

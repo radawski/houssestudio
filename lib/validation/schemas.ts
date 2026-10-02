@@ -200,32 +200,28 @@ export const paymentSchema = z.object({
   method: z.enum(["efectivo", "transferencia"]),
 });
 
-const walkInSaleCommon = {
-  amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
+/**
+ * Una venta suelta con carrito (tasks/plan-productos.md, P3): uno o más
+ * ítems del catálogo, servicios o productos, con su cantidad. Solo catálogo:
+ * no viaja ningún precio, el servidor lo toma de Servicios y Productos.
+ */
+export const walkInSaleSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        kind: z.enum(["servicio", "producto"]),
+        id: z.uuid(),
+        quantity: z.coerce.number<number>().int().min(1).max(99, "Demasiadas unidades"),
+      }),
+    )
+    .min(1, "Agregá al menos un ítem")
+    .refine(
+      (items) => new Set(items.map((item) => `${item.kind}:${item.id}`)).size === items.length,
+      "Un ítem aparece dos veces",
+    ),
   method: z.enum(["efectivo", "transferencia"]),
   note: z.string().trim().max(200, "La nota es demasiado larga").optional(),
-};
-
-/**
- * Un servicio sale del catálogo (se valida que exista); un producto no tiene
- * catálogo y se describe con un nombre libre.
- */
-export const walkInSaleSchema = z.discriminatedUnion("kind", [
-  z.object({
-    kind: z.literal("servicio"),
-    serviceId: z.uuid("Elegí un servicio"),
-    ...walkInSaleCommon,
-  }),
-  z.object({
-    kind: z.literal("producto"),
-    productName: z
-      .string("Escribí qué vendiste")
-      .trim()
-      .min(1, "Escribí qué vendiste")
-      .max(80, "El nombre es demasiado largo"),
-    ...walkInSaleCommon,
-  }),
-]);
+});
 
 /** Categoría de productos (Más › Productos). */
 export const productCategorySchema = z.object({

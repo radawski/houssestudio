@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { WalkInSaleButton } from "@/components/admin/walk-in-sale-button";
+import type { SaleCatalog } from "@/lib/data/products";
 import { Button } from "@/components/ui/button";
 import { dayNumber } from "@/lib/agenda-day";
 import { addDaysToKey, todayKey, weekRange } from "@/lib/dates";
@@ -77,12 +78,12 @@ export function AgendaToolbar({
   view,
   dateKey,
   title,
-  services,
+  catalog,
 }: {
   view: AgendaView;
   dateKey: string;
   title: string;
-  services: { id: string; name: string; price: number }[];
+  catalog: SaleCatalog;
 }) {
   const step = STEP_DAYS[view];
 
@@ -113,7 +114,7 @@ export function AgendaToolbar({
           a agrupar con `ViewSegments` cuando existe como fila real en
           desktop. */}
       <div className="contents md:flex md:items-center md:gap-3">
-        <WalkInSaleButton services={services} />
+        <WalkInSaleButton catalog={catalog} />
         <ViewSegments view={view} dateKey={dateKey} className="hidden md:flex" />
       </div>
 
