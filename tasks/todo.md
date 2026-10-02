@@ -278,7 +278,7 @@
       `step={100}` y el navegador bloqueaba en silencio montos como $12.050
       (servicios y cobro de turno corregidos). Probado en Chrome a 390 y
       1200 px con datos de prueba (borrados)
-- [ ] P2 — **Verificación manual pendiente** en iPhone
+- [x] P2 — Verificado por el usuario en iPhone
 - [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
 - [ ] P4 — Caja por categoría en el iPhone
 - [ ] P5 — Caja por categoría en escritorio
