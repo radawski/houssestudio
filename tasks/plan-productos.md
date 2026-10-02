@@ -88,12 +88,14 @@ Se aplica en Supabase solo después de mostrarla, como las anteriores.
 - Acción `recordWalkInSale` pasa a recibir una lista de ítems: inserta una fila
   por ítem con el mismo `sale_id`, en una sola transacción (función de
   Postgres, como `save_business_hours`).
-- Se retira el selector Servicio/Producto y el nombre libre (ver pregunta 3).
+- Se retiran el selector Servicio/Producto, el nombre libre y el monto
+  editable: solo catálogo, al precio de lista (decisión del usuario).
 - **Verificación**: una venta con un corte + productos sale en Caja.
 
 ### P4 — Caja por categoría (iPhone)
 - Día: tarjetas por categoría con los movimientos (hora · origen, nota,
-  monto, medio). Semana/Mes: conceptos agregados.
+  monto, medio). Semana/Mes: conceptos agregados, **en lugar de** las barras
+  por día y el calendario de calor (decisión del usuario).
 - Tarjetas desplegables; el total de arriba no cambia.
 
 ### P5 — Caja por categoría (escritorio)
@@ -107,7 +109,19 @@ Se aplica en Supabase solo después de mostrarla, como las anteriores.
 - SPEC.md (ventas sueltas con catálogo de productos), README (migración 0012),
   vista previa si cambia algo de emails (no debería).
 
-## Preguntas y contradicciones
+## Decisiones confirmadas
+
+- **Caja semana/mes en el iPhone**: las tarjetas por categoría **reemplazan**
+  las barras por día y el calendario de calor (el usuario eligió seguir las
+  pantallas del diseño, no la nota).
+- **Categoría de servicios**: se llama **"Cortes"**, fija.
+- **Venta suelta: solo catálogo.** Sin precio editable ni producto libre: se
+  vende lo cargado en Servicios y Productos, al precio de lista.
+- Sin respuesta en contra, quedan las propuestas: ventas viejas con nombre libre
+  → "Otros"; barra superior en todo el escritorio; Caja agregada por producto;
+  sin stock.
+
+## Preguntas y contradicciones (registro)
 
 1. **Caja semana/mes en el iPhone**: la nota del diseño dice "solo se suma la
    división por categoría debajo del total", pero las pantallas no muestran las

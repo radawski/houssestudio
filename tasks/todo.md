@@ -260,7 +260,9 @@
   pico, ausencias, clientes nuevos vs. recurrentes
 
 ## Categorías, productos, venta con carrito y Caja por categoría (ver tasks/plan-productos.md)
-- [ ] Respuestas del usuario a las preguntas del plan
+- [x] Decisiones: categorías reemplazan barras/calendario en Caja iPhone;
+      servicios = "Cortes"; venta solo con catálogo (sin precio editable ni
+      producto libre); ventas viejas libres → "Otros"
 - [ ] P1 — Migración 0012 + agregación de Caja por categoría (pura, con tests)
 - [ ] P2 — Productos: gestión (escritorio dos columnas, iPhone en 3 pasos), Más y nav
 - [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
