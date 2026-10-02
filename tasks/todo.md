@@ -267,8 +267,8 @@
       `walk_in_sales` una fila por ítem con `sale_id`/`quantity`/`unit_price`,
       `record_walk_in_sale` con precios del catálogo), tipos, `groupByCategory`
       (6 tests, con conservación del total) y movimientos de Caja con categoría
-- [ ] P1 — **El usuario aplica la 0012**; después: verificar que las ventas
-      viejas quedaron con cantidad 1 y que la Caja carga igual que antes
+- [x] P1 — 0012 aplicada: 6 ventas viejas con cantidad 1 y precio = monto,
+      tablas nuevas y función OK; Caja de septiembre igual ($126.300)
 - [ ] P2 — Productos: gestión (escritorio dos columnas, iPhone en 3 pasos), Más y nav
 - [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
 - [ ] P4 — Caja por categoría en el iPhone
