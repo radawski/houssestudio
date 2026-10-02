@@ -101,15 +101,44 @@ export type Payment = {
 
 export type WalkInSaleKind = "servicio" | "producto";
 
+/** Una categoría de productos (migración 0012). Los servicios no llevan. */
+export type ProductCategory = {
+  id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+};
+
+export type Product = {
+  id: string;
+  category_id: string;
+  name: string;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
+/**
+ * Un ítem de una venta suelta. Desde la 0012 una venta (un carrito) son
+ * varias filas con el mismo `sale_id`; `amount` = `quantity × unit_price`.
+ */
 export type WalkInSale = {
   id: string;
+  sale_id: string;
   kind: WalkInSaleKind;
   service_id: string | null;
+  product_id: string | null;
+  /** Categoría del producto al venderlo; nula en servicios y en productos viejos de nombre libre. */
+  category_id: string | null;
   /**
-   * Congelado al momento de la venta, igual que `service_name_at_booking`.
-   * En un producto es el nombre libre que se escribió al venderlo.
+   * Congelado al momento de la venta, igual que `service_name_at_booking`:
+   * el nombre del servicio o del producto (o el nombre libre de las ventas de
+   * producto anteriores a la 0012).
    */
   service_name: string;
+  quantity: number;
+  unit_price: number;
   amount: number;
   method: PaymentMethod;
   sold_at: string;
@@ -182,7 +211,12 @@ export type Database = {
         | "cancelled_at"
       >;
       payments: TableShape<Payment, "paid_at">;
-      walk_in_sales: TableShape<WalkInSale, "kind" | "service_id" | "sold_at" | "note">;
+      walk_in_sales: TableShape<
+        WalkInSale,
+        "sale_id" | "kind" | "service_id" | "product_id" | "category_id" | "quantity" | "sold_at" | "note"
+      >;
+      product_categories: TableShape<ProductCategory, "sort_order">;
+      products: TableShape<Product, "is_active" | "sort_order">;
       email_log: TableShape<
         EmailLogEntry,
         "appointment_id" | "status" | "provider_id" | "error" | "sent_at"
@@ -197,6 +231,14 @@ export type Database = {
     Views: Record<never, never>;
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean };
+      record_walk_in_sale: {
+        Args: {
+          p_items: { kind: WalkInSaleKind; id: string; quantity: number }[];
+          p_method: PaymentMethod;
+          p_note: string | null;
+        };
+        Returns: string;
+      };
       save_business_hours: {
         Args: {
           p_days: {

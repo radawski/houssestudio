@@ -54,6 +54,10 @@ export async function recordWalkInSale(
   const { error } = await supabase.from("walk_in_sales").insert({
     kind: sale.kind,
     ...item,
+    // Un ítem de una unidad: la 0012 exige `amount = quantity × unit_price`.
+    // El carrito de varios ítems (P3) reemplaza este alta.
+    quantity: 1,
+    unit_price: sale.amount,
     amount: sale.amount,
     method: sale.method,
     note: sale.note ?? null,

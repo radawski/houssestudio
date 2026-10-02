@@ -263,7 +263,12 @@
 - [x] Decisiones: categorías reemplazan barras/calendario en Caja iPhone;
       servicios = "Cortes"; venta solo con catálogo (sin precio editable ni
       producto libre); ventas viejas libres → "Otros"
-- [ ] P1 — Migración 0012 + agregación de Caja por categoría (pura, con tests)
+- [x] P1 — Migración `0012_productos_y_categorias.sql` (categorías, productos,
+      `walk_in_sales` una fila por ítem con `sale_id`/`quantity`/`unit_price`,
+      `record_walk_in_sale` con precios del catálogo), tipos, `groupByCategory`
+      (6 tests, con conservación del total) y movimientos de Caja con categoría
+- [ ] P1 — **El usuario aplica la 0012**; después: verificar que las ventas
+      viejas quedaron con cantidad 1 y que la Caja carga igual que antes
 - [ ] P2 — Productos: gestión (escritorio dos columnas, iPhone en 3 pasos), Más y nav
 - [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
 - [ ] P4 — Caja por categoría en el iPhone
