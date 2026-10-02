@@ -286,7 +286,11 @@
       `record_walk_in_sale`; `getSaleCatalog` arma el catálogo. Probado en
       Chrome a 390px: corte + 2 cocas por transferencia → 2 filas con el mismo
       `sale_id`, $17.000, Caja del día $17.000 (venta de prueba borrada)
-- [ ] P3 — **Verificación manual pendiente** en iPhone
+- [x] P3 — Verificado en iPhone por el usuario. En escritorio el diálogo se
+      desbordaba (heredaba `bottom-0` de la hoja: alto de media pantalla, y
+      `overflow-visible`): corregido con `bottom-auto`, 85vh y scroll propio.
+      Ventas de prueba de esta etapa borradas a pedido del usuario
+- [ ] P3 — Revisar el diálogo en escritorio (usuario)
 - [ ] P4 — Caja por categoría en el iPhone
 - [ ] P5 — Caja por categoría en escritorio
 - [ ] P6 — Cierre: SPEC, README
