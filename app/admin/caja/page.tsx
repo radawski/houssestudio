@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 
 import { CajaToolbar, type CajaView } from "@/app/admin/caja/caja-toolbar";
-import { MonthHeatmap, MovementsList, SummaryCard, WeekBars } from "@/app/admin/caja/caja-views";
+import { SummaryCard } from "@/app/admin/caja/caja-views";
+import { CategoryCards } from "@/app/admin/caja/category-cards";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -11,18 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { weekdayOf } from "@/lib/availability";
-import { buildDayRevenues, type DayRevenue } from "@/lib/cashbox";
-import { getClosedWeekdays } from "@/lib/data/appointments";
+import { groupByCategory } from "@/lib/cashbox";
 import { getCashboxSummary } from "@/lib/data/cashbox";
-import {
-  dayRange,
-  exactMonthRange,
-  monthDateKeys,
-  monthRange,
-  todayKey,
-  weekRange,
-} from "@/lib/dates";
+import { dayRange, exactMonthRange, todayKey, weekRange } from "@/lib/dates";
 import { formatCurrency, formatDateTime, formatInTz, formatLongDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Caja" };
@@ -80,27 +72,7 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
     end: range.end.toISOString(),
   });
 
-  // Solo semana y mes agrupan por día (huecos/heatmap), así que solo ahí
-  // vale la pena la consulta extra de qué días de la semana el local no abre.
-  let weekDays: DayRevenue[] | null = null;
-  let monthGridDays: string[] | null = null;
-  let monthKeyForGrid = "";
-  let monthDays: DayRevenue[] | null = null;
-
-  if (view === "semana") {
-    const { days } = weekRange(dateKey);
-    const closedWeekdays = await getClosedWeekdays();
-    const closedDays = new Set(days.filter((day) => closedWeekdays.has(weekdayOf(day))));
-    weekDays = buildDayRevenues(days, movements, closedDays);
-  } else if (view === "mes") {
-    const { monthKey } = exactMonthRange(dateKey);
-    const exactDays = monthDateKeys(monthKey);
-    const closedWeekdays = await getClosedWeekdays();
-    const closedDays = new Set(exactDays.filter((day) => closedWeekdays.has(weekdayOf(day))));
-    monthGridDays = monthRange(dateKey).days;
-    monthKeyForGrid = monthKey;
-    monthDays = buildDayRevenues(exactDays, movements, closedDays);
-  }
+  const groups = groupByCategory(movements);
 
   return (
     <div className="space-y-4">
@@ -114,11 +86,7 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
         <DesktopSummaryCard label="Transferencia" amount={breakdown.byMethod.transferencia} />
       </div>
 
-      {view === "dia" ? <MovementsList movements={movements} /> : null}
-      {weekDays ? <WeekBars days={weekDays} /> : null}
-      {monthDays && monthGridDays ? (
-        <MonthHeatmap gridDays={monthGridDays} monthKey={monthKeyForGrid} days={monthDays} />
-      ) : null}
+      <CategoryCards groups={groups} detail={view === "dia" ? "movimientos" : "conceptos"} />
 
       <div className="hidden md:block">
         <Card>

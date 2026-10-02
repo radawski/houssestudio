@@ -290,7 +290,15 @@
       desbordaba (heredaba `bottom-0` de la hoja: alto de media pantalla, y
       `overflow-visible`): corregido con `bottom-auto`, 85vh y scroll propio.
       Ventas de prueba de esta etapa borradas a pedido del usuario
-- [ ] P3 — Revisar el diálogo en escritorio (usuario)
-- [ ] P4 — Caja por categoría en el iPhone
+- [x] P3 — Diálogo de escritorio verificado por el usuario
+- [x] P4 — Caja por categoría en el iPhone (`category-cards.tsx`): tarjetas
+      desplegables con cantidad y subtotal; día con cada movimiento, semana y
+      mes con conceptos sumados (cantidad × precio, Ef./Tr.). Reemplazan la
+      lista, las barras y el calendario de calor; se borró lo que solo usaban
+      ellos (`buildDayRevenues`, `bestDay`, `averagePerOpenDay`,
+      `getClosedWeekdays`, `monthDateKeys`, `formatCompactAmount`, tokens del
+      heatmap). Revisado en Chrome a 390px con septiembre: Cortes $120.000 +
+      Otros $6.300 = $126.300
+- [ ] P4 — **Verificación manual pendiente** en iPhone
 - [ ] P5 — Caja por categoría en escritorio
 - [ ] P6 — Cierre: SPEC, README

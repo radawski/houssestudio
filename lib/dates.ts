@@ -99,20 +99,3 @@ export function exactMonthRange(dateKey: string): { start: Date; end: Date; mont
 export function isSameMonth(dateKey: string, referenceKey: string): boolean {
   return dateKey.slice(0, 7) === referenceKey.slice(0, 7);
 }
-
-/**
- * Los dias reales de un mes (`yyyy-MM`), sin el relleno de semanas completas
- * de `monthRange`. Es el contrapunto de `exactMonthRange` para cuando hace
- * falta la lista de claves y no solo el rango — el heatmap de Caja · mes
- * necesita ambos: esta lista para calcular "mejor día"/promedio, y
- * `monthRange(...).days` para dibujar la grilla con el relleno.
- */
-export function monthDateKeys(monthKey: string): string[] {
-  const days: string[] = [];
-  let cursor = `${monthKey}-01`;
-  while (cursor.slice(0, 7) === monthKey) {
-    days.push(cursor);
-    cursor = addDaysToKey(cursor, 1);
-  }
-  return days;
-}
