@@ -258,3 +258,12 @@
 - CRM: ficha de cliente con historial de turnos, gasto, ausencias y notas
 - Reportes: comparativas entre meses, servicios más vendidos, horarios
   pico, ausencias, clientes nuevos vs. recurrentes
+
+## Categorías, productos, venta con carrito y Caja por categoría (ver tasks/plan-productos.md)
+- [ ] Respuestas del usuario a las preguntas del plan
+- [ ] P1 — Migración 0012 + agregación de Caja por categoría (pura, con tests)
+- [ ] P2 — Productos: gestión (escritorio dos columnas, iPhone en 3 pasos), Más y nav
+- [ ] P3 — Venta suelta con carrito (varios ítems, una transacción)
+- [ ] P4 — Caja por categoría en el iPhone
+- [ ] P5 — Caja por categoría en escritorio
+- [ ] P6 — Cierre: SPEC, README
