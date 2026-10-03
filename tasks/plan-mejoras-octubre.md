@@ -283,6 +283,15 @@ en este plan la decisión del mecanismo antes de seguir con L2.
   común hasta L2.
 - **`loading.tsx`:** se queda para entrar desde la barra de pestañas, y
   ahora arma su lista con las mismas barras que `DayListSkeleton`.
+- **Producción:** también se comprobó con `next build` + `next start`, donde
+  los links sí se precargan y la ruta tiene `loading.tsx`. Con la misma
+  demora temporal, ▶ y ▶ ▶ ▶ se comportaron igual que en desarrollo: el
+  esqueleto de la ruta nunca apareció y no hubo recarga. No hizo falta
+  `prefetch={false}`.
+- **Toques seguidos:** la demora de 200 ms arranca solo en el primer toque,
+  igual que la del CSS, que empieza cuando se montan las barras. Los toques
+  siguientes solo reinician el mínimo; así una respuesta que llega en el
+  medio no suelta las barras antes de los 400 ms.
 - **En L1 solo Día navega así.** L2 suma Semana y Mes (con sus esqueletos
   dentro de `AgendaBody`) y el segmentado. L3 replica `AgendaNavigation` en
   Caja; conviene extraerlo a un componente común en ese momento.

@@ -72,17 +72,31 @@ export function AgendaNavigation({
     loadingRef.current = loading;
   });
 
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  const delayTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const minTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(
+    () => () => {
+      clearTimeout(delayTimer.current);
+      clearTimeout(minTimer.current);
+    },
+    [],
+  );
 
   function navigate(to: AgendaPosition, control: AgendaControl) {
-    timers.current.forEach(clearTimeout);
+    // La demora de 200 ms corre desde el primer toque, igual que la del CSS:
+    // las barras quedan montadas desde ahí. Un toque más con la carga en
+    // curso no la reinicia; solo corre el mínimo para que no se suelten antes.
+    if (!loadingRef.current) {
+      clearTimeout(delayTimer.current);
+      delayTimer.current = setTimeout(
+        () => dispatch({ type: "delayElapsed", loading: loadingRef.current }),
+        SKELETON_DELAY_MS,
+      );
+    }
+    clearTimeout(minTimer.current);
+    minTimer.current = setTimeout(() => dispatch({ type: "minElapsed" }), SKELETON_DELAY_MS + SKELETON_MIN_MS);
     dispatch({ type: "start" });
     setPressed(control);
-    timers.current = [
-      setTimeout(() => dispatch({ type: "delayElapsed", loading: loadingRef.current }), SKELETON_DELAY_MS),
-      setTimeout(() => dispatch({ type: "minElapsed" }), SKELETON_DELAY_MS + SKELETON_MIN_MS),
-    ];
     startTransition(() => {
       setPosition(to);
       router.push(agendaHref(to.view, to.dateKey));

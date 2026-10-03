@@ -397,7 +397,10 @@
       (`lib/loading-hold.ts`, 8 tests), flecha tocada en `#f0f1f3`. Título,
       href y paso en `lib/agenda-nav.ts` (9 tests). Sin `Suspense` del
       servidor: decisión escrita en el plan. Comprobado en Chrome con 1,5 s
-      de demora temporal (ya sacada), a 500 px y a 1300 px
+      de demora temporal (ya sacada), a 500 px y a 1300 px, y también en un
+      build de producción (`next start`, con precarga de links): igual
+- [x] L1 — Ajuste: la demora de 200 ms arranca solo en el primer toque
+      (con toques seguidos el mínimo de 400 ms se podía romper)
 - [ ] L1 — Verificar en el iPhone: ◀ ▶, tira y "Hoy" en Día (con Reducir movimiento)
 - [ ] L2 — Agenda Semana, Mes y "Hoy" deshabilitado (`periodContainsToday` con tests)
 - [ ] L3 — Caja: vistas, períodos y "Hoy"; `CajaSkeleton` con categorías (iPhone) y tabla (escritorio)
