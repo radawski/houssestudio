@@ -451,8 +451,8 @@
       vuelve queda en `#f0f1f3` 600 ms (sin fundido con Reducir movimiento).
       Revisado en Chrome: dos vueltas seguidas sin agregar historial, entrada
       directa por URL con link común, y la marca en las dos vueltas
-- [ ] L6 — Verificar en el iPhone: ← desde Servicios, Productos y Disponibilidad
-- [ ] Checkpoint 3 — los 22 artboards revisados en el iPhone
+- [x] L6 — Verificado por el usuario en el iPhone
+- [x] Checkpoint 3 — estados de carga revisados por el usuario en el iPhone
 
 ### Fase 4 — Recordatorio para volver (bloqueada por R3 producción)
 - [ ] V1 — Migraciones 0013 (valor `vuelta` solo) y 0014 (baja en `customers` + índice único)
