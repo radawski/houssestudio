@@ -442,8 +442,16 @@
       "Bloquear un rango") son reales y funcionan; barras con las medidas del
       diseño donde van los datos (esperan 200 ms). Revisado en Chrome en
       escritorio con 1,5 s de demora temporal (sacada); celular solo por código
-- [ ] L5 — Verificar en el iPhone: entrar a Servicios, Productos y Disponibilidad desde Más
-- [ ] L6 — Volver a Más con `router.back()` y la fila marcada 600 ms
+- [x] L5 — Verificado por el usuario en el iPhone
+- [x] L6 — Volver a Más: el ← usa `router.back()` (Más sale de la caché del
+      router, sin esqueleto) si se llegó hacia adelante desde Más; si no, link
+      común. Un `NavigationTracker` en el layout anota la URL anterior y si se
+      llegó con "atrás" (`lib/mas-return.ts`, 7 tests; tolera que el
+      `popstate` llegue después del cambio de ruta). La fila de la que se
+      vuelve queda en `#f0f1f3` 600 ms (sin fundido con Reducir movimiento).
+      Revisado en Chrome: dos vueltas seguidas sin agregar historial, entrada
+      directa por URL con link común, y la marca en las dos vueltas
+- [ ] L6 — Verificar en el iPhone: ← desde Servicios, Productos y Disponibilidad
 - [ ] Checkpoint 3 — los 22 artboards revisados en el iPhone
 
 ### Fase 4 — Recordatorio para volver (bloqueada por R3 producción)

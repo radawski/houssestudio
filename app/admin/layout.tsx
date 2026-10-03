@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { LogOut } from "lucide-react";
 
 import { AdminNav } from "@/app/admin/admin-nav";
 import { AdminTabBar } from "@/app/admin/admin-tab-bar";
+import { NavigationTracker } from "@/components/admin/navigation-tracker";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/actions/auth";
 import { BUSINESS_NAME } from "@/lib/config";
@@ -55,6 +57,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // ... scroll propio"). En desktop no hay tab bar que se superponga, así
     // que se conserva el scroll de documento de siempre.
     <div className="flex h-dvh flex-col overflow-hidden md:h-auto md:min-h-full md:flex-1 md:overflow-visible">
+      {/* Anota de dónde se llegó a cada pantalla, para el ← de las de Más. */}
+      <Suspense fallback={null}>
+        <NavigationTracker />
+      </Suspense>
       <header className="bg-popover shrink-0 border-b md:sticky md:top-0 md:z-20">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
           <span className="text-sm font-semibold tracking-widest">{BUSINESS_NAME}</span>
