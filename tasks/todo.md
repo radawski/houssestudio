@@ -228,11 +228,11 @@
 - [x] E7 — Verificado por el usuario en Gmail (iPhone, modo claro y oscuro)
       con envíos reales de producción. Mail del iPhone y Outlook sin revisar
 
-## Fase 3 — Recordatorios automáticos (decisión del usuario: solo esto)
-- [ ] Especificar y construir el envío del recordatorio del día anterior
-      (tarea programada con `CRON_SECRET`, sin duplicados vía `email_log`),
-      usando `buildReminderEmail` (E5) y el link derivado (E4). Depende del
-      dominio propio en Resend para llegarle a clientes reales
+## Fase 3 — Recordatorios automáticos (ver tasks/plan-recordatorios.md)
+- [ ] Decisión: hora de envío
+- [ ] R1 — Selección de turnos de mañana (pura, con tests) y `sendReminder`
+- [ ] R2 — Ruta `/api/cron/reminders` + `vercel.json` + `CRON_SECRET`
+- [ ] R3 — Verificación local y primera ejecución en producción
 
 ## Dominio propio para los emails (en curso)
 - [x] Decisión: `houssestudio.com.ar` (NIC Argentina), para el sitio y los
