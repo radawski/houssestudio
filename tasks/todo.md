@@ -252,6 +252,9 @@
 - [x] D4 — `EMAIL_FROM` = `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en Vercel
       y `.env.local`
 - [x] D4 — Prueba final en producción: llegaron todos los mails desde `turnos@houssestudio.com.ar`
+- [x] Foto de perfil del remitente: decisión del usuario, sin foto (BIMI
+      exige marca registrada y certificado pago; la cuenta de Google exige
+      que `turnos@` reciba mails)
 - [ ] **Al terminar las pruebas: cambiar `ADMIN_EMAIL` en Vercel al email del
       cliente (el peluquero).** Hoy sigue el del usuario a propósito, para
       probar. En `.env.local` puede quedar el del usuario
