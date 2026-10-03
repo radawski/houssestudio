@@ -2,6 +2,8 @@ import "server-only";
 
 import { createHash, createHmac } from "node:crypto";
 
+import { siteUrl } from "@/lib/config";
+
 /**
  * Tokens de autogestion del cliente.
  *
@@ -50,4 +52,19 @@ export function hashManageToken(token: string): string {
  */
 export function manageTokenMatches(appointmentId: string, storedHash: string): boolean {
   return hashManageToken(deriveManageToken(appointmentId)) === storedHash;
+}
+
+/**
+ * Link de autogestión para un email posterior a la reserva (turno
+ * confirmado, recordatorio), o `null` si no se puede armar: turno anterior a
+ * los tokens derivados, o falta `MANAGE_TOKEN_SECRET`. En ese último caso se
+ * avisa por consola y el email sale sin botón en vez de fallar.
+ */
+export function manageUrlFor(id: string, storedHash: string): string | null {
+  try {
+    return manageTokenMatches(id, storedHash) ? `${siteUrl()}/turno/${deriveManageToken(id)}` : null;
+  } catch (error) {
+    console.error(`No se pudo armar el link del turno: ${error instanceof Error ? error.message : error}`);
+    return null;
+  }
 }

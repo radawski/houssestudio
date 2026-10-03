@@ -229,10 +229,11 @@
       con envíos reales de producción. Mail del iPhone y Outlook sin revisar
 
 ## Fase 3 — Recordatorios automáticos (ver tasks/plan-recordatorios.md)
-- [ ] Decisión: hora de envío
-- [ ] R1 — Selección de turnos de mañana (pura, con tests) y `sendReminder`
-- [ ] R2 — Ruta `/api/cron/reminders` + `vercel.json` + `CRON_SECRET`
-- [ ] R3 — Verificación local y primera ejecución en producción
+- [x] Decisión: 10 de la mañana de Buenos Aires (`0 13 * * *` UTC; en Hobby sale dentro de esa hora)
+- [x] R1 — `lib/reminders.ts` (`tomorrowRange`, `pickReminders`, con tests), `lib/data/reminders.ts` y `sendReminder` (reserva la fila de `email_log` antes de mandar: el índice único frena un envío doble)
+- [x] R2 — `app/api/cron/reminders/route.ts` (401 sin `Bearer CRON_SECRET`), `vercel.json` con el cron diario, `CRON_SECRET` en `.env.local`; `manageUrlFor` pasa a `lib/tokens.ts`
+- [x] R3 local — 401 sin clave o con clave falsa; con un turno de prueba de mañana: 1ª llamada envió 1, 2ª lo salteó (turno de prueba borrado)
+- [ ] R3 producción — el usuario carga `CRON_SECRET` en Vercel; después push y confirmar la primera ejecución en los logs
 
 ## Dominio propio para los emails (en curso)
 - [x] Decisión: `houssestudio.com.ar` (NIC Argentina), para el sitio y los

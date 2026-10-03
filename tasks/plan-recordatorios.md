@@ -60,6 +60,6 @@ quedan "a futuro".
   mañana → llega el mail; una segunda llamada no lo repite; sin secreto → 401.
 - Producción: confirmar en los logs de Vercel la primera ejecución.
 
-## Decisión a confirmar
+## Decisión confirmada
 
-- **Hora de envío** del recordatorio (hora de Buenos Aires).
+- **Hora de envío**: 10 de la mañana de Buenos Aires (`0 13 * * *` en UTC).

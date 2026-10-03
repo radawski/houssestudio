@@ -8,6 +8,7 @@ import {
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
   buildNewRequestAlertEmail,
+  buildReminderEmail,
   type CancellationData,
   type ConfirmedData,
 } from "@/lib/email/templates";
@@ -124,6 +125,62 @@ export async function sendAppointmentConfirmed(
       status: "error",
       error: messageFrom(error),
     });
+  }
+}
+
+/** Postgres: violación de índice único. */
+const UNIQUE_VIOLATION = "23505";
+
+export type ReminderOutcome = "enviado" | "error" | "duplicado";
+
+/**
+ * Recordatorio del día anterior (Fase 3). A diferencia de los otros envíos,
+ * primero reserva su fila en `email_log` como `enviado` y recién después
+ * manda: el índice único `email_log_reminder_once_idx` admite un solo
+ * recordatorio enviado por turno, así que si la tarea corriera dos veces a la
+ * vez la segunda choca ahí y no manda nada. Si el envío falla, la fila pasa
+ * a `error` (y deja de bloquear un reintento).
+ */
+export async function sendReminder(
+  params: ConfirmedData & { appointmentId: string; toEmail: string },
+): Promise<ReminderOutcome> {
+  const supabase = createAdminClient();
+  const { data: claim, error: claimError } = await supabase
+    .from("email_log")
+    .insert({
+      appointment_id: params.appointmentId,
+      type: "recordatorio",
+      to_email: params.toEmail,
+      status: "enviado",
+    })
+    .select("id")
+    .single();
+
+  if (claimError) {
+    if (claimError.code === UNIQUE_VIOLATION) return "duplicado";
+    console.error(`No se pudo registrar el recordatorio: ${claimError.message}`);
+    return "error";
+  }
+
+  const { subject, html, text } = buildReminderEmail(params);
+  try {
+    const { data, error } = await getResendClient().emails.send({
+      from: emailFrom(),
+      to: params.toEmail,
+      subject,
+      html,
+      text,
+    });
+    if (error) throw new Error(error.message);
+    await supabase.from("email_log").update({ provider_id: data?.id ?? null }).eq("id", claim.id);
+    return "enviado";
+  } catch (error) {
+    console.error(`No se pudo enviar el recordatorio: ${messageFrom(error)}`);
+    await supabase
+      .from("email_log")
+      .update({ status: "error", error: messageFrom(error) })
+      .eq("id", claim.id);
+    return "error";
   }
 }
 

@@ -2,10 +2,9 @@
 
 import { revalidateAgenda } from "@/lib/cache";
 import { requireAdmin } from "@/lib/auth";
-import { siteUrl } from "@/lib/config";
 import { getSettings } from "@/lib/data/availability";
 import { sendAppointmentConfirmed, sendCancellationNotice } from "@/lib/email/send";
-import { deriveManageToken, manageTokenMatches } from "@/lib/tokens";
+import { manageUrlFor } from "@/lib/tokens";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
 import { paymentSchema } from "@/lib/validation/schemas";
 
@@ -31,21 +30,6 @@ type ConfirmedAppointment = {
   manage_token_hash: string;
   customer: { full_name: string; email: string | null } | null;
 };
-
-/**
- * Link de autogestión para un email posterior a la reserva, o `null` si no se
- * puede armar: turno anterior a los tokens derivados, o falta
- * `MANAGE_TOKEN_SECRET`. En ese último caso el turno ya quedó confirmado, así
- * que se avisa por consola y el email sale sin botón en vez de fallar.
- */
-function manageUrlFor(id: string, storedHash: string): string | null {
-  try {
-    return manageTokenMatches(id, storedHash) ? `${siteUrl()}/turno/${deriveManageToken(id)}` : null;
-  } catch (error) {
-    console.error(`No se pudo armar el link del turno: ${error instanceof Error ? error.message : error}`);
-    return null;
-  }
-}
 
 /**
  * Acepta una solicitud y le avisa al cliente con el email de turno
