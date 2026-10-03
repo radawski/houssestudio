@@ -239,10 +239,12 @@
       mails (`houssestudio.com` está tomado desde 2018)
 - [x] D0 — El cliente aceptó el acuerdo de mantenimiento
       (doc: https://claude.ai/code/artifact/33294188-21b6-47dc-9827-51d453fd940c)
-- [ ] D1 — Registrar el dominio en nic.ar **a nombre del cliente (su CUIT)**:
-      lo paga él ($8.500/año); el usuario lo administra
-- [ ] D2 — Agregar el dominio en Vercel y delegarlo en NIC a los DNS de
-      Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`)
+- [x] D1 — `houssestudio.com.ar` registrado a nombre del cliente el
+      2026-10-02; **vence el 2027-10-02** (renovación a cargo del cliente)
+- [x] D2 — Delegado en NIC a `ns1/ns2.vercel-dns.com`, agregado al proyecto
+      y con **Enable Vercel DNS** en Domains de la cuenta (sin eso Vercel
+      respondía REFUSED). `https://houssestudio.com.ar` responde 200 con
+      certificado Let's Encrypt; `www` redirige con 301 al dominio sin www
 - [ ] D3 — Agregar el dominio en Resend y cargar sus registros DNS en Vercel
 - [ ] D4 — `EMAIL_FROM` → `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en
       Vercel y `.env.local`; prueba a una casilla ajena
