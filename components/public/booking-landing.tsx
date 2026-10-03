@@ -1,8 +1,13 @@
 "use client";
 
-import { createContext, useContext, useLayoutEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+
+import { heroIsBehind, scrollAfterHeroRemoval } from "@/lib/hero-scroll";
 
 const HideHeroContext = createContext<(() => void) | null>(null);
+
+/** Cuánto tiempo sin eventos `scroll` cuenta como fin del desplazamiento. */
+const SCROLL_IDLE_MS = 150;
 
 /** Oculta la portada. Fuera de `BookingLanding` devuelve `null`. */
 export function useHideHero() {
@@ -10,19 +15,20 @@ export function useHideHero() {
 }
 
 /**
- * Envuelve portada y stepper para poder retirar la portada una vez que el
- * visitante tocó "Reservar turno" y el desplazamiento suave llegó al stepper.
- * No hay vuelta atrás: recargar la página la trae de nuevo.
+ * Envuelve portada y stepper para retirar la portada una vez que el visitante
+ * la dejó atrás, sea con "Reservar turno" (el desplazamiento suave llegó al
+ * stepper, ver `hero-cta.tsx`) o bajando con el dedo. No hay vuelta atrás:
+ * recargar la página la trae de nuevo.
  *
  * La portada llega como prop (`hero`) y no se importa acá porque es un
  * componente de servidor; así sigue renderizándose en el servidor aunque este
  * contenedor corra en el cliente.
  *
  * Al desmontarla, todo lo que estaba debajo sube lo que medía la portada. En
- * el mismo commit, antes de pintar, se lleva el scroll a 0: el stepper queda
- * exactamente donde estaba en pantalla y no se ve ningún salto. Es un
- * `scrollTo` instantáneo porque `html` no tiene `scroll-behavior: smooth`
- * (ver `hero-cta.tsx`).
+ * el mismo commit, antes de pintar, se resta esa altura al scroll: el
+ * contenido queda exactamente donde estaba en pantalla y no se ve ningún
+ * salto. Con el botón eso da 0 (el stepper estaba arriba de todo); con el
+ * dedo, el visitante puede haber seguido bajando.
  */
 export function BookingLanding({
   hero,
@@ -32,14 +38,72 @@ export function BookingLanding({
   children: React.ReactNode;
 }) {
   const [heroHidden, setHeroHidden] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  /** Scroll a restaurar en el commit que quita la portada. */
+  const scrollTarget = useRef(0);
+
+  const hideHero = useCallback(() => {
+    const heroElement = heroRef.current;
+    if (!heroElement) return;
+    scrollTarget.current = scrollAfterHeroRemoval(window.scrollY, heroElement.offsetHeight);
+    setHeroHidden(true);
+  }, []);
 
   useLayoutEffect(() => {
-    if (heroHidden) window.scrollTo(0, 0);
+    if (heroHidden) window.scrollTo(0, scrollTarget.current);
   }, [heroHidden]);
 
+  // Bajar con el dedo hasta pasar la portada equivale a tocar el botón. Se
+  // decide recién cuando el scroll se detiene y el dedo ya no está apoyado:
+  // retirarla a mitad del gesto (o durante la inercia de iOS) le movería la
+  // página al visitante mientras la está arrastrando.
+  useEffect(() => {
+    if (heroHidden) return;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let touching = false;
+
+    const check = () => {
+      clearTimeout(timer);
+      const heroElement = heroRef.current;
+      if (touching || !heroElement) return;
+      if (heroIsBehind(heroElement.getBoundingClientRect().bottom)) hideHero();
+    };
+    // Cada evento `scroll` posterga la revisión, también los de la inercia
+    // que sigue después de soltar el dedo. `scrollend`, donde existe, avisa
+    // antes; en Safari anterior al 26 manda el silencio de `SCROLL_IDLE_MS`.
+    const restart = () => {
+      clearTimeout(timer);
+      timer = setTimeout(check, SCROLL_IDLE_MS);
+    };
+    const onTouchStart = () => {
+      touching = true;
+      clearTimeout(timer);
+    };
+    const onTouchEnd = () => {
+      touching = false;
+      restart();
+    };
+
+    window.addEventListener("scrollend", check);
+    window.addEventListener("scroll", restart, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scrollend", check);
+      window.removeEventListener("scroll", restart);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [heroHidden, hideHero]);
+
   return (
-    <HideHeroContext.Provider value={() => setHeroHidden(true)}>
-      {heroHidden ? null : hero}
+    <HideHeroContext.Provider value={hideHero}>
+      {heroHidden ? null : <div ref={heroRef}>{hero}</div>}
       {children}
     </HideHeroContext.Provider>
   );

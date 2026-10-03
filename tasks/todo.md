@@ -340,7 +340,13 @@
 - [x] C2 — Botón "Volver al inicio" (tinta, 44 px, con ←) al final de Turno
       solicitado, solo con `?nuevo=1`. Revisado en Chrome: lleva a `/` y no
       aparece en "Tu turno"
-- [ ] C3 — Pasar la portada con el dedo la retira, igual que "Reservar turno" (sin salto)
+- [x] C3 — Pasar la portada con el dedo la retira, igual que "Reservar turno":
+      `BookingLanding` espera a que el scroll se detenga y el dedo no esté
+      apoyado, y corrige el scroll restando el alto de la portada
+      (`lib/hero-scroll.ts`, 7 tests). Revisado en Chrome con la rueda:
+      scroll parcial no hace nada; pasarla la retira sin salto; el botón
+      sigue igual
+- [ ] C3 — Verificar en el iPhone (inercia del scroll de iOS)
 - [ ] C4 — Botón flotante de WhatsApp (tarjeta "¿Dudas con tu turno?", blanco sobre la portada, sin tapar el stepper)
 - [ ] Checkpoint 1 — tests/typecheck/lint/build + prueba del usuario en el iPhone
 
