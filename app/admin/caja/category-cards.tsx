@@ -80,8 +80,9 @@ export function CategoryCards({
   /** `movimientos` en el día, `conceptos` en semana y mes. */
   detail: "movimientos" | "conceptos";
 }) {
-  // Todas abiertas de entrada, como en el diseño.
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  // Todas cerradas de entrada (pedido del usuario; el diseño las mostraba
+  // abiertas): al entrar a Caja se ve el resumen por categoría de un vistazo.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   if (groups.length === 0) {
     return (
@@ -92,7 +93,7 @@ export function CategoryCards({
   }
 
   function toggle(key: string) {
-    setCollapsed((current) => {
+    setExpanded((current) => {
       const next = new Set(current);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -103,7 +104,7 @@ export function CategoryCards({
   return (
     <div className="flex flex-col gap-3 md:hidden">
       {groups.map((group) => {
-        const open = !collapsed.has(group.key);
+        const open = expanded.has(group.key);
         return (
           <section
             key={group.key}

@@ -115,6 +115,9 @@ Se aplica en Supabase solo después de mostrarla, como las anteriores.
   las barras por día y el calendario de calor (el usuario eligió seguir las
   pantallas del diseño, no la nota).
 - **Categoría de servicios**: se llama **"Cortes"**, fija.
+- **Desplegables de Caja cerrados al entrar** (pedido del usuario tras P4,
+  aunque el diseño los mostraba abiertos). Vale también para la tabla
+  agrupada de escritorio (P5).
 - **Venta suelta: solo catálogo.** Sin precio editable ni producto libre: se
   vende lo cargado en Servicios y Productos, al precio de lista.
 - Sin respuesta en contra, quedan las propuestas: ventas viejas con nombre libre
