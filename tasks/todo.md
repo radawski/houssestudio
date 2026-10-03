@@ -325,3 +325,37 @@
 - [x] P5 — Verificado por el usuario en escritorio
 - [x] P6 — SPEC (ventas sueltas con carrito de catálogo, Caja por categoría) y
       README (migraciones 0011 y 0012, estado actualizado)
+
+## Mejoras de octubre (ver tasks/plan-mejoras-octubre.md)
+- [x] Decisiones: las 6 confirmadas (2.: hoja "Agregar cliente" en Más en vez de página Clientes)
+
+### Fase 1 — Reserva pública
+- [ ] C1 — "Confirmar turno" muestra "Confirmando…" y queda deshabilitado; mails con `after()` (sin esperar a Resend)
+- [ ] C2 — Botón "Volver al inicio" en Turno solicitado
+- [ ] C3 — Pasar la portada con el dedo la retira, igual que "Reservar turno" (sin salto)
+- [ ] C4 — Botón flotante de WhatsApp (tarjeta "¿Dudas con tu turno?", blanco sobre la portada, sin tapar el stepper)
+- [ ] Checkpoint 1 — tests/typecheck/lint/build + prueba del usuario en el iPhone
+
+### Fase 2 — Clientes de otra zona
+- [ ] Z1 — Editar datos sin cambiar el teléfono de la ficha no vuelve a bloquear (servidor + `DniGate`, con tests)
+- [ ] Z2 — El mensaje de "Coordinar por WhatsApp" trae nombre, DNI, teléfono y email
+- [ ] Z3 — Hoja "Agregar cliente" desde Más: DNI, nombre, teléfono (cualquier zona) y email opcional
+- [ ] Checkpoint 2 — flujo completo con un número de otra provincia, en el iPhone
+
+### Fase 3 — Estados de carga y error del panel
+- [ ] L1 — Spike: Agenda Día con toolbar inmediato, fecha optimista y datos en `<Suspense key>`; decisión escrita en el plan
+- [ ] L2 — Agenda Semana, Mes y "Hoy" deshabilitado (`periodContainsToday` con tests)
+- [ ] L3 — Caja: vistas, períodos y "Hoy"; `CajaSkeleton` con categorías (iPhone) y tabla (escritorio)
+- [ ] L4 — Más: carga y error solo en la tarjeta de sesión
+- [ ] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad
+- [ ] L6 — Volver a Más con `router.back()` y la fila marcada 600 ms
+- [ ] Checkpoint 3 — los 22 artboards revisados en el iPhone
+
+### Fase 4 — Recordatorio para volver (bloqueada por R3 producción)
+- [ ] V1 — Migraciones 0013 (valor `vuelta` solo) y 0014 (baja en `customers` + índice único)
+- [ ] V2 — Mail 1d "Ya pasó un mes" + variantes en `/dev/emails`
+- [ ] V3 — `pickComebacks` con tests + consulta; contar turnos pasados sin cobrar
+- [ ] V4 — Baja con token derivado y página `/baja/[token]` con botón (nunca un GET que cambie datos)
+- [ ] V5 — Envío dentro del cron diario, aislado del recordatorio del día anterior
+- [ ] Checkpoint 4 — mail en Gmail (claro y oscuro), baja probada, primera ejecución en producción
+- [ ] F1 — SPEC y README al día
