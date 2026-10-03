@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ChevronRight, Clock, Package, Scissors } from "lucide-react";
 
 import { AddCustomerSheet } from "@/app/admin/mas/add-customer-sheet";
-import { Button } from "@/components/ui/button";
+import { SessionCard, SessionCardSkeleton } from "@/app/admin/mas/session-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { signOut } from "@/lib/actions/auth";
-import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Más" };
 
@@ -39,12 +38,7 @@ const LINKS = [
  * Disponibilidad, que se tocan poco, cuelgan de acá en vez de tener ítem
  * propio.
  */
-export default async function MasPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export default function MasPage() {
   return (
     <div className="space-y-4">
       <div>
@@ -79,19 +73,11 @@ export default async function MasPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{user?.email}</p>
-            <p className="text-muted-foreground text-xs">Sesión de administrador</p>
-          </div>
-          <form action={signOut}>
-            <Button variant="ghost" size="sm" type="submit" className="text-destructive">
-              Salir
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Lo único que pide algo es la sesión: el resto se pinta y se puede
+          tocar enseguida, y si el pedido falla el error queda en su tarjeta. */}
+      <Suspense fallback={<SessionCardSkeleton />}>
+        <SessionCard />
+      </Suspense>
     </div>
   );
 }

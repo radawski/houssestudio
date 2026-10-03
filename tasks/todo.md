@@ -428,8 +428,14 @@
       `CajaSkeleton` de filas). ▶ en Mes también va al día 1 (antes +30
       días). Revisado en Chrome con 1,5 s de demora temporal (sacada): día,
       calendario, semana, mes, "Hoy" y escritorio; el celular solo por DOM
-- [ ] L3 — Verificar en el iPhone: Caja (◀ ▶, calendario, segmentado, "Hoy")
-- [ ] L4 — Más: carga y error solo en la tarjeta de sesión
+- [x] L3 — Verificado por el usuario en el iPhone
+- [x] L4 — Más: título y filas se pintan enseguida; `getUser` pasa a
+      `SessionCard` dentro de `Suspense` (esqueleto: mail en barra,
+      "Sesión de administrador" real, Salir en bloque). Si falla, tarjeta de
+      error con tipo y hora y "Reintentar" (`router.refresh()`); las filas
+      siguen andando. Sesión vencida → `/login` (`classifySession`, 7 tests).
+      Revisado en Chrome con demora y error de red forzados (ya sacados)
+- [ ] L4 — Verificar en el iPhone: entrar a Más (la tarjeta de sesión carga sola)
 - [ ] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad
 - [ ] L6 — Volver a Más con `router.back()` y la fila marcada 600 ms
 - [ ] Checkpoint 3 — los 22 artboards revisados en el iPhone
