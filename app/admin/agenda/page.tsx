@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 
 import { AgendaBody, AgendaNavigation } from "@/app/admin/agenda/agenda-navigation";
 import { AgendaToolbar } from "@/app/admin/agenda/agenda-toolbar";
-import { DayView, MonthView, WeekView } from "@/app/admin/agenda/agenda-views";
-import { DayListSkeleton } from "@/components/admin/loading-skeletons";
+import { DayView } from "@/app/admin/agenda/agenda-views";
+import { MonthView } from "@/app/admin/agenda/month-view";
+import { WeekView } from "@/app/admin/agenda/week-view";
 import { computeFreeGaps } from "@/lib/availability";
 import {
   getAppointmentsBetween,
@@ -65,7 +66,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
       <AgendaNavigation view={view} dateKey={dateKey}>
         <div className="space-y-4 pb-20 md:pb-0">
           <AgendaToolbar catalog={catalog} />
-          <AgendaBody skeleton={<DayListSkeleton />}>
+          <AgendaBody>
             <DayView appointments={appointments} gaps={gaps} />
           </AgendaBody>
         </div>
@@ -81,7 +82,9 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
       <AgendaNavigation view={view} dateKey={dateKey}>
         <div className="space-y-4 pb-20 md:pb-0">
           <AgendaToolbar catalog={catalog} />
-          <WeekView days={days} appointments={appointments} />
+          <AgendaBody>
+            <WeekView days={days} appointments={appointments} />
+          </AgendaBody>
         </div>
       </AgendaNavigation>
     );
@@ -94,7 +97,9 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
     <AgendaNavigation view={view} dateKey={dateKey}>
       <div className="space-y-4 pb-20 md:pb-0">
         <AgendaToolbar catalog={catalog} />
-        <MonthView days={days} monthKey={monthKey} dateKey={dateKey} appointments={appointments} />
+        <AgendaBody>
+          <MonthView days={days} monthKey={monthKey} dateKey={dateKey} appointments={appointments} />
+        </AgendaBody>
       </div>
     </AgendaNavigation>
   );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { AdminStatusBadge } from "@/components/admin/status-badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { dayNumber, groupByDay, WEEKDAY_SHORT } from "@/lib/agenda-day";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import { dayRange, isSameMonth, todayKey } from "@/lib/dates";
@@ -15,6 +16,9 @@ import { cn } from "@/lib/utils";
  * escritorio, que sigue yendo a la vista dia. Por eso vive en su propio
  * archivo cliente: `agenda-views.tsx` renderiza `AppointmentCard`, que es un
  * Server Component, y no puede pasar a cliente entero por esta selección.
+ *
+ * Con `appointments = null` (cargando) la grilla sigue siendo real, sin las
+ * marcas de "tiene turnos", y la lista del día va a esqueleto (n-AgendaVistaMes).
  */
 export function MonthMobileView({
   days,
@@ -24,13 +28,13 @@ export function MonthMobileView({
 }: {
   days: string[];
   monthKey: string;
-  appointments: AppointmentWithCustomer[];
+  appointments: AppointmentWithCustomer[] | null;
   initialSelectedKey: string;
 }) {
   const [selected, setSelected] = useState(initialSelectedKey);
-  const grouped = groupByDay(appointments);
+  const grouped = appointments ? groupByDay(appointments) : null;
   const today = todayKey();
-  const selectedAppointments = grouped.get(selected) ?? [];
+  const selectedAppointments = grouped?.get(selected) ?? [];
 
   return (
     <div className="flex flex-col gap-3.5 md:hidden">
@@ -48,7 +52,7 @@ export function MonthMobileView({
         <div className="grid grid-cols-7 gap-0.5">
           {days.map((dateKey) => {
             const inMonth = isSameMonth(dateKey, `${monthKey}-01`);
-            const hasAppointments = (grouped.get(dateKey)?.length ?? 0) > 0;
+            const hasAppointments = (grouped?.get(dateKey)?.length ?? 0) > 0;
             const isToday = dateKey === today;
             const isSelected = dateKey === selected;
 
@@ -83,12 +87,36 @@ export function MonthMobileView({
       </div>
 
       <div className="flex flex-col gap-2.5">
-        <h2 className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-          {formatInTz(dayRange(selected).start, "EEEE d")} · {selectedAppointments.length} turno
-          {selectedAppointments.length === 1 ? "" : "s"}
+        <h2 className="text-muted-foreground flex items-center gap-1 text-[11px] font-medium tracking-[0.12em] uppercase">
+          {formatInTz(dayRange(selected).start, "EEEE d")} ·{" "}
+          {grouped ? (
+            <>
+              {selectedAppointments.length} turno{selectedAppointments.length === 1 ? "" : "s"}
+            </>
+          ) : (
+            <Skeleton className="h-[11px] w-[52px]" />
+          )}
         </h2>
 
-        {selectedAppointments.length === 0 ? (
+        {!grouped ? (
+          <div className="bg-card overflow-hidden rounded-md border border-[var(--hs-border-card)]">
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
+                className={cn(
+                  "flex items-center justify-between gap-2.5 px-3.5 py-2.5",
+                  index < 2 && "border-b border-[var(--hs-divider)]",
+                )}
+              >
+                <div className="min-w-0 space-y-1.5">
+                  <Skeleton className="h-3.5 w-[170px] max-w-full" />
+                  <Skeleton className="h-3 w-[130px]" />
+                </div>
+                <Skeleton className="h-6 w-[88px] shrink-0 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : selectedAppointments.length === 0 ? (
           <p className="text-muted-foreground text-sm">Sin turnos.</p>
         ) : (
           <div className="bg-card overflow-hidden rounded-md border border-[var(--hs-border-card)]">

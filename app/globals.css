@@ -309,19 +309,40 @@
   }
 }
 
-/* El esqueleto de una navegación dentro de la página se monta al tocar pero
-   se ve recién a los 200 ms (`lib/loading-hold.ts`): una respuesta rápida pasa
-   directo al contenido sin parpadeo. Es un salto, no un fundido, y va en una
-   clase aparte de `.hs-skeleton` a propósito: con "Reducir movimiento" el
+/* Esqueletos de una navegación dentro de la página (`lib/loading-hold.ts`):
+   se montan al tocar pero se ven recién a los 200 ms, así una respuesta
+   rápida pasa directo al contenido sin parpadeo. Es un salto, no un fundido,
+   y va aparte de `.hs-skeleton` a propósito: con "Reducir movimiento" el
    pulso se apaga, pero esta demora tiene que seguir funcionando o las barras
-   no aparecerían nunca. */
+   no aparecerían nunca.
+
+   - `.hs-reveal-delayed`: todo el bloque espera (la lista del día no tiene
+     nada que se pueda pintar sin datos).
+   - `.hs-reveal-bars`: solo esperan las barras; lo que se calcula sin pedir
+     nada (días de la semana, grilla del mes) se ve desde el primer cuadro. */
 @keyframes hs-reveal {
+  from {
+    opacity: 0;
+  }
   to {
     opacity: 1;
   }
 }
 
 .hs-reveal-delayed {
-  opacity: 0;
-  animation: hs-reveal 0s linear 200ms forwards;
+  animation: hs-reveal 0s linear 200ms both;
+}
+
+/* El pulso arranca recién cuando aparecen; mientras dura le gana al
+   `opacity: 1` en que queda `hs-reveal`. */
+.hs-reveal-bars [data-slot="skeleton"] {
+  animation:
+    hs-reveal 0s linear 200ms both,
+    hs-skeleton-pulse 1.6s ease-in-out 200ms infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-reveal-bars [data-slot="skeleton"] {
+    animation: hs-reveal 0s linear 200ms both;
+  }
 }

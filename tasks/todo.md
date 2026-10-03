@@ -401,8 +401,21 @@
       build de producción (`next start`, con precarga de links): igual
 - [x] L1 — Ajuste: la demora de 200 ms arranca solo en el primer toque
       (con toques seguidos el mínimo de 400 ms se podía romper)
-- [ ] L1 — Verificar en el iPhone: ◀ ▶, tira y "Hoy" en Día (con Reducir movimiento)
-- [ ] L2 — Agenda Semana, Mes y "Hoy" deshabilitado (`periodContainsToday` con tests)
+- [x] L1 — Verificado por el usuario en el iPhone
+- [x] L2 — Agenda Semana, Mes y segmentado Día/Semana/Mes también navegan
+      al toque. `WeekView` y `MonthView` pasan a archivos propios sin
+      componentes de servidor y con `appointments = null` son su propio
+      esqueleto: días y grilla reales desde el primer cuadro, barras donde van
+      los turnos (solo las barras esperan los 200 ms, `.hs-reveal-bars`).
+      `AgendaBody` elige el esqueleto por la vista recién tocada y pone la
+      única región `status`. "Hoy" con borde (diseño) y deshabilitado en el
+      período de hoy (`periodContainsToday`, 4 tests). Arreglos: ▶ en Mes iba
+      +30 días (salteaba febrero desde el 31 de enero) y ahora va al día 1 del
+      mes vecino (4 tests); el día elegido del mes en el celular quedaba en
+      el mes anterior al navegar (`key`). Revisado en Chrome con 1,5 s de
+      demora temporal (sacada): semana, mes, cambio de vista y "Hoy"; el
+      celular solo por DOM (la ventana no se dejó achicar)
+- [ ] L2 — Verificar en el iPhone: Semana y Mes (◀ ▶, segmentado, "Hoy")
 - [ ] L3 — Caja: vistas, períodos y "Hoy"; `CajaSkeleton` con categorías (iPhone) y tabla (escritorio)
 - [ ] L4 — Más: carga y error solo en la tarjeta de sesión
 - [ ] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad

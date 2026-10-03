@@ -137,9 +137,10 @@ function DayRowSkeleton() {
 
 /**
  * Lista del día mientras carga: las filas del celular y, en escritorio, las
- * tarjetas de `AppointmentCard` (como `DayView`).
+ * tarjetas de `AppointmentCard` (como `DayView`). Sin región `status` propia:
+ * la pone quien la usa (`AgendaBody` o `AgendaSkeleton`).
  */
-function DayListBars() {
+export function DayListSkeleton() {
   return (
     <>
       <div className="flex flex-col gap-2.5 md:hidden">
@@ -156,15 +157,6 @@ function DayListBars() {
   );
 }
 
-/** Solo la lista: el toolbar real queda arriba (`AgendaBody`). */
-export function DayListSkeleton() {
-  return (
-    <LoadingRegion label="Cargando turnos del día…">
-      <DayListBars />
-    </LoadingRegion>
-  );
-}
-
 /** Entrada a Agenda desde la barra de pestañas (`loading.tsx` de la ruta). */
 export function AgendaSkeleton() {
   return (
@@ -176,7 +168,7 @@ export function AgendaSkeleton() {
             <Skeleton key={i} className="h-14 flex-1 rounded-md" />
           ))}
         </div>
-        <DayListBars />
+        <DayListSkeleton />
       </div>
     </LoadingRegion>
   );

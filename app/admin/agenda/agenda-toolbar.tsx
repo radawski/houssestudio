@@ -8,7 +8,7 @@ import { WalkInSaleButton } from "@/components/admin/walk-in-sale-button";
 import type { SaleCatalog } from "@/lib/data/products";
 import { Button } from "@/components/ui/button";
 import { dayNumber } from "@/lib/agenda-day";
-import { agendaHref, agendaTitle, stepDateKey, type AgendaView } from "@/lib/agenda-nav";
+import { agendaHref, agendaTitle, periodContainsToday, stepDateKey, type AgendaView } from "@/lib/agenda-nav";
 import { todayKey, weekRange } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
@@ -21,14 +21,10 @@ const WEEK_STRIP_LABELS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"] as
  */
 function useAgendaLink(view: AgendaView, dateKey: string, control: AgendaControl) {
   const navigation = useAgendaNavigation();
-  // L1: solo la vista Día navega sin esperar; Semana y Mes se suman en L2,
-  // cuando tengan su esqueleto.
-  const optimistic = navigation.view === "dia" && view === "dia";
 
   return {
     href: agendaHref(view, dateKey),
     onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!optimistic) return;
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
       navigation.navigate({ view, dateKey }, control);
@@ -40,20 +36,26 @@ function ViewSegments({ view, dateKey, className }: { view: AgendaView; dateKey:
   return (
     <div role="group" aria-label="Vista" className={cn("bg-muted flex gap-0.5 rounded-md p-0.5", className)}>
       {(["dia", "semana", "mes"] as const).map((option) => (
-        <Link
-          key={option}
-          href={agendaHref(option, dateKey)}
-          className={cn(
-            "flex-1 rounded px-3 py-1.5 text-center text-sm capitalize transition-colors md:flex-none md:py-1",
-            view === option
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          {option === "dia" ? "día" : option}
-        </Link>
+        <ViewSegment key={option} option={option} active={view === option} dateKey={dateKey} />
       ))}
     </div>
+  );
+}
+
+/** Cambiar de vista conserva la fecha: de Día 19 a Semana es la semana del 19. */
+function ViewSegment({ option, active, dateKey }: { option: AgendaView; active: boolean; dateKey: string }) {
+  const link = useAgendaLink(option, dateKey, "view");
+  return (
+    <Link
+      {...link}
+      aria-current={active ? "true" : undefined}
+      className={cn(
+        "flex-1 rounded px-3 py-1.5 text-center text-sm capitalize transition-colors md:flex-none md:py-1",
+        active ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {option === "dia" ? "día" : option}
+    </Link>
   );
 }
 
@@ -128,9 +130,22 @@ export function AgendaToolbar({ catalog }: { catalog: SaleCatalog }) {
             <ChevronRight className="size-4" />
           </Link>
         </Button>
-        <Button asChild variant="ghost" size="sm" className="order-last h-9 md:order-none md:h-7">
-          <Link {...today}>Hoy</Link>
-        </Button>
+        {/* Con el período de hoy a la vista "Hoy" no haría nada: queda
+            deshabilitado, y así también avisa dónde estás (n-AgendaHoy). */}
+        {periodContainsToday(view, dateKey, todayKey()) ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="order-last h-9 border-[var(--hs-border-card)] px-3 text-[13px] text-[var(--hs-mist)] disabled:opacity-100 md:order-none md:h-7"
+          >
+            Hoy
+          </Button>
+        ) : (
+          <Button asChild variant="outline" size="sm" className="order-last h-9 px-3 text-[13px] md:order-none md:h-7">
+            <Link {...today}>Hoy</Link>
+          </Button>
+        )}
         <h1 className="ml-1 flex-1 truncate text-base font-semibold first-letter:uppercase md:ml-2 md:flex-none">
           {agendaTitle(view, dateKey)}
         </h1>

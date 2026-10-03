@@ -1,4 +1,4 @@
-import { addDaysToKey, dayRange, monthRange, weekRange } from "@/lib/dates";
+import { addDaysToKey, dayRange, isSameMonth, monthRange, weekRange } from "@/lib/dates";
 import { formatInTz, formatLongDate } from "@/lib/format";
 
 /**
@@ -12,15 +12,35 @@ import { formatInTz, formatLongDate } from "@/lib/format";
 
 export type AgendaView = "dia" | "semana" | "mes";
 
-/** Cuánto se mueve cada flecha según la vista activa. */
-const STEP_DAYS: Record<AgendaView, number> = { dia: 1, semana: 7, mes: 30 };
+/** Cuánto se mueve cada flecha en Día y Semana. */
+const STEP_DAYS = { dia: 1, semana: 7 } as const;
 
 export function agendaHref(view: AgendaView, dateKey: string): string {
   return `/admin/agenda?vista=${view}&fecha=${dateKey}`;
 }
 
+/**
+ * Fecha a la que lleva ◀ / ▶. En Mes va al día 1 del mes vecino (diseño
+ * AgendaPeriodoMes): sumar 30 días se salteaba febrero desde un 31 de enero.
+ */
 export function stepDateKey(view: AgendaView, dateKey: string, direction: 1 | -1): string {
-  return addDaysToKey(dateKey, STEP_DAYS[view] * direction);
+  if (view !== "mes") return addDaysToKey(dateKey, STEP_DAYS[view] * direction);
+
+  const [year, month] = dateKey.split("-").map(Number);
+  const index = year * 12 + (month - 1) + direction;
+  const nextYear = Math.floor(index / 12);
+  const nextMonth = (index % 12) + 1;
+  return `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+}
+
+/**
+ * El período a la vista incluye hoy: "Hoy" queda deshabilitado (no
+ * dispararía una carga que no cambia nada) y de paso avisa dónde estás.
+ */
+export function periodContainsToday(view: AgendaView, dateKey: string, today: string): boolean {
+  if (view === "dia") return dateKey === today;
+  if (view === "semana") return weekRange(dateKey).days.includes(today);
+  return isSameMonth(dateKey, today);
 }
 
 export function agendaTitle(view: AgendaView, dateKey: string): string {

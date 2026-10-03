@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { agendaHref, agendaTitle, stepDateKey } from "@/lib/agenda-nav";
+import { agendaHref, agendaTitle, periodContainsToday, stepDateKey } from "@/lib/agenda-nav";
 
 describe("agendaTitle", () => {
   it("día: día de la semana, número y mes", () => {
@@ -37,6 +37,48 @@ describe("stepDateKey", () => {
 
   it("cruza de mes y de año", () => {
     expect(stepDateKey("dia", "2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  it("mes: va al día 1 del mes siguiente (diseño AgendaPeriodoMes)", () => {
+    expect(stepDateKey("mes", "2026-09-19", 1)).toBe("2026-10-01");
+  });
+
+  it("mes: va al día 1 del mes anterior", () => {
+    expect(stepDateKey("mes", "2026-09-19", -1)).toBe("2026-08-01");
+  });
+
+  it("mes: desde el 31 de enero no se saltea febrero", () => {
+    expect(stepDateKey("mes", "2027-01-31", 1)).toBe("2027-02-01");
+  });
+
+  it("mes: cruza de año en los dos sentidos", () => {
+    expect(stepDateKey("mes", "2026-12-15", 1)).toBe("2027-01-01");
+    expect(stepDateKey("mes", "2027-01-15", -1)).toBe("2026-12-01");
+  });
+});
+
+describe("periodContainsToday", () => {
+  const today = "2026-09-08"; // martes
+
+  it("día: solo el mismo día", () => {
+    expect(periodContainsToday("dia", "2026-09-08", today)).toBe(true);
+    expect(periodContainsToday("dia", "2026-09-09", today)).toBe(false);
+  });
+
+  it("semana: cualquier día de la semana de hoy (lunes a domingo)", () => {
+    expect(periodContainsToday("semana", "2026-09-07", today)).toBe(true);
+    expect(periodContainsToday("semana", "2026-09-13", today)).toBe(true);
+    expect(periodContainsToday("semana", "2026-09-14", today)).toBe(false);
+    expect(periodContainsToday("semana", "2026-09-06", today)).toBe(false);
+  });
+
+  it("mes: cualquier día del mes de hoy", () => {
+    expect(periodContainsToday("mes", "2026-09-30", today)).toBe(true);
+    expect(periodContainsToday("mes", "2026-10-01", today)).toBe(false);
+  });
+
+  it("mes: el mismo mes de otro año no cuenta", () => {
+    expect(periodContainsToday("mes", "2027-09-08", today)).toBe(false);
   });
 });
 

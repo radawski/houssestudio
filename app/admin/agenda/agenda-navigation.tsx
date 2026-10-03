@@ -12,7 +12,11 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
+import { MonthView } from "@/app/admin/agenda/month-view";
+import { WeekView } from "@/app/admin/agenda/week-view";
+import { DayListSkeleton } from "@/components/admin/loading-skeletons";
 import { agendaHref, type AgendaView } from "@/lib/agenda-nav";
+import { monthRange, weekRange } from "@/lib/dates";
 import {
   holdReducer,
   showSkeleton,
@@ -23,7 +27,7 @@ import {
 type AgendaPosition = { view: AgendaView; dateKey: string };
 
 /** Qué control disparó la navegación en curso (◀ queda marcado mientras carga). */
-export type AgendaControl = "prev" | "next" | "today" | "strip";
+export type AgendaControl = "prev" | "next" | "today" | "strip" | "view";
 
 type AgendaNavigationValue = AgendaPosition & {
   /** Hay una navegación en curso: lo que muestra el servidor no es lo pedido. */
@@ -118,12 +122,43 @@ export function AgendaNavigation({
   );
 }
 
+const LOADING_LABEL: Record<AgendaView, string> = {
+  dia: "Cargando turnos del día…",
+  semana: "Cargando turnos de la semana…",
+  mes: "Cargando turnos del mes…",
+};
+
 /**
- * La lista de la vista: el contenido del servidor, o el esqueleto mientras
- * carga. El esqueleto se monta al tocar y `.hs-reveal-delayed` lo deja
- * invisible los primeros 200 ms.
+ * El cuerpo de la vista: el contenido del servidor, o el esqueleto de la
+ * vista y la fecha recién tocadas mientras carga. Se arma acá, en el
+ * navegador, porque al cambiar de Día a Semana el esqueleto tiene que ser el
+ * de Semana aunque el servidor todavía esté mostrando Día.
+ *
+ * Semana y Mes son su propio esqueleto (`appointments = null`): los días y la
+ * grilla se ven desde el primer cuadro y solo las barras esperan los 200 ms
+ * (`.hs-reveal-bars`). En Día no hay nada que pintar sin datos y espera todo
+ * el bloque (`.hs-reveal-delayed`).
  */
-export function AgendaBody({ skeleton, children }: { skeleton: React.ReactNode; children: React.ReactNode }) {
-  const navigation = useAgendaNavigation();
-  return navigation.skeleton ? <div className="hs-reveal-delayed">{skeleton}</div> : <>{children}</>;
+export function AgendaBody({ children }: { children: React.ReactNode }) {
+  const { view, dateKey, skeleton } = useAgendaNavigation();
+  if (!skeleton) return <>{children}</>;
+
+  const month = view === "mes" ? monthRange(dateKey) : null;
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={view === "dia" ? "hs-reveal-delayed" : "hs-reveal-bars"}
+    >
+      <span className="sr-only">{LOADING_LABEL[view]}</span>
+      {view === "dia" ? (
+        <DayListSkeleton />
+      ) : view === "semana" ? (
+        <WeekView days={weekRange(dateKey).days} appointments={null} />
+      ) : month ? (
+        <MonthView days={month.days} monthKey={month.monthKey} dateKey={dateKey} appointments={null} />
+      ) : null}
+    </div>
+  );
 }
