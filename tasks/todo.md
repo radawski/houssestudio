@@ -251,7 +251,7 @@
       respuestas a `turnos@` se pierden: decisión del usuario, sin "responder a"
 - [x] D4 — `EMAIL_FROM` = `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en Vercel
       y `.env.local`
-- [ ] D4 — Prueba final: reserva en producción con el email de otra persona
+- [x] D4 — Prueba final en producción: llegaron todos los mails desde `turnos@houssestudio.com.ar`
 - [ ] **Al terminar las pruebas: cambiar `ADMIN_EMAIL` en Vercel al email del
       cliente (el peluquero).** Hoy sigue el del usuario a propósito, para
       probar. En `.env.local` puede quedar el del usuario
