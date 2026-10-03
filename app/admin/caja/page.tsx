@@ -3,19 +3,11 @@ import type { Metadata } from "next";
 import { CajaToolbar, type CajaView } from "@/app/admin/caja/caja-toolbar";
 import { SummaryCard } from "@/app/admin/caja/caja-views";
 import { CategoryCards } from "@/app/admin/caja/category-cards";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { CategoryTable, DesktopSummary } from "@/app/admin/caja/category-table";
 import { groupByCategory } from "@/lib/cashbox";
 import { getCashboxSummary } from "@/lib/data/cashbox";
 import { dayRange, exactMonthRange, todayKey, weekRange } from "@/lib/dates";
-import { formatCurrency, formatDateTime, formatInTz, formatLongDate } from "@/lib/format";
+import { formatInTz, formatLongDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Caja" };
 
@@ -29,20 +21,6 @@ const SUMMARY_LABEL: Record<CajaView, string> = {
   semana: "Total de la semana",
   mes: "Total del mes",
 };
-
-const METHOD_LABEL = { efectivo: "Efectivo", transferencia: "Transferencia" } as const;
-const ORIGIN_LABEL = { turno: "Turno", venta_suelta: "Venta suelta", producto: "Producto" } as const;
-
-function DesktopSummaryCard({ label, amount }: { label: string; amount: number }) {
-  return (
-    <Card>
-      <CardContent className="py-4">
-        <p className="text-muted-foreground text-xs tracking-[0.08em] uppercase">{label}</p>
-        <p className="mt-1 text-2xl font-semibold tabular-nums">{formatCurrency(amount)}</p>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default async function CajaPage({ searchParams }: PageProps<"/admin/caja">) {
   const { vista, fecha } = await searchParams;
@@ -80,57 +58,14 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
 
       <SummaryCard label={SUMMARY_LABEL[view]} breakdown={breakdown} />
 
-      <div className="hidden grid-cols-1 gap-3 sm:grid-cols-3 md:grid">
-        <DesktopSummaryCard label="Total" amount={breakdown.total} />
-        <DesktopSummaryCard label="Efectivo" amount={breakdown.byMethod.efectivo} />
-        <DesktopSummaryCard label="Transferencia" amount={breakdown.byMethod.transferencia} />
-      </div>
+      <DesktopSummary label={SUMMARY_LABEL[view]} breakdown={breakdown} groups={groups} />
 
       <CategoryCards groups={groups} detail={view === "dia" ? "movimientos" : "conceptos"} />
-
-      <div className="hidden md:block">
-        <Card>
-          <CardContent className="p-0">
-            {movements.length === 0 ? (
-              <p className="text-muted-foreground py-10 text-center text-sm">
-                Sin movimientos en este período.
-              </p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Origen</TableHead>
-                    <TableHead>Concepto</TableHead>
-                    <TableHead>Medio</TableHead>
-                    <TableHead className="text-right">Monto</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {movements.map((movement) => (
-                    <TableRow key={`${movement.origin}-${movement.id}`}>
-                      <TableCell className="text-muted-foreground">
-                        {formatDateTime(movement.at)}
-                      </TableCell>
-                      <TableCell>{ORIGIN_LABEL[movement.origin]}</TableCell>
-                      <TableCell className="whitespace-normal">
-                        {movement.serviceName}
-                        {movement.note ? (
-                          <p className="text-muted-foreground mt-0.5 text-xs">“{movement.note}”</p>
-                        ) : null}
-                      </TableCell>
-                      <TableCell>{METHOD_LABEL[movement.method]}</TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatCurrency(movement.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <CategoryTable
+        groups={groups}
+        breakdown={breakdown}
+        detail={view === "dia" ? "movimientos" : "conceptos"}
+      />
     </div>
   );
 }
