@@ -465,7 +465,15 @@
       servicio, "Reservar turno" a la portada, "Sin seña" y pie con "No quiero
       recibir recordatorios" (`emailDocument` acepta `unsubscribeUrl`). Dos
       variantes en `/dev/emails`, revisadas a 375 y 600 px
-- [ ] V3 — `pickComebacks` con tests + consulta; contar turnos pasados sin cobrar
+- [x] V3 — `pickComebacks` (`lib/comebacks.ts`, 12 tests): último turno
+      completado entre 30 y 60 días (días de calendario del local), sin turno
+      pendiente/confirmado por delante, sin baja, con email y sin 1d enviado
+      por esa visita (ciclo nuevo si vuelve). Consulta en
+      `lib/data/comebacks.ts`. Corrida en seco contra la base (sin escribir):
+      hoy no le toca a nadie (8 visitas de 3 clientes, todas de hace < 30 días)
+- [ ] V3 — Decisión pendiente: hay 15 turnos pasados en `confirmado` contra 8
+      en `completado`. Solo `completado` cuenta como visita (decisión 6): si el
+      peluquero no registra los cobros, esos clientes no reciben el 1d
 - [ ] V4 — Baja con token derivado y página `/baja/[token]` con botón (nunca un GET que cambie datos)
 - [ ] V5 — Envío dentro del cron diario, aislado del recordatorio del día anterior
 - [ ] Checkpoint 4 — mail en Gmail (claro y oscuro), baja probada, primera ejecución en producción
