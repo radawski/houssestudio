@@ -363,7 +363,10 @@
       `createBooking` y `DniGate`. Probado en local con una ficha de otra zona:
       editar el nombre no muestra el aviso y la reserva entra; otro número de
       otra zona sí lo muestra. Ficha y turno de prueba borrados
-- [ ] Z2 — El mensaje de "Coordinar por WhatsApp" trae nombre, DNI, teléfono y email
+- [x] Z2 — El mensaje de "Coordinar por WhatsApp" suma "Mis datos:" con
+      nombre, DNI, teléfono y email (los vacíos se omiten).
+      `lib/out-of-area-message.ts` (5 tests); `DniGate` pasa lo escrito en
+      `Identity.contact`. Revisado en Chrome sin enviar la reserva
 - [ ] Z3 — Hoja "Agregar cliente" desde Más: DNI, nombre, teléfono (cualquier zona) y email opcional
 - [ ] Checkpoint 2 — flujo completo con un número de otra provincia, en el iPhone
 

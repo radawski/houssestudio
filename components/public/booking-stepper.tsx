@@ -36,7 +36,7 @@ const dateFormatter = new Intl.DateTimeFormat("es-AR", {
   month: "long",
 });
 
-const UNRESOLVED_IDENTITY: Identity = { resolved: false, displayName: null, outOfArea: false };
+const UNRESOLVED_IDENTITY: Identity = { resolved: false, displayName: null, outOfArea: false, contact: null };
 
 export function BookingStepper({
   services,
@@ -269,6 +269,7 @@ export function BookingStepper({
                       serviceName={service.name}
                       dateLabel={date ? dateFormatter.format(date) : ""}
                       timeLabel={slot.label}
+                      contact={identity.contact}
                     />
                   </div>
                 ) : state.status === "error" && !state.fieldErrors ? (

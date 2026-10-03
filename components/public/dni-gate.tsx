@@ -6,6 +6,7 @@ import { Check, Pencil } from "lucide-react";
 import { BookingFields, type ContactField, type ContactValues } from "@/components/public/booking-fields";
 import { Field, inputClass } from "@/components/public/form-field";
 import { lookupCustomerByDni, type CustomerLookupResult } from "@/lib/actions/booking";
+import type { OutOfAreaContact } from "@/lib/out-of-area-message";
 import { checkPhone, isBookablePhone } from "@/lib/phone";
 import { normalizeDni } from "@/lib/validation/schemas";
 
@@ -17,6 +18,12 @@ export type Identity = {
    * mostrar la salida por WhatsApp en vez de habilitar la confirmación.
    */
   outOfArea: boolean;
+  /**
+   * Lo que el cliente escribió en el alta o la edición, para sumarlo al
+   * mensaje de WhatsApp si su número es de otra zona. `null` si no hay
+   * formulario a la vista.
+   */
+  contact: OutOfAreaContact | null;
 };
 
 const EMPTY_CONTACT: ContactValues = { fullName: "", phone: "", email: "" };
@@ -109,7 +116,7 @@ export function DniGate({
     if (isLockedFound && lookup.status === "found") {
       // Cliente reconocido que no tocó sus datos: no entra ningún teléfono
       // nuevo al sistema, así que no hay nada que validar.
-      onIdentityChange({ resolved: true, displayName: lookup.fullName, outOfArea: false });
+      onIdentityChange({ resolved: true, displayName: lookup.fullName, outOfArea: false, contact: null });
       return;
     }
 
@@ -131,12 +138,13 @@ export function DniGate({
         resolved: complete && !outOfArea,
         displayName: contact.fullName.trim() || null,
         outOfArea,
+        contact: { ...contact, dni: normalizeDni(dniInput) },
       });
       return;
     }
 
-    onIdentityChange({ resolved: false, displayName: null, outOfArea: false });
-  }, [isLockedFound, showContactFields, contact, lookup, onIdentityChange]);
+    onIdentityChange({ resolved: false, displayName: null, outOfArea: false, contact: null });
+  }, [isLockedFound, showContactFields, contact, dniInput, lookup, onIdentityChange]);
 
   return (
     <div className="space-y-5">

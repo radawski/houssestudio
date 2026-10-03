@@ -2,6 +2,7 @@
 
 import { MessageCircle } from "lucide-react";
 
+import { buildOutOfAreaMessage, type OutOfAreaContact } from "@/lib/out-of-area-message";
 import { toWhatsappNumber } from "@/lib/phone";
 
 /**
@@ -11,25 +12,27 @@ import { toWhatsappNumber } from "@/lib/phone";
  * reserva y deja el botón de WhatsApp detrás de un scroll, justo cuando es lo
  * único que le queda por hacer al visitante.
  *
- * El turno NO se registra, así que el horario sigue disponible para otro. Por
- * eso el mensaje dice "quería" y no da el horario por reservado: para cuando el
- * barbero lo lea puede estar tomado, y prometerlo sería mentirle al cliente.
+ * El texto del mensaje (y por qué dice "quería") está en
+ * `lib/out-of-area-message.ts`.
  */
 export function OutOfAreaNotice({
   businessWhatsapp,
   serviceName,
   dateLabel,
   timeLabel,
+  contact,
 }: {
   /** Teléfono del local, tal como está guardado en `settings.phone`. */
   businessWhatsapp: string | null;
   serviceName: string;
   dateLabel: string;
   timeLabel: string;
+  /** Lo que el cliente ya escribió; va en el mensaje para cargarle la ficha. */
+  contact: OutOfAreaContact | null;
 }) {
   const number = businessWhatsapp ? toWhatsappNumber(businessWhatsapp) : null;
 
-  const message = `Hola, tengo una línea de otra localidad y quería agendar un turno para el ${dateLabel} a las ${timeLabel} para el servicio ${serviceName}.`;
+  const message = buildOutOfAreaMessage({ serviceName, dateLabel, timeLabel }, contact);
 
   return (
     <div className="border-border bg-[var(--hs-surface-raised)] border p-5">
