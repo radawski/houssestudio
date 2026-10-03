@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 
 import { CancelAppointmentButton } from "@/components/public/cancel-appointment-button";
 import { StatusBadge } from "@/components/status-badge";
@@ -123,6 +123,21 @@ export default async function AppointmentPage({
               businessWhatsapp={settings.phone}
               withinWindow={affordance === "boton"}
             />
+          </div>
+        ) : null}
+
+        {/* Solo recién reservado: es el final del recorrido y la portada es el
+            único lugar al que tiene sentido seguir. Abierto desde el mail, el
+            nombre del local arriba ya lleva al inicio. */}
+        {nuevo ? (
+          <div className="border-border mt-10 border-t pt-6">
+            <Link
+              href="/"
+              className="bg-foreground text-background hover:bg-[var(--hs-graphite)] focus-visible:ring-ring inline-flex min-h-11 items-center gap-2 px-6 py-3 text-sm tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <ArrowLeft className="size-4" />
+              Volver al inicio
+            </Link>
           </div>
         ) : null}
       </div>

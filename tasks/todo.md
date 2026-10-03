@@ -337,7 +337,9 @@
 - [x] C1 — Verificado por el usuario en el iPhone. En `email_log` el 1a quedó
       `enviado` 0,7 s después de crear el turno (el 2a nunca se registró ahí,
       ya era así antes)
-- [ ] C2 — Botón "Volver al inicio" en Turno solicitado
+- [x] C2 — Botón "Volver al inicio" (tinta, 44 px, con ←) al final de Turno
+      solicitado, solo con `?nuevo=1`. Revisado en Chrome: lleva a `/` y no
+      aparece en "Tu turno"
 - [ ] C3 — Pasar la portada con el dedo la retira, igual que "Reservar turno" (sin salto)
 - [ ] C4 — Botón flotante de WhatsApp (tarjeta "¿Dudas con tu turno?", blanco sobre la portada, sin tapar el stepper)
 - [ ] Checkpoint 1 — tests/typecheck/lint/build + prueba del usuario en el iPhone
