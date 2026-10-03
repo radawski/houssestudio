@@ -471,10 +471,16 @@
       por esa visita (ciclo nuevo si vuelve). Consulta en
       `lib/data/comebacks.ts`. Corrida en seco contra la base (sin escribir):
       hoy no le toca a nadie (8 visitas de 3 clientes, todas de hace < 30 días)
-- [ ] V3 — Decisión pendiente: hay 15 turnos pasados en `confirmado` contra 8
-      en `completado`. Solo `completado` cuenta como visita (decisión 6): si el
-      peluquero no registra los cobros, esos clientes no reciben el 1d
-- [ ] V4 — Baja con token derivado y página `/baja/[token]` con botón (nunca un GET que cambie datos)
+- [x] V3 — Decisión del usuario (opción 1): sigue contando solo `completado`;
+      el peluquero registra el cobro de cada turno (hoy hay 15 pasados en
+      `confirmado` contra 8 en `completado`)
+- [x] V4 — Baja: `deriveUnsubscribeToken` / `readUnsubscribeToken`
+      (`<id>.<firma HMAC>` con propósito propio, comparación en tiempo
+      constante; 11 tests) y `unsubscribeUrlFor`. Página `/baja/[token]`
+      (404 si el token no vale) con botón; la acción vuelve a verificar el token
+      y marca `comeback_opt_out_at` una sola vez. Probado en local con una
+      ficha de prueba (borrada): abrir el link no cambia nada, el botón da de
+      baja y muestra "Listo"; firma tocada → 404
 - [ ] V5 — Envío dentro del cron diario, aislado del recordatorio del día anterior
 - [ ] Checkpoint 4 — mail en Gmail (claro y oscuro), baja probada, primera ejecución en producción
 - [ ] F1 — SPEC y README al día
