@@ -3,36 +3,18 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { useAgendaNavigation, type AgendaControl } from "@/app/admin/agenda/agenda-navigation";
+import { usePeriodLink, usePeriodNavigation } from "@/components/admin/period-navigation";
 import { WalkInSaleButton } from "@/components/admin/walk-in-sale-button";
 import type { SaleCatalog } from "@/lib/data/products";
 import { Button } from "@/components/ui/button";
 import { dayNumber } from "@/lib/agenda-day";
-import { agendaHref, agendaTitle, periodContainsToday, stepDateKey, type AgendaView } from "@/lib/agenda-nav";
+import { periodContainsToday, periodTitle, stepDateKey, stepFrom, type PeriodView } from "@/lib/period-nav";
 import { todayKey, weekRange } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 const WEEK_STRIP_LABELS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"] as const;
 
-/**
- * Link que, en un clic simple, navega sin esperar al servidor
- * (`AgendaNavigation`). Con modificadores (abrir en otra pestaña, etc.) o sin
- * JavaScript sigue siendo un link común.
- */
-function useAgendaLink(view: AgendaView, dateKey: string, control: AgendaControl) {
-  const navigation = useAgendaNavigation();
-
-  return {
-    href: agendaHref(view, dateKey),
-    onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      event.preventDefault();
-      navigation.navigate({ view, dateKey }, control);
-    },
-  };
-}
-
-function ViewSegments({ view, dateKey, className }: { view: AgendaView; dateKey: string; className?: string }) {
+function ViewSegments({ view, dateKey, className }: { view: PeriodView; dateKey: string; className?: string }) {
   return (
     <div role="group" aria-label="Vista" className={cn("bg-muted flex gap-0.5 rounded-md p-0.5", className)}>
       {(["dia", "semana", "mes"] as const).map((option) => (
@@ -43,8 +25,8 @@ function ViewSegments({ view, dateKey, className }: { view: AgendaView; dateKey:
 }
 
 /** Cambiar de vista conserva la fecha: de Día 19 a Semana es la semana del 19. */
-function ViewSegment({ option, active, dateKey }: { option: AgendaView; active: boolean; dateKey: string }) {
-  const link = useAgendaLink(option, dateKey, "view");
+function ViewSegment({ option, active, dateKey }: { option: PeriodView; active: boolean; dateKey: string }) {
+  const link = usePeriodLink(option, dateKey, "view");
   return (
     <Link
       {...link}
@@ -77,7 +59,7 @@ function WeekStrip({ dateKey }: { dateKey: string }) {
 }
 
 function WeekStripDay({ day, label, active }: { day: string; label: string; active: boolean }) {
-  const link = useAgendaLink("dia", day, "strip");
+  const link = usePeriodLink("dia", day, "strip");
   return (
     <Link
       {...link}
@@ -97,14 +79,14 @@ function WeekStripDay({ day, label, active }: { day: string; label: string; acti
 
 /**
  * Flechas, título, Día/Semana/Mes y tira de días. Todo sale de la vista y la
- * fecha de `AgendaNavigation`, que cambian al toque: no hace falta esperar al
+ * fecha de `PeriodNavigation`, que cambian al toque: no hace falta esperar al
  * servidor para saber a qué día se fue.
  */
 export function AgendaToolbar({ catalog }: { catalog: SaleCatalog }) {
-  const { view, dateKey, pressed } = useAgendaNavigation();
-  const previous = useAgendaLink(view, stepDateKey(view, dateKey, -1), "prev");
-  const next = useAgendaLink(view, stepDateKey(view, dateKey, 1), "next");
-  const today = useAgendaLink(view, todayKey(), "today");
+  const { view, dateKey, pressed } = usePeriodNavigation();
+  const previous = usePeriodLink(view, stepDateKey(view, dateKey, -1), "prev", stepFrom(-1));
+  const next = usePeriodLink(view, stepDateKey(view, dateKey, 1), "next", stepFrom(1));
+  const today = usePeriodLink(view, todayKey(), "today");
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
@@ -147,7 +129,7 @@ export function AgendaToolbar({ catalog }: { catalog: SaleCatalog }) {
           </Button>
         )}
         <h1 className="ml-1 flex-1 truncate text-base font-semibold first-letter:uppercase md:ml-2 md:flex-none">
-          {agendaTitle(view, dateKey)}
+          {periodTitle(view, dateKey)}
         </h1>
       </div>
 

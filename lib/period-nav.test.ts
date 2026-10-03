@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
 
-import { agendaHref, agendaTitle, periodContainsToday, stepDateKey } from "@/lib/agenda-nav";
+import { periodContainsToday, periodHref, periodTitle, stepDateKey, stepFrom } from "@/lib/period-nav";
 
-describe("agendaTitle", () => {
+describe("periodTitle", () => {
   it("día: día de la semana, número y mes", () => {
-    expect(agendaTitle("dia", "2026-09-19")).toBe("sábado 19 de septiembre");
+    expect(periodTitle("dia", "2026-09-19")).toBe("sábado 19 de septiembre");
   });
 
   it("semana: de lunes a domingo de la semana que contiene la fecha", () => {
-    expect(agendaTitle("semana", "2026-09-19")).toBe("14 de septiembre – 20 de septiembre");
+    expect(periodTitle("semana", "2026-09-19")).toBe("14 de septiembre – 20 de septiembre");
   });
 
   it("semana que cruza de mes", () => {
-    expect(agendaTitle("semana", "2026-10-01")).toBe("28 de septiembre – 4 de octubre");
+    expect(periodTitle("semana", "2026-10-01")).toBe("28 de septiembre – 4 de octubre");
   });
 
   it("mes: nombre del mes y año", () => {
-    expect(agendaTitle("mes", "2026-09-19")).toBe("septiembre 2026");
+    expect(periodTitle("mes", "2026-09-19")).toBe("septiembre 2026");
   });
 });
 
@@ -82,8 +82,23 @@ describe("periodContainsToday", () => {
   });
 });
 
-describe("agendaHref", () => {
+describe("periodHref", () => {
   it("arma la URL con vista y fecha", () => {
-    expect(agendaHref("semana", "2026-09-19")).toBe("/admin/agenda?vista=semana&fecha=2026-09-19");
+    expect(periodHref("/admin/agenda", "semana", "2026-09-19")).toBe("/admin/agenda?vista=semana&fecha=2026-09-19");
+  });
+
+  it("sirve también para Caja", () => {
+    expect(periodHref("/admin/caja", "dia", "2026-09-19")).toBe("/admin/caja?vista=dia&fecha=2026-09-19");
+  });
+});
+
+describe("stepFrom", () => {
+  it("dos ▶ encadenados desde la última posición avanzan dos días", () => {
+    const start = { view: "dia" as const, dateKey: "2026-09-20" };
+    expect(stepFrom(1)(stepFrom(1)(start))).toEqual({ view: "dia", dateKey: "2026-09-22" });
+  });
+
+  it("conserva la vista y usa su paso", () => {
+    expect(stepFrom(-1)({ view: "mes", dateKey: "2026-09-20" })).toEqual({ view: "mes", dateKey: "2026-08-01" });
   });
 });

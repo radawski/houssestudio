@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
 
-import { AgendaBody, AgendaNavigation } from "@/app/admin/agenda/agenda-navigation";
+import { AgendaBody } from "@/app/admin/agenda/agenda-body";
 import { AgendaToolbar } from "@/app/admin/agenda/agenda-toolbar";
 import { DayView } from "@/app/admin/agenda/agenda-views";
 import { MonthView } from "@/app/admin/agenda/month-view";
 import { WeekView } from "@/app/admin/agenda/week-view";
+import { PeriodNavigation } from "@/components/admin/period-navigation";
 import { computeFreeGaps } from "@/lib/availability";
 import {
   getAppointmentsBetween,
   getBusinessHoursForDay,
   getTimeBlocksForDay,
 } from "@/lib/data/appointments";
-import type { AgendaView } from "@/lib/agenda-nav";
 import { getSaleCatalog } from "@/lib/data/products";
 import { dayRange, monthRange, todayKey, weekRange } from "@/lib/dates";
+import type { PeriodView } from "@/lib/period-nav";
 import type { AppointmentStatus } from "@/lib/supabase/database.types";
 
 /**
@@ -28,7 +29,7 @@ export const metadata: Metadata = { title: "Agenda" };
 
 export const dynamic = "force-dynamic";
 
-const VIEWS: AgendaView[] = ["dia", "semana", "mes"];
+const VIEWS: PeriodView[] = ["dia", "semana", "mes"];
 
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -37,7 +38,7 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
 
   // Los parámetros vienen de la URL, así que se saneen antes de usarlos: una
   // fecha basura llegaría hasta el cálculo de rangos y reventaría la página.
-  const view = VIEWS.includes(vista as AgendaView) ? (vista as AgendaView) : "dia";
+  const view = VIEWS.includes(vista as PeriodView) ? (vista as PeriodView) : "dia";
   const dateKey =
     typeof fecha === "string" && DATE_KEY_PATTERN.test(fecha) ? fecha : todayKey();
 
@@ -63,14 +64,14 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
     const gaps = computeFreeGaps({ dateKey, hours, busy });
 
     return (
-      <AgendaNavigation view={view} dateKey={dateKey}>
+      <PeriodNavigation basePath="/admin/agenda" view={view} dateKey={dateKey}>
         <div className="space-y-4 pb-20 md:pb-0">
           <AgendaToolbar catalog={catalog} />
           <AgendaBody>
             <DayView appointments={appointments} gaps={gaps} />
           </AgendaBody>
         </div>
-      </AgendaNavigation>
+      </PeriodNavigation>
     );
   }
 
@@ -79,14 +80,14 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
     const appointments = await getAppointmentsBetween(start, end);
 
     return (
-      <AgendaNavigation view={view} dateKey={dateKey}>
+      <PeriodNavigation basePath="/admin/agenda" view={view} dateKey={dateKey}>
         <div className="space-y-4 pb-20 md:pb-0">
           <AgendaToolbar catalog={catalog} />
           <AgendaBody>
             <WeekView days={days} appointments={appointments} />
           </AgendaBody>
         </div>
-      </AgendaNavigation>
+      </PeriodNavigation>
     );
   }
 
@@ -94,13 +95,13 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
   const appointments = await getAppointmentsBetween(start, end);
 
   return (
-    <AgendaNavigation view={view} dateKey={dateKey}>
+    <PeriodNavigation basePath="/admin/agenda" view={view} dateKey={dateKey}>
       <div className="space-y-4 pb-20 md:pb-0">
         <AgendaToolbar catalog={catalog} />
         <AgendaBody>
           <MonthView days={days} monthKey={monthKey} dateKey={dateKey} appointments={appointments} />
         </AgendaBody>
       </div>
-    </AgendaNavigation>
+    </PeriodNavigation>
   );
 }

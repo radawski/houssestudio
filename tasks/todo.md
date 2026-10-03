@@ -415,7 +415,7 @@
       el mes anterior al navegar (`key`). Revisado en Chrome con 1,5 s de
       demora temporal (sacada): semana, mes, cambio de vista y "Hoy"; el
       celular solo por DOM (la ventana no se dejó achicar)
-- [ ] L2 — Verificar en el iPhone: Semana y Mes (◀ ▶, segmentado, "Hoy")
+- [x] L2 — Verificado por el usuario en el iPhone
 - [ ] L3 — Caja: vistas, períodos y "Hoy"; `CajaSkeleton` con categorías (iPhone) y tabla (escritorio)
 - [ ] L4 — Más: carga y error solo en la tarjeta de sesión
 - [ ] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad
