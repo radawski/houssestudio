@@ -435,8 +435,14 @@
       error con tipo y hora y "Reintentar" (`router.refresh()`); las filas
       siguen andando. Sesión vencida → `/login` (`classifySession`, 7 tests).
       Revisado en Chrome con demora y error de red forzados (ya sacados)
-- [ ] L4 — Verificar en el iPhone: entrar a Más (la tarjeta de sesión carga sola)
-- [ ] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad
+- [x] L4 — Verificado por el usuario en el iPhone
+- [x] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad: navegación
+      inmediata desde Más; ←, textos, encabezados, días de la semana y los
+      botones que no necesitan datos ("Nuevo servicio", "Nueva categoría",
+      "Bloquear un rango") son reales y funcionan; barras con las medidas del
+      diseño donde van los datos (esperan 200 ms). Revisado en Chrome en
+      escritorio con 1,5 s de demora temporal (sacada); celular solo por código
+- [ ] L5 — Verificar en el iPhone: entrar a Servicios, Productos y Disponibilidad desde Más
 - [ ] L6 — Volver a Más con `router.back()` y la fila marcada 600 ms
 - [ ] Checkpoint 3 — los 22 artboards revisados en el iPhone
 
