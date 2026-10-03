@@ -7,10 +7,13 @@ import {
   buildBookingConfirmationEmail,
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
+  buildComebackEmail,
   buildNewRequestAlertEmail,
   buildReminderEmail,
   type CancellationData,
+  type ComebackData,
   type ConfirmedData,
+  type EmailContent,
 } from "@/lib/email/templates";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { EmailType } from "@/lib/supabase/database.types";
@@ -134,54 +137,88 @@ const UNIQUE_VIOLATION = "23505";
 export type ReminderOutcome = "enviado" | "error" | "duplicado";
 
 /**
- * Recordatorio del día anterior (Fase 3). A diferencia de los otros envíos,
- * primero reserva su fila en `email_log` como `enviado` y recién después
- * manda: el índice único `email_log_reminder_once_idx` admite un solo
- * recordatorio enviado por turno, así que si la tarea corriera dos veces a la
- * vez la segunda choca ahí y no manda nada. Si el envío falla, la fila pasa
- * a `error` (y deja de bloquear un reintento).
+ * Envíos programados (los dos recordatorios). A diferencia de los otros,
+ * primero reservan su fila en `email_log` como `enviado` y recién después
+ * mandan: un índice único admite un solo envío por turno y tipo
+ * (`email_log_reminder_once_idx`, `email_log_comeback_once_idx`), así que si
+ * la tarea corriera dos veces a la vez la segunda choca ahí y no manda nada.
+ * Si el envío falla, la fila pasa a `error` (y deja de bloquear un reintento).
  */
-export async function sendReminder(
-  params: ConfirmedData & { appointmentId: string; toEmail: string },
-): Promise<ReminderOutcome> {
+async function claimAndSend({
+  appointmentId,
+  type,
+  toEmail,
+  content,
+  label,
+}: {
+  appointmentId: string;
+  type: "recordatorio" | "vuelta";
+  toEmail: string;
+  content: EmailContent;
+  /** Para los mensajes del log. */
+  label: string;
+}): Promise<ReminderOutcome> {
   const supabase = createAdminClient();
   const { data: claim, error: claimError } = await supabase
     .from("email_log")
-    .insert({
-      appointment_id: params.appointmentId,
-      type: "recordatorio",
-      to_email: params.toEmail,
-      status: "enviado",
-    })
+    .insert({ appointment_id: appointmentId, type, to_email: toEmail, status: "enviado" })
     .select("id")
     .single();
 
   if (claimError) {
     if (claimError.code === UNIQUE_VIOLATION) return "duplicado";
-    console.error(`No se pudo registrar el recordatorio: ${claimError.message}`);
+    console.error(`No se pudo registrar ${label}: ${claimError.message}`);
     return "error";
   }
 
-  const { subject, html, text } = buildReminderEmail(params);
   try {
     const { data, error } = await getResendClient().emails.send({
       from: emailFrom(),
-      to: params.toEmail,
-      subject,
-      html,
-      text,
+      to: toEmail,
+      subject: content.subject,
+      html: content.html,
+      text: content.text,
     });
     if (error) throw new Error(error.message);
     await supabase.from("email_log").update({ provider_id: data?.id ?? null }).eq("id", claim.id);
     return "enviado";
   } catch (error) {
-    console.error(`No se pudo enviar el recordatorio: ${messageFrom(error)}`);
+    console.error(`No se pudo enviar ${label}: ${messageFrom(error)}`);
     await supabase
       .from("email_log")
       .update({ status: "error", error: messageFrom(error) })
       .eq("id", claim.id);
     return "error";
   }
+}
+
+/** Recordatorio del día anterior (Fase 3). */
+export function sendReminder(
+  params: ConfirmedData & { appointmentId: string; toEmail: string },
+): Promise<ReminderOutcome> {
+  return claimAndSend({
+    appointmentId: params.appointmentId,
+    type: "recordatorio",
+    toEmail: params.toEmail,
+    content: buildReminderEmail(params),
+    label: "el recordatorio",
+  });
+}
+
+/**
+ * Recordatorio para volver (1d). La fila de `email_log` lleva el id del
+ * último turno completado: es la llave de "un mail por visita".
+ */
+export function sendComeback(
+  params: ComebackData & { appointmentId: string; toEmail: string },
+): Promise<ReminderOutcome> {
+  return claimAndSend({
+    appointmentId: params.appointmentId,
+    type: "vuelta",
+    toEmail: params.toEmail,
+    content: buildComebackEmail(params),
+    label: "el recordatorio para volver",
+  });
 }
 
 /**

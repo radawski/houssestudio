@@ -481,6 +481,14 @@
       y marca `comeback_opt_out_at` una sola vez. Probado en local con una
       ficha de prueba (borrada): abrir el link no cambia nada, el botón da de
       baja y muestra "Listo"; firma tocada → 404
-- [ ] V5 — Envío dentro del cron diario, aislado del recordatorio del día anterior
+- [x] V5 — `sendComeback` (y `sendReminder`) sobre `claimAndSend`: reserva la
+      fila de `email_log` antes de mandar. La ruta diaria corre
+      `recordatorios` y `vuelta` aislados (`runIsolated`, 3 tests); el resumen
+      del log pasa a `{ recordatorios: {...}, vuelta: {...} }`. Probado en
+      local con un cliente de prueba de hace 31 días (borrado): sin clave 401;
+      1ª llamada envió el 1d (y el recordatorio del turno de prueba del
+      usuario de mañana), 2ª no repitió; el índice de 0014 rechaza un segundo
+      envío
+- [ ] V5 — Producción: subir y revisar en los logs de Vercel la corrida de las 10
 - [ ] Checkpoint 4 — mail en Gmail (claro y oscuro), baja probada, primera ejecución en producción
 - [ ] F1 — SPEC y README al día
