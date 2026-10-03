@@ -60,6 +60,9 @@ En el **SQL Editor** de Supabase, ejecutar en orden los archivos de
 9. `0009_horario_bloques.sql` — horario con N bloques por día.
 10. `0010_retira_columnas_horario.sql` — retira las columnas de horario
     anteriores a la 0009.
+11. `0011_email_aceptacion.sql` — tipo de email para el turno confirmado.
+12. `0012_productos_y_categorias.sql` — categorías y productos, ventas
+    sueltas con varios ítems y la función que las registra.
 
 Cada archivo depende de los anteriores: la 0009 copia a bloques el horario
 que dejan cargado la 0003 y la 0006, y la 0010 recién después borra esas
@@ -144,9 +147,9 @@ que al cruzar zonas corre los turnos de día.
 **Fase 1 completa**: reservas públicas, agenda, solicitudes, servicios y
 disponibilidad.
 
-**Fase 2 en curso** (ver `SPEC.md`): emails transaccionales, autogestión de
-cancelaciones y registro de cobros (turnos cobrados vía RPC atómica, turnos
-ausentes, ventas sueltas) ya funcionan.
+**Fase 2 completa** (ver `SPEC.md`): emails transaccionales con el diseño de
+la web, autogestión de cancelaciones, registro de cobros, venta suelta con
+carrito de catálogo, productos con categorías y cierre de caja por categoría.
 
-Pendiente de Fase 2: cierre de caja.
-Pendiente de Fase 3: CRM, reportes y recordatorios automáticos.
+**Pendiente** (ver `tasks/todo.md`): Fase 3, solo recordatorios automáticos;
+dominio propio para los emails. CRM y reportes quedan para más adelante.

@@ -299,7 +299,7 @@
       `getClosedWeekdays`, `monthDateKeys`, `formatCompactAmount`, tokens del
       heatmap). Revisado en Chrome a 390px con septiembre: Cortes $120.000 +
       Otros $6.300 = $126.300
-- [ ] P4 — **Verificación manual pendiente** en iPhone
+- [x] P4 — Verificado por el usuario en iPhone (desplegables cerrados al entrar)
 - [x] P5 — Caja por categoría en escritorio (`category-table.tsx`): total en
       tinta con "N ventas · X servicios y Y productos", efectivo y
       transferencia con % y barra; tabla agrupada desplegable (cerrada al
@@ -307,5 +307,6 @@
       precio, efectivo, transferencia, subtotal), "% del total" y fila de
       total. Reemplaza las tres tarjetas y la tabla de movimientos. Revisado
       en Chrome con septiembre (mes $126.300, día 26 $30.300)
-- [ ] P5 — **Verificación manual pendiente** en escritorio
-- [ ] P6 — Cierre: SPEC, README
+- [x] P5 — Verificado por el usuario en escritorio
+- [x] P6 — SPEC (ventas sueltas con carrito de catálogo, Caja por categoría) y
+      README (migraciones 0011 y 0012, estado actualizado)
