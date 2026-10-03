@@ -247,13 +247,18 @@
       certificado Let's Encrypt; `www` redirige con 301 al dominio sin www
 - [x] D3 — Dominio verificado en Resend (región São Paulo): MX y SPF en
       `send`, DKIM en `resend._domainkey`, publicados y comprobados
-- [ ] D3 — DMARC en modo observación (`_dmarc`, `v=DMARC1; p=none;`), pedido
-      por el usuario. Las respuestas a `turnos@` se pierden: decisión del
-      usuario, sin "responder a"
+- [x] D3 — DMARC en modo observación (`_dmarc`, `v=DMARC1; p=none;`). Las
+      respuestas a `turnos@` se pierden: decisión del usuario, sin "responder a"
+- [x] D4 — `EMAIL_FROM` = `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en Vercel
+      y `.env.local`
+- [ ] D4 — Prueba final: reserva en producción con el email de otra persona
+- [ ] **Al terminar las pruebas: cambiar `ADMIN_EMAIL` en Vercel al email del
+      cliente (el peluquero).** Hoy sigue el del usuario a propósito, para
+      probar. En `.env.local` puede quedar el del usuario
 - [ ] D4 — `EMAIL_FROM` → `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en
       Vercel y `.env.local`; prueba a una casilla ajena
-- [ ] D5 — Sitio en `houssestudio.com.ar`: dominio de producción en Vercel,
-      `NEXT_PUBLIC_SITE_URL` actualizado, redeploy
+- [x] D5 — Sitio en `https://houssestudio.com.ar` y `NEXT_PUBLIC_SITE_URL`
+      actualizado en Vercel
 
 ## Al arrancar el abono (antes de usarla con clientes reales)
 - [ ] Pasar el proyecto de Vercel a Pro (USD 20/mes): Hobby prohíbe uso comercial
