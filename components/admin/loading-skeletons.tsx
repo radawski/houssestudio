@@ -110,6 +110,62 @@ function ToolbarSkeleton() {
   );
 }
 
+/**
+ * Fila [hora][tarjeta] de la lista mobile del día (diseño "Estados de carga",
+ * n-Main): canaleta de 44 con la hora a la derecha y la tarjeta de
+ * `AgendaAppointmentRow`. No hay filas "Libre": todavía no se sabe dónde caen.
+ */
+function DayRowSkeleton() {
+  return (
+    <div className="flex gap-2.5">
+      <span className="flex w-11 shrink-0 justify-end pt-[3px]">
+        <Skeleton className="h-3 w-[34px]" />
+      </span>
+      <div className={`${CARD} flex min-w-0 flex-1 flex-col gap-2 p-3`}>
+        <div className="flex items-center justify-between gap-2.5">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-6 w-[88px] rounded-full" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3.5 w-[140px]" />
+          <Skeleton className="h-[13px] w-[182px] max-w-full" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Lista del día mientras carga: las filas del celular y, en escritorio, las
+ * tarjetas de `AppointmentCard` (como `DayView`).
+ */
+function DayListBars() {
+  return (
+    <>
+      <div className="flex flex-col gap-2.5 md:hidden">
+        {[0, 1, 2, 3].map((i) => (
+          <DayRowSkeleton key={i} />
+        ))}
+      </div>
+      <div className="hidden grid-cols-1 gap-3 md:grid">
+        {[0, 1, 2].map((i) => (
+          <AppointmentCardSkeleton key={i} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** Solo la lista: el toolbar real queda arriba (`AgendaBody`). */
+export function DayListSkeleton() {
+  return (
+    <LoadingRegion label="Cargando turnos del día…">
+      <DayListBars />
+    </LoadingRegion>
+  );
+}
+
+/** Entrada a Agenda desde la barra de pestañas (`loading.tsx` de la ruta). */
 export function AgendaSkeleton() {
   return (
     <LoadingRegion label="Cargando la agenda…">
@@ -120,14 +176,7 @@ export function AgendaSkeleton() {
             <Skeleton key={i} className="h-14 flex-1 rounded-md" />
           ))}
         </div>
-        <div className="flex flex-col gap-2.5">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="flex gap-2.5">
-              <Skeleton className="mt-0.5 h-[13px] w-11 shrink-0" />
-              <Skeleton className={i % 2 ? "h-11 flex-1 rounded-md" : "h-[88px] flex-1 rounded-md"} />
-            </div>
-          ))}
-        </div>
+        <DayListBars />
       </div>
     </LoadingRegion>
   );

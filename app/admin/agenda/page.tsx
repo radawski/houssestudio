@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 
-import { AgendaToolbar, type AgendaView } from "@/app/admin/agenda/agenda-toolbar";
+import { AgendaBody, AgendaNavigation } from "@/app/admin/agenda/agenda-navigation";
+import { AgendaToolbar } from "@/app/admin/agenda/agenda-toolbar";
 import { DayView, MonthView, WeekView } from "@/app/admin/agenda/agenda-views";
+import { DayListSkeleton } from "@/components/admin/loading-skeletons";
 import { computeFreeGaps } from "@/lib/availability";
 import {
   getAppointmentsBetween,
   getBusinessHoursForDay,
   getTimeBlocksForDay,
 } from "@/lib/data/appointments";
+import type { AgendaView } from "@/lib/agenda-nav";
 import { getSaleCatalog } from "@/lib/data/products";
 import { dayRange, monthRange, todayKey, weekRange } from "@/lib/dates";
-import { formatInTz, formatLongDate } from "@/lib/format";
 import type { AppointmentStatus } from "@/lib/supabase/database.types";
 
 /**
@@ -60,15 +62,14 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
     const gaps = computeFreeGaps({ dateKey, hours, busy });
 
     return (
-      <div className="space-y-4 pb-20 md:pb-0">
-        <AgendaToolbar
-          view={view}
-          dateKey={dateKey}
-          title={formatLongDate(start)}
-          catalog={catalog}
-        />
-        <DayView appointments={appointments} gaps={gaps} />
-      </div>
+      <AgendaNavigation view={view} dateKey={dateKey}>
+        <div className="space-y-4 pb-20 md:pb-0">
+          <AgendaToolbar catalog={catalog} />
+          <AgendaBody skeleton={<DayListSkeleton />}>
+            <DayView appointments={appointments} gaps={gaps} />
+          </AgendaBody>
+        </div>
+      </AgendaNavigation>
     );
   }
 
@@ -77,15 +78,12 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
     const appointments = await getAppointmentsBetween(start, end);
 
     return (
-      <div className="space-y-4 pb-20 md:pb-0">
-        <AgendaToolbar
-          view={view}
-          dateKey={dateKey}
-          title={`${formatInTz(start, "d 'de' MMMM")} – ${formatInTz(dayRange(days[6]).start, "d 'de' MMMM")}`}
-          catalog={catalog}
-        />
-        <WeekView days={days} appointments={appointments} />
-      </div>
+      <AgendaNavigation view={view} dateKey={dateKey}>
+        <div className="space-y-4 pb-20 md:pb-0">
+          <AgendaToolbar catalog={catalog} />
+          <WeekView days={days} appointments={appointments} />
+        </div>
+      </AgendaNavigation>
     );
   }
 
@@ -93,14 +91,11 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
   const appointments = await getAppointmentsBetween(start, end);
 
   return (
-    <div className="space-y-4 pb-20 md:pb-0">
-      <AgendaToolbar
-        view={view}
-        dateKey={dateKey}
-        title={formatInTz(dayRange(`${monthKey}-01`).start, "MMMM yyyy")}
-        catalog={catalog}
-      />
-      <MonthView days={days} monthKey={monthKey} dateKey={dateKey} appointments={appointments} />
-    </div>
+    <AgendaNavigation view={view} dateKey={dateKey}>
+      <div className="space-y-4 pb-20 md:pb-0">
+        <AgendaToolbar catalog={catalog} />
+        <MonthView days={days} monthKey={monthKey} dateKey={dateKey} appointments={appointments} />
+      </div>
+    </AgendaNavigation>
   );
 }

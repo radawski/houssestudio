@@ -259,6 +259,34 @@ en este plan la decisión del mecanismo antes de seguir con L2.
 `app/admin/agenda/agenda-views.tsx`, `components/admin/loading-skeletons.tsx`,
 `app/admin/agenda/loading.tsx`.
 
+**Decisión (L1 hecho, 2026-10-03) — mecanismo para L2 y L3:**
+- **Sin `Suspense` del servidor.** La página sigue esperando todos sus datos
+  antes de responder. El cliente (`AgendaNavigation`) guarda con
+  `useOptimistic` la vista y la fecha recién tocadas y navega con
+  `router.push` dentro de `startTransition`. Comprobado con 1,5 s de demora:
+  el título queda en la fecha nueva durante toda la espera y el
+  `loading.tsx` de la ruta no reaparece al cambiar `?fecha=`.
+- **Lista:** `AgendaBody` muestra el esqueleto mientras lo pedido no
+  coincida con lo que trajo el servidor. Esa misma comparación resuelve los
+  toques seguidos: ▶ ▶ ▶ desde el 24 terminó en el 27 sin pintar respuestas
+  intermedias.
+- **Tiempos:** los 200 ms de demora los pone `.hs-reveal-delayed` en CSS, en
+  una clase aparte del pulso, porque "Reducir movimiento" apaga el pulso pero
+  no esta demora. Los 400 ms de mínimo los pone `lib/loading-hold.ts`, con
+  tests, y dos temporizadores. El throttling de React no sirve acá: solo
+  aplica a límites de `Suspense`.
+- **Flecha tocada:** `#f0f1f3` (`--hs-track`) sale del estado propio de la
+  navegación. No se usa `useLinkStatus`, que se saltea cuando la ruta ya
+  estaba precargada.
+- **Links reales:** flechas, tira y "Hoy" siguen siendo `<Link href>`; solo
+  se intercepta el clic simple. El segmentado Día/Semana/Mes sigue como link
+  común hasta L2.
+- **`loading.tsx`:** se queda para entrar desde la barra de pestañas, y
+  ahora arma su lista con las mismas barras que `DayListSkeleton`.
+- **En L1 solo Día navega así.** L2 suma Semana y Mes (con sus esqueletos
+  dentro de `AgendaBody`) y el segmentado. L3 replica `AgendaNavigation` en
+  Caja; conviene extraerlo a un componente común en ese momento.
+
 #### L2 — Agenda: Semana, Mes y "Hoy" (M)
 El mismo mecanismo para cambiar de vista y de período en Semana y Mes, con
 sus esqueletos (barra de 38 px por día; contador + 3 filas, grilla del mes

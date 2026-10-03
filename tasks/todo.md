@@ -390,7 +390,15 @@
       "Cancelar turno" (público) tienen el mismo vaciado
 
 ### Fase 3 — Estados de carga y error del panel
-- [ ] L1 — Spike: Agenda Día con toolbar inmediato, fecha optimista y datos en `<Suspense key>`; decisión escrita en el plan
+- [x] L1 — Agenda Día: toolbar inmediato con fecha optimista
+      (`AgendaNavigation` + `useOptimistic`), lista a esqueleto en
+      `AgendaBody` (4 filas del diseño en el celular, tarjetas en
+      escritorio), demora de 200 ms en CSS y mínimo de 400 ms
+      (`lib/loading-hold.ts`, 8 tests), flecha tocada en `#f0f1f3`. Título,
+      href y paso en `lib/agenda-nav.ts` (9 tests). Sin `Suspense` del
+      servidor: decisión escrita en el plan. Comprobado en Chrome con 1,5 s
+      de demora temporal (ya sacada), a 500 px y a 1300 px
+- [ ] L1 — Verificar en el iPhone: ◀ ▶, tira y "Hoy" en Día (con Reducir movimiento)
 - [ ] L2 — Agenda Semana, Mes y "Hoy" deshabilitado (`periodContainsToday` con tests)
 - [ ] L3 — Caja: vistas, períodos y "Hoy"; `CajaSkeleton` con categorías (iPhone) y tabla (escritorio)
 - [ ] L4 — Más: carga y error solo en la tarjeta de sesión
