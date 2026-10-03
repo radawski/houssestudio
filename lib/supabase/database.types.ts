@@ -20,7 +20,7 @@ export type PaymentMethod = "efectivo" | "transferencia";
  * `confirmacion` es el email de solicitud recibida (1a); `aceptacion`, el de
  * turno confirmado por el peluquero (1b, migración 0011).
  */
-export type EmailType = "confirmacion" | "aceptacion" | "cancelacion" | "recordatorio";
+export type EmailType = "confirmacion" | "aceptacion" | "cancelacion" | "recordatorio" | "vuelta";
 export type EmailStatus = "enviado" | "error";
 
 type Timestamps = { created_at: string; updated_at: string };
@@ -69,6 +69,8 @@ export type Customer = {
   phone: string;
   email: string | null;
   notes: string | null;
+  /** Se dio de baja del recordatorio para volver (mail 1d). */
+  comeback_opt_out_at: string | null;
 } & Timestamps;
 
 export type Appointment = {
@@ -199,7 +201,7 @@ export type Database = {
       };
       business_hour_ranges: TableShape<BusinessHourRange>;
       time_blocks: TableShape<TimeBlock, "reason">;
-      customers: TableShape<Customer, "email" | "notes">;
+      customers: TableShape<Customer, "email" | "notes" | "comeback_opt_out_at">;
       appointments: TableShape<
         Appointment,
         | "status"

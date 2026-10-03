@@ -456,7 +456,10 @@
 - [x] Checkpoint 3 — estados de carga revisados por el usuario en el iPhone
 
 ### Fase 4 — Recordatorio para volver (bloqueada por R3 producción)
-- [ ] V1 — Migraciones 0013 (valor `vuelta` solo) y 0014 (baja en `customers` + índice único)
+- [x] V1 — Migraciones escritas: `0013_email_vuelta.sql` (solo el valor
+      `vuelta`) y `0014_recordatorio_vuelta.sql` (`customers.comeback_opt_out_at`
+      + `email_log_comeback_once_idx`); tipos actualizados a mano
+- [ ] V1 — El usuario aplica 0013 y después 0014 en el editor SQL de Supabase
 - [ ] V2 — Mail 1d "Ya pasó un mes" + variantes en `/dev/emails`
 - [ ] V3 — `pickComebacks` con tests + consulta; contar turnos pasados sin cobrar
 - [ ] V4 — Baja con token derivado y página `/baja/[token]` con botón (nunca un GET que cambie datos)
