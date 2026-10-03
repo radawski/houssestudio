@@ -57,7 +57,7 @@ export function BookingStepper({
   const [monthCounts, setMonthCounts] = useState<Record<string, number> | null>(null);
   const [loadingMonth, startLoadingMonth] = useTransition();
   const [identity, setIdentity] = useState<Identity>(UNRESOLVED_IDENTITY);
-  const [state, formAction] = useActionState(createBooking, idleState);
+  const [state, formAction, submitting] = useActionState(createBooking, idleState);
   const sectionRef = useRef<HTMLElement>(null);
   const slotsRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement>(null);
@@ -245,6 +245,8 @@ export function BookingStepper({
                 continueType="submit"
                 continueLabel="Confirmar turno"
                 canContinue={identity.resolved}
+                pending={submitting}
+                pendingLabel="Confirmando…"
               >
                 <div className="space-y-6">
                   <DniGate errors={state.fieldErrors} onIdentityChange={setIdentity} />

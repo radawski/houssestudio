@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import {
   actionError,
@@ -258,27 +259,31 @@ export async function createBooking(
     return actionError("No pudimos registrar tu turno. Intentá de nuevo.");
   }
 
-  // Nunca lanzan: un fallo de envío no puede tumbar una reserva ya guardada.
-  await Promise.all([
-    sendBookingConfirmation({
-      appointmentId: appointment.id,
-      toEmail: contact.email,
-      fullName: contact.fullName,
-      serviceName: service.name,
-      startsAt: startDate.toISOString(),
-      endsAt: endDate.toISOString(),
-      price: service.price,
-      manageUrl: `${siteUrl()}/turno/${token}`,
-    }),
-    sendNewRequestAlert({
-      fullName: contact.fullName,
-      phone: contact.phone,
-      serviceName: service.name,
-      startsAt: startDate.toISOString(),
-      endsAt: endDate.toISOString(),
-      price: service.price,
-    }),
-  ]);
+  // Los mails salen después de responder: esperarlos dejaba al cliente
+  // varios segundos frente a "Confirmar turno" sin que pasara nada. Nunca
+  // lanzan, y cada envío queda registrado en `email_log` igual que antes.
+  after(() =>
+    Promise.all([
+      sendBookingConfirmation({
+        appointmentId: appointment.id,
+        toEmail: contact.email,
+        fullName: contact.fullName,
+        serviceName: service.name,
+        startsAt: startDate.toISOString(),
+        endsAt: endDate.toISOString(),
+        price: service.price,
+        manageUrl: `${siteUrl()}/turno/${token}`,
+      }),
+      sendNewRequestAlert({
+        fullName: contact.fullName,
+        phone: contact.phone,
+        serviceName: service.name,
+        startsAt: startDate.toISOString(),
+        endsAt: endDate.toISOString(),
+        price: service.price,
+      }),
+    ]),
+  );
 
   redirect(`/turno/${token}?nuevo=1`);
 }

@@ -330,7 +330,11 @@
 - [x] Decisiones: las 6 confirmadas (2.: hoja "Agregar cliente" en Más en vez de página Clientes)
 
 ### Fase 1 — Reserva pública
-- [ ] C1 — "Confirmar turno" muestra "Confirmando…" y queda deshabilitado; mails con `after()` (sin esperar a Resend)
+- [x] C1 — "Confirmar turno" muestra "Confirmando…" (ícono quieto con Reducir
+      movimiento) y deshabilita también "Volver"; los mails 1a y 2a salen con
+      `after()`, así el redirect no espera a Resend. Typecheck, lint, 177 tests
+      y build OK. **Falta** probarlo con una reserva real (Checkpoint 1) y
+      confirmar en `email_log` que los dos mails se siguen registrando
 - [ ] C2 — Botón "Volver al inicio" en Turno solicitado
 - [ ] C3 — Pasar la portada con el dedo la retira, igual que "Reservar turno" (sin salto)
 - [ ] C4 — Botón flotante de WhatsApp (tarjeta "¿Dudas con tu turno?", blanco sobre la portada, sin tapar el stepper)
