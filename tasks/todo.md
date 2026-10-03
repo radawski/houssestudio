@@ -333,8 +333,10 @@
 - [x] C1 — "Confirmar turno" muestra "Confirmando…" (ícono quieto con Reducir
       movimiento) y deshabilita también "Volver"; los mails 1a y 2a salen con
       `after()`, así el redirect no espera a Resend. Typecheck, lint, 177 tests
-      y build OK. **Falta** probarlo con una reserva real (Checkpoint 1) y
-      confirmar en `email_log` que los dos mails se siguen registrando
+      y build OK
+- [x] C1 — Verificado por el usuario en el iPhone. En `email_log` el 1a quedó
+      `enviado` 0,7 s después de crear el turno (el 2a nunca se registró ahí,
+      ya era así antes)
 - [ ] C2 — Botón "Volver al inicio" en Turno solicitado
 - [ ] C3 — Pasar la portada con el dedo la retira, igual que "Reservar turno" (sin salto)
 - [ ] C4 — Botón flotante de WhatsApp (tarjeta "¿Dudas con tu turno?", blanco sobre la portada, sin tapar el stepper)
