@@ -123,8 +123,17 @@ export function ServiceDialog({
         </DialogHeader>
 
         {/* `key` fuerza a React a recrear el formulario al reabrir el diálogo,
-            de modo que no quede texto de una edición anterior. */}
-        <form key={String(open)} action={submit} className="space-y-3.5">
+            de modo que no quede texto de una edición anterior. `onSubmit` y
+            no `action`: React vacía el formulario al terminar una `action`, y
+            con un error se perdía todo lo cargado. */}
+        <form
+          key={String(open)}
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit(new FormData(event.currentTarget));
+          }}
+          className="space-y-3.5"
+        >
           {service ? <input type="hidden" name="id" value={service.id} /> : null}
 
           <div className="space-y-1.5">

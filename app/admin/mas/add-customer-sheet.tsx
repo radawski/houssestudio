@@ -87,10 +87,7 @@ export function AddCustomerSheet() {
         </button>
       </DialogTrigger>
 
-      {/* En escritorio el diálogo centrado heredaba `bottom-0` de la hoja y
-          quedaba con media pantalla de alto: el email y el pie se salían de
-          la caja (mismo arreglo que "Venta suelta"). */}
-      <DialogContent className="sm:bottom-auto sm:max-h-[85vh] sm:max-w-md sm:overflow-y-auto">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Agregar cliente</DialogTitle>
           <DialogDescription>

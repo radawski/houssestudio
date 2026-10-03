@@ -192,12 +192,9 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
           alto fijo, la grilla de `DialogContent` repartía el sobrante entre
           sus filas (un hueco bajo la manija): acá va en columna y el cuerpo
           (su segundo hijo) ocupa el resto, así el pie queda abajo aunque haya
-          pocos ítems. En escritorio, el diálogo centrado de `DialogContent`
-          trae `overflow-visible` y hereda el `bottom-0` de la hoja: con
-          `top: 50%` quedaba estirado a media pantalla y el contenido se salía
-          por debajo del pie. Acá: `bottom-auto`, alto máximo de 85vh (con `!`,
-          gana al `sm:max-h-none` de la base) y desplazamiento propio. */}
-      <DialogContent className="flex h-[calc(100dvh-40px)] max-h-none flex-col pb-0 sm:bottom-auto sm:grid sm:h-auto sm:max-h-[85vh]! sm:max-w-lg sm:overflow-y-auto sm:pb-0 [&>div:nth-child(2)]:flex-1">
+          pocos ítems. En escritorio vuelve a ser el diálogo centrado de
+          `DialogContent`, con su alto máximo y desplazamiento propio. */}
+      <DialogContent className="flex h-[calc(100dvh-40px)] max-h-none flex-col pb-0 sm:grid sm:h-auto sm:max-w-lg sm:pb-0 [&>div:nth-child(2)]:flex-1">
         <DialogHeader>
           <DialogTitle>Registrar venta suelta</DialogTitle>
           <DialogDescription>Un corte que entró sin turno reservado, o un producto.</DialogDescription>

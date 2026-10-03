@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useEffectEvent, useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState, useEffect, useEffectEvent, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -24,8 +23,7 @@ function lastBookableDate(days: number): string {
   return dateFormatter.format(date);
 }
 
-function SaveButton() {
-  const { pending } = useFormStatus();
+function SaveButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" disabled={pending}>
       {pending ? "Guardando…" : "Guardar ventana"}
@@ -50,7 +48,7 @@ export function BookingWindowForm({
   /** Lo usa la hoja mobile para cerrarse después de guardar. */
   onSaved?: () => void;
 }) {
-  const [state, formAction] = useActionState(saveBookingWindow, idleState);
+  const [state, formAction, pending] = useActionState(saveBookingWindow, idleState);
   const formRef = useRef<HTMLFormElement>(null);
   const [days, setDays] = useState(String(maxBookingDays));
   // Evento y no dependencia: el efecto responde a cada resultado del guardado,
@@ -74,7 +72,17 @@ export function BookingWindowForm({
   const showsPreview = Number.isInteger(parsedDays) && parsedDays >= 1 && parsedDays <= 365;
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    // `onSubmit` y no `action`: React vacía el formulario al terminar una
+    // `action`, y con un error se perdía la anticipación recién escrita.
+    <form
+      ref={formRef}
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        startTransition(() => formAction(formData));
+      }}
+      className="space-y-4"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="maxBookingDays">Se puede reservar hasta (días)</Label>
@@ -126,7 +134,7 @@ export function BookingWindowForm({
         </div>
       </div>
 
-      <SaveButton />
+      <SaveButton pending={pending} />
     </form>
   );
 }

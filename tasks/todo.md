@@ -378,7 +378,16 @@
       Dos arreglos: el diálogo de escritorio heredaba media pantalla de alto
       (`sm:bottom-auto`, como Venta suelta) y con un error React vaciaba el
       formulario (`onSubmit` en vez de `action`). Datos de prueba borrados
-- [ ] Checkpoint 2 — flujo completo con un número de otra provincia, en el iPhone
+- [x] Checkpoint 2 — flujo completo con un número de otra provincia, probado
+      por el usuario en el iPhone
+- [x] H1 — (pedido aparte, tras Z3) Los dos errores de Z3 en el resto de los
+      diálogos del panel: `DialogContent` en escritorio suma `bottom-auto`,
+      alto máximo 85vh y desplazamiento propio (se sacan los parches de Venta
+      suelta y Agregar cliente); "Nuevo servicio", "Bloquear un rango" y la
+      ventana de reserva pasan de `action` a `onSubmit` para no vaciarse con
+      un error. Revisado en Chrome: Nuevo servicio y el bloqueo conservan lo
+      cargado tras el error; Venta suelta sigue igual. Sin tocar: el login y
+      "Cancelar turno" (público) tienen el mismo vaciado
 
 ### Fase 3 — Estados de carga y error del panel
 - [ ] L1 — Spike: Agenda Día con toolbar inmediato, fecha optimista y datos en `<Suspense key>`; decisión escrita en el plan

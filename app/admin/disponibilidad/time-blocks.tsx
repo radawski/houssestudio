@@ -1,7 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useEffectEvent, useRef, useTransition } from "react";
-import { useFormStatus } from "react-dom";
+import { startTransition, useActionState, useEffect, useEffectEvent, useRef, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,8 +13,7 @@ import { formatLongDate, formatTime } from "@/lib/format";
 import type { TimeBlock } from "@/lib/supabase/database.types";
 import { toastActionError, toastError } from "@/lib/toast-error";
 
-function AddButton() {
-  const { pending } = useFormStatus();
+function AddButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" disabled={pending}>
       {pending ? "Bloqueando…" : "Bloquear"}
@@ -31,7 +29,7 @@ export function TimeBlockForm({
   /** Lo usa la hoja mobile para cerrarse después de bloquear. */
   onSaved?: () => void;
 }) {
-  const [state, formAction] = useActionState(createTimeBlock, idleState);
+  const [state, formAction, pending] = useActionState(createTimeBlock, idleState);
   const formRef = useRef<HTMLFormElement>(null);
   // Ver `BookingWindowForm`: evento, no dependencia del efecto.
   const notifySaved = useEffectEvent(() => onSaved?.());
@@ -48,7 +46,17 @@ export function TimeBlockForm({
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    // `onSubmit` y no `action`: React vacía el formulario al terminar una
+    // `action`, y un error (se pisa con un turno) borraba fecha y horas.
+    <form
+      ref={formRef}
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        startTransition(() => formAction(formData));
+      }}
+      className="space-y-4"
+    >
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="date">Fecha</Label>
@@ -73,7 +81,7 @@ export function TimeBlockForm({
         <p className="text-destructive text-sm">{state.message}</p>
       ) : null}
 
-      <AddButton />
+      <AddButton pending={pending} />
     </form>
   );
 }
