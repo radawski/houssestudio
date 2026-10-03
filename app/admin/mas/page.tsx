@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Clock, Package, Scissors } from "lucide-react";
 
+import { AddCustomerSheet } from "@/app/admin/mas/add-customer-sheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { signOut } from "@/lib/actions/auth";
@@ -74,6 +75,7 @@ export default async function MasPage() {
               <ChevronRight className="text-muted-foreground size-4.5 shrink-0" />
             </Link>
           ))}
+          <AddCustomerSheet />
         </CardContent>
       </Card>
 

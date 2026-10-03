@@ -85,6 +85,21 @@ export const bookingSchema = z.object({
   note: z.string().trim().max(300, "La nota es demasiado larga").optional(),
 });
 
+/**
+ * Ficha de cliente cargada por el peluquero (Más → Agregar cliente).
+ *
+ * El teléfono pasa por el mismo `phoneSchema` que la reserva, así que se
+ * guarda normalizado, pero sin control de zona: esta hoja existe justamente
+ * para el cliente de otra provincia que coordinó por WhatsApp. El email es
+ * opcional porque por WhatsApp puede no darlo; sin email no recibe mails.
+ */
+export const customerSchema = z.object({
+  dni: dniSchema,
+  fullName: fullNameSchema,
+  phone: phoneSchema,
+  email: emailSchema.optional(),
+});
+
 export const serviceSchema = z.object({
   name: z.string().trim().min(2, "Ingresa un nombre").max(60),
   description: z.string().trim().max(200).optional(),

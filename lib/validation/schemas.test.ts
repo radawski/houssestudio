@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   bookingSchema,
   businessHourSchema,
+  customerSchema,
   identifySchema,
   normalizeDni,
   normalizePhone,
@@ -86,6 +87,40 @@ describe("bookingSchema", () => {
 
   it("rechaza un telefono invalido cuando se lo manda", () => {
     const result = bookingSchema.safeParse({ ...base, phone: "123" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("customerSchema (alta desde el panel)", () => {
+  const base = { dni: "30.123.456", fullName: "Martín Pérez", phone: "011 15 2345-6789" };
+
+  it("acepta un número de otra zona: el alta del panel no tiene restricción de zona", () => {
+    const result = customerSchema.safeParse(base);
+    expect(result.success && result.data.phone).toBe("1123456789");
+  });
+
+  it("normaliza el DNI como en la reserva, para dar con la misma ficha", () => {
+    const result = customerSchema.safeParse(base);
+    expect(result.success && result.data.dni).toBe("30123456");
+  });
+
+  it("el email es opcional", () => {
+    const result = customerSchema.safeParse({ ...base, email: undefined });
+    expect(result.success && result.data.email).toBeUndefined();
+  });
+
+  it("acepta un email válido", () => {
+    const result = customerSchema.safeParse({ ...base, email: "martin@example.com" });
+    expect(result.success && result.data.email).toBe("martin@example.com");
+  });
+
+  it.each([
+    ["dni", "123"],
+    ["fullName", "M"],
+    ["phone", "123"],
+    ["email", "no-es-un-email"],
+  ])("rechaza un %s inválido", (field, value) => {
+    const result = customerSchema.safeParse({ ...base, [field]: value });
     expect(result.success).toBe(false);
   });
 });

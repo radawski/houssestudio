@@ -367,7 +367,12 @@
       nombre, DNI, teléfono y email (los vacíos se omiten).
       `lib/out-of-area-message.ts` (5 tests); `DniGate` pasa lo escrito en
       `Identity.contact`. Revisado en Chrome sin enviar la reserva
-- [ ] Z3 — Hoja "Agregar cliente" desde Más: DNI, nombre, teléfono (cualquier zona) y email opcional
+- [x] Z3 — Hoja "Agregar cliente" desde Más (`app/admin/mas/add-customer-sheet.tsx`):
+      DNI, nombre, teléfono de cualquier zona y email opcional (con la
+      aclaración de que sin email no recibe mails). `customerSchema` (8 tests)
+      y `addCustomer` (`requireAdmin`; DNI existente → actualiza la ficha; un
+      email vacío no borra el que tenía). Tests, typecheck, lint y build OK
+- [ ] Z3 — Probar la hoja con sesión de admin (Chrome o iPhone)
 - [ ] Checkpoint 2 — flujo completo con un número de otra provincia, en el iPhone
 
 ### Fase 3 — Estados de carga y error del panel
