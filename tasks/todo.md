@@ -237,7 +237,7 @@
 ## Dominio propio para los emails (en curso)
 - [x] Decisión: `houssestudio.com.ar` (NIC Argentina), para el sitio y los
       mails (`houssestudio.com` está tomado desde 2018)
-- [ ] D0 — Esperando que el cliente acepte el acuerdo de mantenimiento
+- [x] D0 — El cliente aceptó el acuerdo de mantenimiento
       (doc: https://claude.ai/code/artifact/33294188-21b6-47dc-9827-51d453fd940c)
 - [ ] D1 — Registrar el dominio en nic.ar **a nombre del cliente (su CUIT)**:
       lo paga él ($8.500/año); el usuario lo administra
