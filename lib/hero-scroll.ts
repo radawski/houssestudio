@@ -22,3 +22,12 @@ export function heroIsBehind(heroBottom: number): boolean {
 export function scrollAfterHeroRemoval(scrollY: number, heroHeight: number): number {
   return Math.max(0, scrollY - heroHeight);
 }
+
+/**
+ * La portada todavía pasa por detrás de un punto fijo a `distanceFromBottom`
+ * del borde inferior de la pantalla (el centro del botón de WhatsApp). Sirve
+ * para que el botón vaya en blanco sobre el negro y en tinta sobre el papel.
+ */
+export function heroIsUnder(heroBottom: number, viewportHeight: number, distanceFromBottom: number): boolean {
+  return heroBottom > viewportHeight - distanceFromBottom;
+}

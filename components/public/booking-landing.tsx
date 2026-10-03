@@ -6,12 +6,22 @@ import { heroIsBehind, scrollAfterHeroRemoval } from "@/lib/hero-scroll";
 
 const HideHeroContext = createContext<(() => void) | null>(null);
 
+/**
+ * La portada mientras está montada (`null` una vez retirada). La usa el botón
+ * de WhatsApp para saber si tiene el negro o el papel detrás.
+ */
+const HeroElementContext = createContext<HTMLElement | null>(null);
+
 /** Cuánto tiempo sin eventos `scroll` cuenta como fin del desplazamiento. */
 const SCROLL_IDLE_MS = 150;
 
 /** Oculta la portada. Fuera de `BookingLanding` devuelve `null`. */
 export function useHideHero() {
   return useContext(HideHeroContext);
+}
+
+export function useHeroElement() {
+  return useContext(HeroElementContext);
 }
 
 /**
@@ -39,6 +49,15 @@ export function BookingLanding({
 }) {
   const [heroHidden, setHeroHidden] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  // Copia en estado del nodo de la portada: un ref no avisa a quien lo lee
+  // cuando cambia, y el botón de WhatsApp necesita enterarse al retirarla.
+  const [heroElement, setHeroElement] = useState<HTMLElement | null>(null);
+  // Estable: un callback nuevo en cada render haría que React lo llame con
+  // `null` y con el nodo otra vez, y cada llamada vuelve a renderizar.
+  const attachHero = useCallback((node: HTMLDivElement | null) => {
+    heroRef.current = node;
+    setHeroElement(node);
+  }, []);
   /** Scroll a restaurar en el commit que quita la portada. */
   const scrollTarget = useRef(0);
 
@@ -103,8 +122,14 @@ export function BookingLanding({
 
   return (
     <HideHeroContext.Provider value={hideHero}>
-      {heroHidden ? null : <div ref={heroRef}>{hero}</div>}
-      {children}
+      <HeroElementContext.Provider value={heroElement}>
+        {heroHidden ? null : (
+          <div ref={attachHero}>
+            {hero}
+          </div>
+        )}
+        {children}
+      </HeroElementContext.Provider>
     </HideHeroContext.Provider>
   );
 }

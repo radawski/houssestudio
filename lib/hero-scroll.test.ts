@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { heroIsBehind, scrollAfterHeroRemoval } from "@/lib/hero-scroll";
+import { heroIsBehind, heroIsUnder, scrollAfterHeroRemoval } from "@/lib/hero-scroll";
 
 describe("heroIsBehind", () => {
   it("es verdadero cuando el borde inferior de la portada ya salió por arriba", () => {
@@ -31,5 +31,24 @@ describe("scrollAfterHeroRemoval", () => {
 
   it("nunca devuelve un scroll negativo", () => {
     expect(scrollAfterHeroRemoval(842, 844)).toBe(0);
+  });
+});
+
+describe("heroIsUnder", () => {
+  // Viewport de 844 y el centro del botón flotante a 52 px del borde inferior.
+  it("es verdadero con la portada ocupando toda la pantalla", () => {
+    expect(heroIsUnder(844, 844, 52)).toBe(true);
+  });
+
+  it("es verdadero mientras la portada todavía pasa por detrás del botón", () => {
+    expect(heroIsUnder(800, 844, 52)).toBe(true);
+  });
+
+  it("es falso cuando el borde de la portada ya subió por encima del botón", () => {
+    expect(heroIsUnder(780, 844, 52)).toBe(false);
+  });
+
+  it("es falso sin portada (retirada o fuera de pantalla)", () => {
+    expect(heroIsUnder(-200, 844, 52)).toBe(false);
   });
 });

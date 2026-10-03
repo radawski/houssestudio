@@ -13,6 +13,7 @@ import { StepShell } from "@/components/public/step-shell";
 import { TimeSlotGrid, type Slot } from "@/components/public/time-slot-grid";
 import { createBooking, fetchMonthAvailability, fetchSlots } from "@/lib/actions/booking";
 import { idleState } from "@/lib/actions/result";
+import { toWhatsappNumber } from "@/lib/phone";
 import type { Service } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -162,7 +163,12 @@ export function BookingStepper({
       // con teclado siga desde acá y no desde la portada. El anillo se oculta
       // porque el foco lo pone el código, no el usuario.
       tabIndex={-1}
-      className="flex min-h-dvh scroll-mt-0 flex-col px-6 py-10 focus:outline-none sm:px-10"
+      className={cn(
+        "flex min-h-dvh scroll-mt-0 flex-col px-6 py-10 focus:outline-none sm:px-10",
+        // Lugar para el botón flotante de WhatsApp (ver `app/page.tsx`): sin
+        // esto tapa "Continuar" cuando el pie del paso llega al borde.
+        businessWhatsapp && toWhatsappNumber(businessWhatsapp) && "pb-28",
+      )}
     >
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col">
         <StepIndicator current={step} />

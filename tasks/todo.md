@@ -346,8 +346,15 @@
       (`lib/hero-scroll.ts`, 7 tests). Revisado en Chrome con la rueda:
       scroll parcial no hace nada; pasarla la retira sin salto; el botón
       sigue igual
-- [ ] C3 — Verificar en el iPhone (inercia del scroll de iOS)
-- [ ] C4 — Botón flotante de WhatsApp (tarjeta "¿Dudas con tu turno?", blanco sobre la portada, sin tapar el stepper)
+- [x] C3 — Verificado por el usuario en el iPhone
+- [x] C4 — Botón flotante de WhatsApp (`whatsapp-fab.tsx`): cuadrado de 56 px
+      abajo a la derecha, abre la tarjeta "¿Dudas con tu turno?" con "Abrir
+      WhatsApp" (Popover, sin animación ni foco automático). Blanco mientras
+      la portada pasa por detrás (`heroIsUnder`, 4 tests), tinta sobre el
+      papel. Sin `settings.phone` no aparece; el stepper suma `pb-28` para que
+      no tape "Continuar". Revisado en Chrome: abre, cierra con Escape, cambia
+      de color al pasar la portada y no se superpone con el pie del paso
+- [ ] C4 — Verificar en el iPhone (tamaño, área segura inferior, VoiceOver)
 - [ ] Checkpoint 1 — tests/typecheck/lint/build + prueba del usuario en el iPhone
 
 ### Fase 2 — Clientes de otra zona
