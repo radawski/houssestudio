@@ -372,7 +372,12 @@
       aclaración de que sin email no recibe mails). `customerSchema` (8 tests)
       y `addCustomer` (`requireAdmin`; DNI existente → actualiza la ficha; un
       email vacío no borra el que tenía). Tests, typecheck, lint y build OK
-- [ ] Z3 — Probar la hoja con sesión de admin (Chrome o iPhone)
+- [x] Z3 — Probado en Chrome con sesión de admin: errores en el campo (DNI y
+      teléfono), alta con número porteño, DNI repetido con puntos → actualiza
+      sin duplicar, y reserva desde la web con ese DNI sin el aviso de zona.
+      Dos arreglos: el diálogo de escritorio heredaba media pantalla de alto
+      (`sm:bottom-auto`, como Venta suelta) y con un error React vaciaba el
+      formulario (`onSubmit` en vez de `action`). Datos de prueba borrados
 - [ ] Checkpoint 2 — flujo completo con un número de otra provincia, en el iPhone
 
 ### Fase 3 — Estados de carga y error del panel

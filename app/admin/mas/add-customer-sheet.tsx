@@ -87,7 +87,10 @@ export function AddCustomerSheet() {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      {/* En escritorio el diálogo centrado heredaba `bottom-0` de la hoja y
+          quedaba con media pantalla de alto: el email y el pie se salían de
+          la caja (mismo arreglo que "Venta suelta"). */}
+      <DialogContent className="sm:bottom-auto sm:max-h-[85vh] sm:max-w-md sm:overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Agregar cliente</DialogTitle>
           <DialogDescription>
@@ -95,8 +98,17 @@ export function AddCustomerSheet() {
           </DialogDescription>
         </DialogHeader>
 
-        {/* `key`: al reabrir la hoja arranca vacía. */}
-        <form key={String(open)} action={submit} className="space-y-3.5">
+        {/* `key`: al reabrir la hoja arranca vacía. `onSubmit` y no `action`:
+            React vacía el formulario al terminar una `action`, y con un error
+            se perdía todo lo cargado, no solo el campo a corregir. */}
+        <form
+          key={String(open)}
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit(new FormData(event.currentTarget));
+          }}
+          className="space-y-3.5"
+        >
           <div className="space-y-1.5">
             <Label htmlFor="customer-dni">DNI</Label>
             <Input
