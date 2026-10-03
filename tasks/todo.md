@@ -245,7 +245,11 @@
       y con **Enable Vercel DNS** en Domains de la cuenta (sin eso Vercel
       respondía REFUSED). `https://houssestudio.com.ar` responde 200 con
       certificado Let's Encrypt; `www` redirige con 301 al dominio sin www
-- [ ] D3 — Agregar el dominio en Resend y cargar sus registros DNS en Vercel
+- [x] D3 — Dominio verificado en Resend (región São Paulo): MX y SPF en
+      `send`, DKIM en `resend._domainkey`, publicados y comprobados
+- [ ] D3 — DMARC en modo observación (`_dmarc`, `v=DMARC1; p=none;`), pedido
+      por el usuario. Las respuestas a `turnos@` se pierden: decisión del
+      usuario, sin "responder a"
 - [ ] D4 — `EMAIL_FROM` → `HOUSSESTUDIO <turnos@houssestudio.com.ar>` en
       Vercel y `.env.local`; prueba a una casilla ajena
 - [ ] D5 — Sitio en `houssestudio.com.ar`: dominio de producción en Vercel,
