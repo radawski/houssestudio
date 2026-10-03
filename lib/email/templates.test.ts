@@ -6,6 +6,7 @@ import {
   buildBookingConfirmationEmail,
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
+  buildComebackEmail,
   buildNewRequestAlertEmail,
   buildReminderEmail,
   type CancellationData,
@@ -228,5 +229,69 @@ describe("recordatorio · buildReminderEmail", () => {
     expect(reminder(data).html).toContain("hasta 3 horas antes.");
     expect(reminder({ cancellationWindowHours: 0 }).html).toContain("hasta el horario del turno.");
     expect(reminder({ manageUrl: null }).html).toContain("desde el link de tu reserva");
+  });
+});
+
+describe("1d · buildComebackEmail", () => {
+  const comeback = (overrides: Partial<Parameters<typeof buildComebackEmail>[0]> = {}) =>
+    buildComebackEmail({
+      fullName: "Martín Gómez",
+      lastVisitAt: TIME.startsAt,
+      serviceName: "Corte + barba",
+      daysSince: 30,
+      unsubscribeUrl: "https://houssestudio.com.ar/baja/tok123",
+      ...overrides,
+    });
+
+  it("asunto con el nombre, título y pastilla de recordatorio", () => {
+    const email = comeback();
+    expect(email.subject).toBe("Martín, ya pasó un mes de tu último corte");
+    expect(email.preheader).toBe("Reservá tu próximo turno en un minuto.");
+    expect(email.html).toContain("Ya pasó un mes");
+    expect(email.html).toContain("Recordatorio");
+    expect(email.html).toContain("#e0e7ff");
+  });
+
+  it("cuenta los días reales desde la última visita", () => {
+    expect(comeback().html).toContain("Hola Martín, tu último corte fue hace 30 días.");
+    expect(comeback({ daysSince: 41 }).html).toContain("fue hace 41 días.");
+  });
+
+  it("muestra la última visita y el servicio", () => {
+    const email = comeback();
+    expect(email.html).toContain("Última visita");
+    expect(email.html).toContain("Sábado 15 de agosto");
+    expect(email.html).toContain("Corte + barba");
+    expect(email.text).toContain("Última visita: Sábado 15 de agosto");
+    expect(email.text).toContain("Servicio: Corte + barba");
+  });
+
+  it("lleva a reservar en la portada y aclara que no hay seña", () => {
+    const email = comeback();
+    expect(email.html).toContain("Reservar turno");
+    expect(email.html).toMatch(/href="[^"]+\/"/);
+    expect(email.html).toContain("Sin seña: pagás en el local.");
+    expect(email.text).toMatch(/Reservá tu turno en: \S+\//);
+  });
+
+  it("el pie trae el link para darse de baja, en HTML y en texto", () => {
+    const email = comeback();
+    expect(email.html).toContain("No quiero recibir recordatorios");
+    expect(email.html).toContain('href="https://houssestudio.com.ar/baja/tok123"');
+    expect(email.html).toContain("Recibís este email porque reservaste con nosotros.");
+    expect(email.text).toContain("No quiero recibir recordatorios: https://houssestudio.com.ar/baja/tok123");
+  });
+
+  it("escapa el nombre y el servicio", () => {
+    const email = comeback({ fullName: HOSTILE, serviceName: HOSTILE });
+    expect(email.html).not.toContain("<script>");
+    expect(email.html).toContain("&lt;script&gt;");
+  });
+
+  it("sin flex ni clases, y texto plano sin etiquetas", () => {
+    const email = comeback();
+    expect(email.html).not.toMatch(/display:\s*(flex|grid)/);
+    expect(email.html).not.toMatch(/\sclass=/);
+    expect(email.text).not.toMatch(/<[a-z]/i);
   });
 });

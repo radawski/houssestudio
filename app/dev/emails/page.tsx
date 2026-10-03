@@ -7,6 +7,7 @@ import {
   buildBookingConfirmationEmail,
   buildCancellationAdminEmail,
   buildCancellationClientEmail,
+  buildComebackEmail,
   buildNewRequestAlertEmail,
   buildReminderEmail,
   type EmailContent,
@@ -69,6 +70,28 @@ function samples(): { id: string; label: string; email: EmailContent }[] {
       id: "recordatorio",
       label: "Recordatorio (cliente), plazo de 1 hora",
       email: buildReminderEmail({ ...TIME, ...CLIENT, manageUrl, cancellationWindowHours: 1 }),
+    },
+    {
+      id: "1d",
+      label: "1d · Ya pasó un mes (cliente), 30 días",
+      email: buildComebackEmail({
+        fullName: CLIENT.fullName,
+        serviceName: CLIENT.serviceName,
+        lastVisitAt: TIME.startsAt,
+        daysSince: 30,
+        unsubscribeUrl: `${siteUrl()}/baja/token-de-ejemplo`,
+      }),
+    },
+    {
+      id: "1d-especiales",
+      label: "1d · Nombre y servicio con caracteres especiales, 47 días",
+      email: buildComebackEmail({
+        fullName: "José María O'Connor & Cía",
+        serviceName: "Corte <degradé> + barba",
+        lastVisitAt: TIME.startsAt,
+        daysSince: 47,
+        unsubscribeUrl: `${siteUrl()}/baja/token-de-ejemplo`,
+      }),
     },
   ];
 }

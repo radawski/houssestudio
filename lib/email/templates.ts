@@ -334,3 +334,66 @@ export function buildReminderEmail(data: ConfirmedData): EmailContent {
     preheaderPrefix: "Mañana: ",
   });
 }
+
+// ---------------------------------------------------------------------------
+// 1d · Recordatorio para volver (cliente) — Fase 4
+// ---------------------------------------------------------------------------
+
+export type ComebackData = {
+  fullName: string;
+  /** Inicio del último turno completado. */
+  lastVisitAt: string;
+  serviceName: string;
+  /** Días de calendario desde esa visita, en la zona del local. */
+  daysSince: number;
+  /** Página de baja con token derivado (`lib/tokens.ts`). */
+  unsubscribeUrl: string;
+};
+
+/**
+ * "Ya pasó un mes" (diseño "Recordatorio de turno HOUSSESTUDIO"): sale cuando
+ * el último turno completado del cliente quedó entre 30 y 60 días atrás y no
+ * tiene otro pedido. Lleva a reservar en la portada y, en el pie, a la baja.
+ */
+export function buildComebackEmail(data: ComebackData): EmailContent {
+  const name = firstName(data.fullName);
+  const subject = `${name}, ya pasó un mes de tu último corte`;
+  const preheader = "Reservá tu próximo turno en un minuto.";
+  const greeting = `Hola ${name}, tu último corte fue hace ${data.daysSince} días. Si querés mantenerlo prolijo, es buen momento para reservar el próximo.`;
+  const url = `${siteUrl()}/`;
+  const noSena = "Sin seña: pagás en el local.";
+  const rows: DetailRow[] = [
+    { label: "Última visita", value: formatEmailDate(data.lastVisitAt) },
+    { label: "Servicio", value: data.serviceName },
+  ];
+
+  return {
+    subject,
+    preheader,
+    html: emailDocument({
+      subject,
+      preheader,
+      audience: "cliente",
+      baseUrl: siteUrl(),
+      unsubscribeUrl: data.unsubscribeUrl,
+      body: [
+        badge("recordatorio"),
+        title("Ya pasó un mes"),
+        intro(greeting),
+        detailTable(rows),
+        button({ label: "Reservar turno", href: url }),
+        note(noSena),
+      ].join(""),
+    }),
+    text: [
+      greeting,
+      "",
+      ...textRows(rows),
+      "",
+      `Reservá tu turno en: ${url}`,
+      noSena,
+      "",
+      `No quiero recibir recordatorios: ${data.unsubscribeUrl}`,
+    ].join("\n"),
+  };
+}

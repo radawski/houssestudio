@@ -34,6 +34,8 @@ const BADGES = {
   pendiente: { label: "Pendiente", bg: "#fef3c7", border: "#fde68a", text: "#78350f", dot: "#b45309" },
   confirmado: { label: "Confirmado", bg: "#d1fae5", border: "#a7f3d0", text: "#064e3b", dot: "#059669" },
   cancelado: { label: "Cancelado", bg: "#f5f5f5", border: "#e5e5e5", text: "#525252", dot: "#a3a3a3" },
+  // Recordatorio para volver (1d): no es el estado de un turno.
+  recordatorio: { label: "Recordatorio", bg: "#e0e7ff", border: "#c7d2fe", text: "#312e81", dot: "#4f46e5" },
 } as const;
 
 export type BadgeStatus = keyof typeof BADGES;
@@ -200,10 +202,18 @@ function panelHeader(baseUrl: string): string {
   return `<tr><td bgcolor="${EMAIL_COLORS.header}" style="background:${EMAIL_COLORS.header};padding:18px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle">${logoImg(baseUrl, "panel")}</td><td valign="middle" style="padding-left:14px;font-family:${FONT};font-size:13px;line-height:16px;font-weight:500;letter-spacing:0.18em;color:#ffffff;">${BUSINESS_NAME}</td></tr></table></td><td valign="middle" align="right" style="font-family:${FONT};font-size:11px;line-height:14px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55);">Panel</td></tr></table></td></tr>`;
 }
 
-function footer(audience: "cliente" | "panel"): string {
+/**
+ * Pie del mail. Con `unsubscribeUrl` (recordatorio para volver, 1d) explica
+ * por qué llega sin un turno de por medio y ofrece darse de baja: es el único
+ * mail que no responde a algo que el cliente acaba de hacer.
+ */
+function footer(audience: "cliente" | "panel", unsubscribeUrl?: string): string {
+  const reason = unsubscribeUrl
+    ? `<p style="margin:6px 0 0;">Recibís este email porque reservaste con nosotros.</p><p style="margin:4px 0 0;"><a href="${escapeHtml(unsubscribeUrl)}" style="color:${EMAIL_COLORS.slate};text-decoration:underline;">No quiero recibir recordatorios</a></p>`
+    : `<p style="margin:6px 0 0;">Recibís este email porque pediste un turno.</p>`;
   const content =
     audience === "cliente"
-      ? `<p style="margin:0;letter-spacing:0.18em;text-transform:uppercase;">${BUSINESS_NAME}</p><p style="margin:6px 0 0;">Recibís este email porque pediste un turno.</p>`
+      ? `<p style="margin:0;letter-spacing:0.18em;text-transform:uppercase;">${BUSINESS_NAME}</p>${reason}`
       : `<p style="margin:0;">Aviso automático del panel de turnos.</p>`;
   const padding = audience === "cliente" ? "20px 24px" : "16px 24px";
   return `<tr><td style="border-top:1px solid ${EMAIL_COLORS.divider};padding:${padding};font-family:${FONT};font-size:12px;line-height:18px;color:${EMAIL_COLORS.slate};">${content}</td></tr>`;
@@ -225,6 +235,7 @@ export function emailDocument({
   audience,
   baseUrl,
   body,
+  unsubscribeUrl,
 }: {
   subject: string;
   preheader: string;
@@ -233,6 +244,8 @@ export function emailDocument({
   baseUrl: string;
   /** Piezas del cuerpo, ya armadas con las funciones de este módulo. */
   body: string;
+  /** Link de baja en el pie (solo el recordatorio para volver). */
+  unsubscribeUrl?: string;
 }): string {
   const bodyPadding = audience === "cliente" ? "32px 24px 28px" : "28px 24px";
   return `<!DOCTYPE html>
@@ -254,7 +267,7 @@ export function emailDocument({
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${EMAIL_COLORS.card}" style="width:100%;max-width:600px;background:${EMAIL_COLORS.card};border:1px solid ${EMAIL_COLORS.cardBorder};">
 ${audience === "cliente" ? clientHeader(baseUrl) : panelHeader(baseUrl)}
 <tr><td style="padding:${bodyPadding};font-family:${FONT};color:${EMAIL_COLORS.ink};">${body}</td></tr>
-${footer(audience)}
+${footer(audience, unsubscribeUrl)}
 </table>
 <!--[if mso]></td></tr></table><![endif]-->
 </td></tr>

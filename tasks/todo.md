@@ -459,8 +459,12 @@
 - [x] V1 — Migraciones escritas: `0013_email_vuelta.sql` (solo el valor
       `vuelta`) y `0014_recordatorio_vuelta.sql` (`customers.comeback_opt_out_at`
       + `email_log_comeback_once_idx`); tipos actualizados a mano
-- [ ] V1 — El usuario aplica 0013 y después 0014 en el editor SQL de Supabase
-- [ ] V2 — Mail 1d "Ya pasó un mes" + variantes en `/dev/emails`
+- [x] V1 — Aplicadas por el usuario; comprobado: la columna existe y `vuelta` es un valor válido
+- [x] V2 — Mail 1d "Ya pasó un mes" (`buildComebackEmail`, 7 tests): pastilla
+      "Recordatorio", días reales desde la última visita, última visita y
+      servicio, "Reservar turno" a la portada, "Sin seña" y pie con "No quiero
+      recibir recordatorios" (`emailDocument` acepta `unsubscribeUrl`). Dos
+      variantes en `/dev/emails`, revisadas a 375 y 600 px
 - [ ] V3 — `pickComebacks` con tests + consulta; contar turnos pasados sin cobrar
 - [ ] V4 — Baja con token derivado y página `/baja/[token]` con botón (nunca un GET que cambie datos)
 - [ ] V5 — Envío dentro del cron diario, aislado del recordatorio del día anterior
