@@ -6,7 +6,7 @@ import { Check, Pencil } from "lucide-react";
 import { BookingFields, type ContactField, type ContactValues } from "@/components/public/booking-fields";
 import { Field, inputClass } from "@/components/public/form-field";
 import { lookupCustomerByDni, type CustomerLookupResult } from "@/lib/actions/booking";
-import { checkPhone } from "@/lib/phone";
+import { checkPhone, isBookablePhone } from "@/lib/phone";
 import { normalizeDni } from "@/lib/validation/schemas";
 
 export type Identity = {
@@ -121,8 +121,11 @@ export function DniGate({
 
       // Solo se marca fuera de área cuando el número está completo: avisarlo a
       // mitad de tipeo sería un cartel que aparece y desaparece mientras el
-      // cliente todavía está escribiendo.
-      const outOfArea = checkPhone(contact.phone).kind === "out_of_area";
+      // cliente todavía está escribiendo. El teléfono que ya figura en su
+      // ficha no cuenta: lo aceptó el peluquero (la misma regla que el servidor).
+      const registeredPhone = lookup.status === "found" ? lookup.phone : null;
+      const outOfArea =
+        checkPhone(contact.phone).kind === "out_of_area" && !isBookablePhone(contact.phone, registeredPhone);
 
       onIdentityChange({
         resolved: complete && !outOfArea,

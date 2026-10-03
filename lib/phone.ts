@@ -138,6 +138,22 @@ export function isLocalPhone(input: string): boolean {
 }
 
 /**
+ * ¿Se puede reservar con este teléfono?
+ *
+ * Los del área, siempre. Uno de otra zona, solo si es el mismo que ya figura
+ * en la ficha de ese DNI: esa ficha la cargó el peluquero después de
+ * coordinar con el cliente, así que el número ya está aceptado. Sin esto, un
+ * cliente de otra zona que solo quiere corregir su email chocaría otra vez
+ * con el aviso de "fuera del área".
+ */
+export function isBookablePhone(input: string, registeredPhone: string | null): boolean {
+  const result = checkPhone(input);
+  if (result.kind === "local") return true;
+  if (result.kind === "invalid" || !registeredPhone) return false;
+  return result.national === normalizePhone(registeredPhone);
+}
+
+/**
  * Formato que espera `wa.me`: código de país, marca de celular y número, sin
  * el `+` ni separadores.
  */

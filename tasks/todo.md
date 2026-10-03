@@ -354,11 +354,15 @@
       papel. Sin `settings.phone` no aparece; el stepper suma `pb-28` para que
       no tape "Continuar". Revisado en Chrome: abre, cierra con Escape, cambia
       de color al pasar la portada y no se superpone con el pie del paso
-- [ ] C4 — Verificar en el iPhone (tamaño, área segura inferior, VoiceOver)
-- [ ] Checkpoint 1 — tests/typecheck/lint/build + prueba del usuario en el iPhone
+- [x] C4 — Verificado por el usuario en el iPhone
+- [x] Checkpoint 1 — tests/typecheck/lint/build OK y C1–C4 probados por el usuario en el iPhone
 
 ### Fase 2 — Clientes de otra zona
-- [ ] Z1 — Editar datos sin cambiar el teléfono de la ficha no vuelve a bloquear (servidor + `DniGate`, con tests)
+- [x] Z1 — `isBookablePhone` (6 tests): del área, siempre; de otra zona,
+      solo si es el de la ficha de ese DNI (escrito de cualquier forma). Lo usan
+      `createBooking` y `DniGate`. Probado en local con una ficha de otra zona:
+      editar el nombre no muestra el aviso y la reserva entra; otro número de
+      otra zona sí lo muestra. Ficha y turno de prueba borrados
 - [ ] Z2 — El mensaje de "Coordinar por WhatsApp" trae nombre, DNI, teléfono y email
 - [ ] Z3 — Hoja "Agregar cliente" desde Más: DNI, nombre, teléfono (cualquier zona) y email opcional
 - [ ] Checkpoint 2 — flujo completo con un número de otra provincia, en el iPhone

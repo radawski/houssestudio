@@ -25,7 +25,7 @@ import { getAppointmentByToken } from "@/lib/data/public";
 import { toDateKey } from "@/lib/dates";
 import { sendBookingConfirmation, sendCancellationNotice, sendNewRequestAlert } from "@/lib/email/send";
 import { formatTime } from "@/lib/format";
-import { isLocalPhone } from "@/lib/phone";
+import { isBookablePhone } from "@/lib/phone";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { deriveManageToken, hashManageToken } from "@/lib/tokens";
@@ -126,7 +126,8 @@ export async function lookupCustomerByDni(rawDni: string): Promise<CustomerLooku
  *     inyectar el customer_id de otra persona.
  *  4. El telefono tiene que caer dentro del area de atencion. Solo se exige
  *     cuando entra un telefono nuevo (alta o edicion): a un cliente ya
- *     registrado que no toca sus datos no se le revisa nada.
+ *     registrado que no toca sus datos no se le revisa nada, y si edita sus
+ *     datos pero deja el telefono de su ficha, tampoco (`isBookablePhone`).
  *  5. La restriccion de exclusion de la base resuelve la carrera entre dos
  *     personas que mandan el mismo horario en el mismo instante: el paso 2 no
  *     puede cubrirla porque entre leer y escribir hay una ventana.
@@ -205,7 +206,7 @@ export async function createBooking(
     // manipulable: sin esta barrera alcanzaría con un POST a mano para tomar
     // el horario igual. Se corta ANTES de insertar, así el slot queda libre
     // para alguien que sí pueda venir.
-    if (!isLocalPhone(phone!)) {
+    if (!isBookablePhone(phone!, existingCustomer?.phone ?? null)) {
       return {
         status: "error",
         code: "fuera_de_area",

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   LOCAL_AREA_CODES,
   checkPhone,
+  isBookablePhone,
   isLocalPhone,
   normalizePhone,
   toWhatsappNumber,
@@ -130,6 +131,36 @@ describe("isLocalPhone", () => {
     expect(isLocalPhone("0342 15 533 1802")).toBe(true);
     expect(isLocalPhone("1123456789")).toBe(false);
     expect(isLocalPhone("123")).toBe(false);
+  });
+});
+
+describe("isBookablePhone", () => {
+  it("acepta cualquier número del área, tenga ficha o no", () => {
+    expect(isBookablePhone("0342 15 533 1802", null)).toBe(true);
+    expect(isBookablePhone("0342 15 533 1802", "1123456789")).toBe(true);
+  });
+
+  it("rechaza un número de otra zona sin ficha", () => {
+    expect(isBookablePhone("1123456789", null)).toBe(false);
+  });
+
+  it("acepta el número de otra zona que ya figura en la ficha de ese DNI", () => {
+    // Ficha cargada por el peluquero: el cliente editó solo su email.
+    expect(isBookablePhone("1123456789", "1123456789")).toBe(true);
+  });
+
+  it("reconoce el número de la ficha aunque esté escrito de otra forma", () => {
+    expect(isBookablePhone("+54 9 11 2345-6789", "1123456789")).toBe(true);
+    expect(isBookablePhone("011 15 2345 6789", "1123456789")).toBe(true);
+  });
+
+  it("rechaza un número de otra zona distinto del de la ficha", () => {
+    expect(isBookablePhone("2234567890", "1123456789")).toBe(false);
+  });
+
+  it("no deja pasar un número inválido aunque la ficha esté vacía", () => {
+    expect(isBookablePhone("", "")).toBe(false);
+    expect(isBookablePhone("123", null)).toBe(false);
   });
 });
 
