@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { SERVICES_CATEGORY, type CashboxBreakdown, type CategoryGroup } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
 import { formatCurrency, formatTime } from "@/lib/format";
@@ -34,6 +35,8 @@ function ShareBar({ value }: { value: number }) {
 /**
  * Tarjetas de arriba en escritorio (design CajaCatA): el total en tinta con
  * cuántas unidades se vendieron, y efectivo y transferencia con su parte.
+ * Con `breakdown = null` (cargando) quedan las etiquetas y los montos pasan a
+ * barras: nunca `$ 0`.
  */
 export function DesktopSummary({
   label,
@@ -41,9 +44,36 @@ export function DesktopSummary({
   groups,
 }: {
   label: string;
-  breakdown: CashboxBreakdown;
-  groups: CategoryGroup<CashboxMovement>[];
+  breakdown: CashboxBreakdown | null;
+  groups: CategoryGroup<CashboxMovement>[] | null;
 }) {
+  if (!breakdown || !groups) {
+    return (
+      <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 md:grid">
+        <div className="bg-foreground text-background rounded-md px-6 py-5">
+          <p className="text-[11px] font-medium tracking-[0.08em] text-[var(--hs-mist)] uppercase">{label}</p>
+          <div className="mt-2 flex h-10 items-center">
+            <Skeleton className="h-8 w-48 bg-white/15" />
+          </div>
+          <div className="mt-1 flex h-5 items-center">
+            <Skeleton className="h-3 w-56 bg-white/15" />
+          </div>
+        </div>
+        {(["efectivo", "transferencia"] as const).map((method) => (
+          <div key={method} className={`${CARD} px-6 py-5`}>
+            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.08em] uppercase">
+              {METHOD_LABEL[method]}
+            </p>
+            <div className="mt-2 flex h-8 items-center">
+              <Skeleton className="h-6 w-28" />
+            </div>
+            <div className="mt-3 h-1.5 rounded-full bg-[var(--hs-track)]" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   const services = groups.find((group) => group.key === SERVICES_CATEGORY.key)?.quantity ?? 0;
   const units = groups.reduce((sum, group) => sum + group.quantity, 0);
   const products = units - services;
@@ -88,11 +118,31 @@ export function CategoryTable({
   breakdown,
   detail,
 }: {
-  groups: CategoryGroup<CashboxMovement>[];
-  breakdown: CashboxBreakdown;
+  groups: CategoryGroup<CashboxMovement>[] | null;
+  breakdown: CashboxBreakdown | null;
   detail: "movimientos" | "conceptos";
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // Cargando: tres filas de categoría cerradas, como llegan los datos.
+  if (!groups || !breakdown) {
+    return (
+      <section className={`${CARD} hidden overflow-hidden md:block`}>
+        {[0, 1, 2].map((index) => (
+          <div
+            key={index}
+            className="flex h-12 items-center gap-2 border-b border-[var(--hs-divider)] bg-[var(--hs-surface-raised)] px-5 last:border-b-0"
+          >
+            <ChevronRight className="size-4 shrink-0 text-[var(--hs-mist)]" />
+            <Skeleton className="h-[15px] w-32" />
+            <div className="flex-1" />
+            <Skeleton className="h-[15px] w-20" />
+            <Skeleton className="ml-8 h-1.5 w-40 rounded-full" />
+          </div>
+        ))}
+      </section>
+    );
+  }
 
   if (groups.length === 0) {
     return (

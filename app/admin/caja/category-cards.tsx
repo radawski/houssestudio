@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import type { CategoryGroup, ConceptTotal } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
 import { formatCurrency, formatTime } from "@/lib/format";
@@ -65,24 +66,55 @@ function ConceptRow({ concept }: { concept: ConceptTotal }) {
   );
 }
 
+/** Nombre, "· N" y subtotal de las tres tarjetas de carga (anchos del diseño). */
+const SKELETON_WIDTHS = [
+  [134, 18, 76],
+  [92, 14, 60],
+  [112, 16, 68],
+] as const;
+
 /**
  * Caja por categoría en el celular (design iPhoneCajaDia / Semana / Mes): una
  * tarjeta por categoría con cantidad y subtotal en el encabezado, que se
  * pliega o despliega al tocarlo. En el día lista cada movimiento; en semana y
  * mes, cada concepto sumado. Reemplaza la lista de movimientos, las barras
  * por día y el calendario de calor (decisión del usuario).
+ *
+ * Con `groups = null` (cargando) son tres tarjetas cerradas con el chevron
+ * real y barras en nombre, cantidad y subtotal (n-CajaVistaDia): igual en
+ * día, semana y mes, porque al llegar los datos también arrancan cerradas.
  */
 export function CategoryCards({
   groups,
   detail,
 }: {
-  groups: CategoryGroup<CashboxMovement>[];
+  groups: CategoryGroup<CashboxMovement>[] | null;
   /** `movimientos` en el día, `conceptos` en semana y mes. */
   detail: "movimientos" | "conceptos";
 }) {
   // Todas cerradas de entrada (pedido del usuario; el diseño las mostraba
   // abiertas): al entrar a Caja se ve el resumen por categoría de un vistazo.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  if (!groups) {
+    return (
+      <div className="flex flex-col gap-3 md:hidden">
+        {SKELETON_WIDTHS.map(([name, quantity, total]) => (
+          <div
+            key={name}
+            className="bg-card flex h-12 items-center gap-2 rounded-md border border-[var(--hs-border-card)] px-3.5"
+          >
+            <ChevronRight className="size-4 shrink-0 text-[var(--hs-mist)]" />
+            <div className="flex min-w-0 flex-1 items-center gap-1.5">
+              <Skeleton className="h-[15px]" style={{ width: name }} />
+              <Skeleton className="h-[13px]" style={{ width: quantity }} />
+            </div>
+            <Skeleton className="h-[15px]" style={{ width: total }} />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (groups.length === 0) {
     return (

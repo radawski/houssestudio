@@ -416,7 +416,19 @@
       demora temporal (sacada): semana, mes, cambio de vista y "Hoy"; el
       celular solo por DOM (la ventana no se dejó achicar)
 - [x] L2 — Verificado por el usuario en el iPhone
-- [ ] L3 — Caja: vistas, períodos y "Hoy"; `CajaSkeleton` con categorías (iPhone) y tabla (escritorio)
+- [x] L3 — Navegación por período común (`lib/period-nav.ts`,
+      `components/admin/period-navigation.tsx`); las flechas calculan su
+      destino en el toque desde la última posición pedida (`stepFrom`)
+- [x] L3 — Caja navega al toque (flechas, segmentado, "Hoy" y la píldora de
+      fecha): resumen, tarjetas y tabla con modo cargando (etiquetas reales,
+      barras en los montos: nunca `$ 0` ni el total anterior). Tarjetas de
+      categoría con los anchos del diseño; píldora a .6 si se eligió desde el
+      calendario; "Hoy" ghost y en mist cuando el período contiene hoy. El
+      `loading.tsx` de la ruta pasa a las tarjetas de categoría (se borra el
+      `CajaSkeleton` de filas). ▶ en Mes también va al día 1 (antes +30
+      días). Revisado en Chrome con 1,5 s de demora temporal (sacada): día,
+      calendario, semana, mes, "Hoy" y escritorio; el celular solo por DOM
+- [ ] L3 — Verificar en el iPhone: Caja (◀ ▶, calendario, segmentado, "Hoy")
 - [ ] L4 — Más: carga y error solo en la tarjeta de sesión
 - [ ] L5 — `loading.tsx` de Servicios, Productos y Disponibilidad
 - [ ] L6 — Volver a Más con `router.back()` y la fila marcada 600 ms

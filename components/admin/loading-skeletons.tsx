@@ -97,7 +97,7 @@ export function HoySkeleton() {
 }
 
 /** Flechas, título y segmentado Día/Semana/Mes: la misma barra en Agenda y Caja. */
-function ToolbarSkeleton() {
+export function ToolbarSkeleton() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-1.5">
@@ -206,40 +206,6 @@ export function SolicitudesSkeleton() {
             </div>
           </div>
         ))}
-      </div>
-    </LoadingRegion>
-  );
-}
-
-export function CajaSkeleton() {
-  return (
-    <LoadingRegion label="Cargando la caja…">
-      <div className="space-y-4">
-        <ToolbarSkeleton />
-        <div className={`${CARD} space-y-3 p-4`}>
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-7 w-24" />
-          </div>
-          <div className="flex justify-between border-t border-[var(--hs-divider)] pt-3">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-        </div>
-        <div className={`${CARD} divide-y divide-[var(--hs-divider)]`}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex items-center justify-between px-3.5 py-3">
-              <div className="space-y-1.5">
-                <Skeleton className="h-3.5 w-28" />
-                <Skeleton className="h-3 w-20" />
-              </div>
-              <div className="flex flex-col items-end space-y-1.5">
-                <Skeleton className="h-[15px] w-16" />
-                <Skeleton className="h-3 w-12" />
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </LoadingRegion>
   );
