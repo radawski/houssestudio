@@ -12,6 +12,7 @@ import { requireAdmin } from "@/lib/auth";
 import { serviceSchema } from "@/lib/validation/schemas";
 
 function revalidateServices() {
+  revalidatePath("/");
   revalidatePath("/admin/servicios");
   revalidatePath("/reservar");
 }

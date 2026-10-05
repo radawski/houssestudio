@@ -6,8 +6,12 @@ import { getSettings } from "@/lib/data/availability";
 import { toWhatsappNumber } from "@/lib/phone";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// La disponibilidad cambia con cada reserva, así que la página no se cachea.
-export const dynamic = "force-dynamic";
+// La portada solo muestra servicios y ajustes: los horarios libres los pide el
+// stepper con Server Actions, que nunca se cachean. Por eso se sirve cacheada y
+// se regenera cuando el panel cambia un servicio (`lib/actions/services.ts`) o
+// la ventana de reserva (`lib/actions/settings.ts`). La hora es la red de
+// seguridad para lo que se edite directo en Supabase, como el teléfono.
+export const revalidate = 3600;
 
 export default async function HomePage() {
   const supabase = createAdminClient();
