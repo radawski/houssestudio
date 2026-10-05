@@ -21,12 +21,18 @@ export function SiteHero({ tagline }: { tagline?: string }) {
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-[#050505] text-white">
       <div className="hs-hero-glow" aria-hidden />
       <div className="hs-hero-grid" aria-hidden />
+      {/* Es el elemento LCP de la portada: se pide de entrada y con prioridad
+          alta. `sizes` repite el ancho de `.hs-hero-logo` (min(520px, 62vw):
+          62vw hasta los ~839px, 520px de ahí en adelante) para que el
+          navegador no baje la variante pensada para todo el viewport. */}
       <Image
         src="/logo.png"
         alt=""
         width={914}
         height={1024}
-        priority
+        loading="eager"
+        fetchPriority="high"
+        sizes="(min-width: 839px) 520px, 62vw"
         aria-hidden
         className="hs-hero-logo"
       />
