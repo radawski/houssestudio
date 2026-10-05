@@ -7,8 +7,8 @@ import { BookingFields, type ContactField, type ContactValues } from "@/componen
 import { Field, inputClass } from "@/components/public/form-field";
 import { lookupCustomerByDni, type CustomerLookupResult } from "@/lib/actions/booking";
 import type { OutOfAreaContact } from "@/lib/out-of-area-message";
+import { normalizeDni } from "@/lib/dni";
 import { checkPhone, isBookablePhone } from "@/lib/phone";
-import { normalizeDni } from "@/lib/validation/schemas";
 
 export type Identity = {
   resolved: boolean;

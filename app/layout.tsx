@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { Roboto, Roboto_Mono } from "next/font/google";
+import { Roboto } from "next/font/google";
 
-import { Toaster } from "@/components/ui/sonner";
 import { BUSINESS_NAME } from "@/lib/config";
 import "./globals.css";
 
 // Pocos pesos a propósito: el sistema es minimalista y la jerarquía la dan el
-// tamaño y el espacio, no la variedad tipográfica.
+// tamaño y el espacio, no la variedad tipográfica. No hay fuente mono propia:
+// `font-mono` se usa en una sola pantalla del panel y le alcanza la del
+// sistema, en vez de precargar una fuente más en cada visita a la portada.
 const roboto = Roboto({
   variable: "--font-roboto",
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
-});
-
-const robotoMono = Roboto_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -31,12 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${roboto.variable} ${robotoMono.variable} h-full antialiased`}
+      className={`${roboto.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        {children}
-        <Toaster richColors />
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

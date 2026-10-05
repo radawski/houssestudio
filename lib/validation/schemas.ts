@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { normalizeDni } from "@/lib/dni";
 import { checkPhone, normalizePhone as normalizePhoneValue } from "@/lib/phone";
 
 /**
@@ -31,15 +32,8 @@ const phoneSchema = z
   })
   .transform(normalizePhoneValue);
 
-/**
- * Normaliza un DNI a solo digitos, con el mismo criterio que `normalizePhone`
- * y por el mismo motivo: "30.123.456", "30 123 456" y "30123456" tienen que
- * resolver a la misma ficha, o cada forma de escribirlo crearia un cliente
- * nuevo y partiria el historial.
- */
-export function normalizeDni(input: string): string {
-  return input.replace(/\D/g, "");
-}
+/** La normalización del DNI vive en `lib/dni.ts`, sin zod, para el portal. */
+export { normalizeDni };
 
 const dniSchema = z
   .string()

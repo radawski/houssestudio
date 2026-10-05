@@ -6,6 +6,7 @@ import { AdminNav } from "@/app/admin/admin-nav";
 import { AdminTabBar } from "@/app/admin/admin-tab-bar";
 import { NavigationTracker } from "@/components/admin/navigation-tracker";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import { signOut } from "@/lib/actions/auth";
 import { BUSINESS_NAME } from "@/lib/config";
 import { countPendingAppointments } from "@/lib/data/appointments";
@@ -81,6 +82,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       </main>
 
       <AdminTabBar pendingCount={pendingCount} />
+
+      {/* Solo el panel muestra toasts: en el layout raíz, la portada bajaba
+          sonner sin usarlo nunca. */}
+      <Toaster richColors />
     </div>
   );
 }
