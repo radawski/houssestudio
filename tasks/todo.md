@@ -234,7 +234,7 @@
 - [x] R2 — `app/api/cron/reminders/route.ts` (401 sin `Bearer CRON_SECRET`), `vercel.json` con el cron diario, `CRON_SECRET` en `.env.local`; `manageUrlFor` pasa a `lib/tokens.ts`
 - [x] R3 local — 401 sin clave o con clave falsa; con un turno de prueba de mañana: 1ª llamada envió 1, 2ª lo salteó (turno de prueba borrado)
 - [x] R3 producción — `CRON_SECRET` cargado en Vercel por el usuario (junto con R2)
-- [ ] R3 producción — confirmar en los logs de Vercel una ejecución diaria con 200
+- [x] R3 producción — confirmado por el usuario: el domingo 4/10 a las 10:14 llegó "Mañana te esperamos" del turno del lunes 5/10
 
 ## Dominio propio para los emails (en curso)
 - [x] Decisión: `houssestudio.com.ar` (NIC Argentina), para el sitio y los
@@ -489,6 +489,10 @@
       1ª llamada envió el 1d (y el recordatorio del turno de prueba del
       usuario de mañana), 2ª no repitió; el índice de 0014 rechaza un segundo
       envío
-- [ ] V5 — Producción: subir y revisar en los logs de Vercel la corrida de las 10
+- [x] V5 — Subido a producción (5/10)
+- [ ] V5 — Revisar en los logs de Vercel la primera corrida con el código nuevo
+      (6/10, 10 h): respuesta 200 con `{ recordatorios, vuelta }`
 - [ ] Checkpoint 4 — mail en Gmail (claro y oscuro), baja probada, primera ejecución en producción
-- [ ] F1 — SPEC y README al día
+- [x] F1 — SPEC (decisiones de octubre en §2 y nueva §9) y README (portal,
+      panel, variables de mail y `CRON_SECRET`, migraciones 0013 y 0014,
+      mapa del código y estado) al día

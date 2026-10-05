@@ -43,7 +43,9 @@ Fuera de alcance (Fase 3 u otra decisión explícita del usuario):
 - Pasarela de pago online (Mercado Pago o similar) — hoy el registro de cobro
   es siempre manual, hecho por el barbero.
 - Recordatorios automáticos, CRM y reportes históricos más allá de
-  diario/semanal/mensual — quedan para Fase 3.
+  diario/semanal/mensual — quedan para Fase 3. (Actualizado: los
+  recordatorios ya están hechos, el del día anterior en Fase 3 y "Ya pasó un
+  mes" en octubre, ver §9; CRM y reportes siguen afuera.)
 - Reprogramación de turnos por el cliente (solo puede cancelar).
 - Gastos/egresos de caja — el cierre de esta fase es solo lo cobrado.
 
@@ -70,6 +72,17 @@ Fuera de alcance (Fase 3 u otra decisión explícita del usuario):
   escritorio, con desplegables que arrancan cerrados.
 - Un turno cancelado que ya tenía cobro registrado no borra el pago: queda
   como dato histórico para el reporte de caja.
+- Octubre de 2026 (`tasks/plan-mejoras-octubre.md`, detalle en §9):
+  - Botón de WhatsApp solo en la portada y la reserva (no en `/turno`).
+  - Cliente con número de otra zona: el peluquero lo carga en Más › Agregar
+    cliente (hoja, sin restricción de zona, email opcional). Desde ahí reserva
+    con su DNI; el control de zona no aplica al teléfono que ya figura en su
+    ficha.
+  - Recordatorio para volver: a quien tuvo su último turno **completado**
+    hace entre 30 y 60 días y no tiene otro turno por delante. Solo cuenta
+    `completado`: el peluquero registra el cobro de cada turno.
+  - La baja corta solo ese recordatorio; los avisos de turnos (confirmación y
+    recordatorio del día anterior) siguen llegando.
 
 ## 3. Cambios de datos (migración `0007_ventas_sueltas.sql`)
 
@@ -286,3 +299,55 @@ módulo desde el SQL Editor a medida que se implementa.
 - Borrar o editar un pago ya registrado desde código de la aplicación.
 - Exponer `RESEND_API_KEY` o `SUPABASE_SERVICE_ROLE_KEY` a un componente
   cliente.
+
+## 9. Actualización de octubre de 2026 (`tasks/plan-mejoras-octubre.md`)
+
+Construido sobre Fase 2 y Fase 3, con los diseños "Botón WhatsApp",
+"Recordatorio de turno" y "Estados de carga — Admin".
+
+**Reserva pública**
+- "Confirmar turno" muestra "Confirmando…" y bloquea los botones; los mails
+  1a y 2a salen con `after()`, así el redirect no espera a Resend.
+- "Turno solicitado" termina con "Volver al inicio".
+- Pasar la portada con el dedo la retira igual que "Reservar turno", sin
+  salto (`lib/hero-scroll.ts`).
+- Botón flotante de WhatsApp (`components/public/whatsapp-fab.tsx`): blanco
+  sobre la portada, tinta sobre el papel; sin `settings.phone` no aparece.
+
+**Clientes de otra zona**
+- `isBookablePhone` (`lib/phone.ts`): los números del área siempre; de otra
+  zona, solo el que ya figura en la ficha de ese DNI. Lo aplican
+  `createBooking` y `DniGate`.
+- El mensaje de "Coordinar por WhatsApp" lleva nombre, DNI, teléfono y email
+  (`lib/out-of-area-message.ts`).
+- Más › Agregar cliente (`addCustomer`, `customerSchema`): si el DNI ya
+  tenía ficha la actualiza; un email vacío no borra el que tenía.
+
+**Estados de carga del panel**
+- Agenda y Caja navegan sin esperar al servidor (`PeriodNavigation`): la vista
+  y la fecha tocadas se guardan con `useOptimistic`, el toolbar responde en el
+  mismo toque y el cuerpo muestra su esqueleto mientras lo pedido no coincida
+  con lo que trajo el servidor. Sin `Suspense` del servidor.
+- El esqueleto aparece a los 200 ms (CSS, aparte del pulso para que
+  "Reducir movimiento" no lo apague) y dura al menos 400 ms
+  (`lib/loading-hold.ts`). Semana, Mes y Caja muestran desde el primer cuadro
+  lo que no depende de datos (días, grilla, etiquetas); en Caja nunca queda
+  un monto viejo ni `$ 0`.
+- ◀ ▶ en Mes van al día 1 del mes vecino; "Hoy" se deshabilita cuando el
+  período a la vista ya contiene hoy (`lib/period-nav.ts`).
+- Más pinta sus filas al toque y la sesión carga (o falla, con "Reintentar")
+  sola en su tarjeta; sesión vencida va al login (`lib/session-state.ts`).
+- Servicios, Productos y Disponibilidad tienen `loading.tsx`. Su ← vuelve a
+  Más con `router.back()` si se llegó desde Más (`NavigationTracker`,
+  `lib/mas-return.ts`) y marca 600 ms la fila de origen.
+
+**Recordatorio para volver (1d)**
+- Migraciones 0013 (valor `vuelta` de `email_type`) y 0014
+  (`customers.comeback_opt_out_at` + `email_log_comeback_once_idx`).
+- `pickComebacks` (`lib/comebacks.ts`) elige; `getComebackInputs` lee con
+  `service_role`; `sendComeback` reserva la fila de `email_log` antes de
+  mandar, así el índice único impide un segundo envío por visita.
+- La tarea diaria (`/api/cron/reminders`, 10 de Buenos Aires) corre el
+  recordatorio del día anterior y este, aislados (`runIsolated`).
+- Baja en `/baja/<id>.<firma>` (HMAC con propósito propio sobre
+  `MANAGE_TOKEN_SECRET`): abrir el link no cambia nada, la baja es el botón.

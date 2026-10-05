@@ -3,11 +3,15 @@
 Sistema de turnos y gestión comercial para una peluquería de operación
 unipersonal: un profesional, una estación de trabajo.
 
-- **Portal público** (`/`, `/reservar`, `/turno/[token]`): el cliente elige
-  servicio, día y horario, deja sus datos y recibe un link propio para seguir su
-  turno. Sin pago ni seña previa.
-- **Panel privado** (`/admin`): agenda, bandeja de solicitudes, catálogo de
-  servicios y configuración de disponibilidad.
+- **Portal público** (`/`, `/reservar`, `/turno/[token]`, `/baja/[token]`): el
+  cliente elige servicio, día y horario, deja sus datos y recibe un link propio
+  para seguir su turno. Sin pago ni seña previa. Un botón flotante abre
+  WhatsApp con el local.
+- **Panel privado** (`/admin`): Hoy, agenda, bandeja de solicitudes, caja por
+  categoría y, desde Más, servicios, productos, disponibilidad y alta de
+  clientes.
+- **Emails**: confirmaciones y cancelaciones al cliente y al peluquero, más dos
+  recordatorios automáticos (el día anterior al turno y "Ya pasó un mes").
 
 ## Puesta en marcha
 
@@ -39,6 +43,16 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 > puede recibir emails armados en el otro. Si cambia, los links de los turnos
 > ya reservados dejan de coincidir.
 
+Para los emails y la tarea diaria completar también:
+
+- `NEXT_PUBLIC_SITE_URL`: la URL pública (`https://houssestudio.com.ar` en
+  producción), base de los links de los mails.
+- `RESEND_API_KEY`, `EMAIL_FROM` (remitente verificado en Resend) y
+  `ADMIN_EMAIL` (la casilla del peluquero, que recibe los avisos).
+- `CRON_SECRET`: lo exige `/api/cron/reminders`, que Vercel Cron llama todos
+  los días a las 10 de Buenos Aires (`vercel.json`). Se genera con el mismo
+  comando que `MANAGE_TOKEN_SECRET` y se carga igual en Vercel.
+
 > `SUPABASE_SERVICE_ROLE_KEY` saltea todas las políticas de seguridad de la base.
 > Nunca se commitea ni se expone al navegador: los módulos que la usan importan
 > `server-only`, así que el build falla si alguna vez terminan alcanzados por
@@ -63,6 +77,11 @@ En el **SQL Editor** de Supabase, ejecutar en orden los archivos de
 11. `0011_email_aceptacion.sql` — tipo de email para el turno confirmado.
 12. `0012_productos_y_categorias.sql` — categorías y productos, ventas
     sueltas con varios ítems y la función que las registra.
+13. `0013_email_vuelta.sql` — tipo de email del recordatorio para volver.
+    Va sola: Postgres no deja usar un valor de enum recién agregado en la
+    misma ejecución.
+14. `0014_recordatorio_vuelta.sql` — baja de ese recordatorio
+    (`customers.comeback_opt_out_at`) y el índice que impide repetirlo.
 
 Cada archivo depende de los anteriores: la 0009 copia a bloques el horario
 que dejan cargado la 0003 y la 0006, y la 0010 recién después borra esas
@@ -114,6 +133,9 @@ npm run build
 | Lecturas del portal público | [`lib/data/availability.ts`](lib/data/availability.ts), [`lib/data/public.ts`](lib/data/public.ts) |
 | Lecturas del panel | [`lib/data/appointments.ts`](lib/data/appointments.ts) |
 | Escrituras | [`lib/actions/`](lib/actions) — una Server Action por dominio |
+| Emails | [`lib/email/`](lib/email) — plantillas puras (con tests) y envío por Resend |
+| Tarea diaria | [`app/api/cron/reminders/route.ts`](app/api/cron/reminders/route.ts) — los dos recordatorios, aislados |
+| Navegación por fecha (Agenda y Caja) | [`components/admin/period-navigation.tsx`](components/admin/period-navigation.tsx), [`lib/period-nav.ts`](lib/period-nav.ts) |
 | Esquema | [`supabase/migrations/`](supabase/migrations) |
 
 Tres decisiones que conviene conocer antes de tocar el código:
@@ -151,5 +173,13 @@ disponibilidad.
 la web, autogestión de cancelaciones, registro de cobros, venta suelta con
 carrito de catálogo, productos con categorías y cierre de caja por categoría.
 
-**Pendiente** (ver `tasks/todo.md`): Fase 3, solo recordatorios automáticos;
-dominio propio para los emails. CRM y reportes quedan para más adelante.
+**Fase 3 completa**: recordatorio automático el día anterior al turno, con
+dominio propio para los emails (`turnos@houssestudio.com.ar`).
+
+**Mejoras de octubre completas** (ver `SPEC.md` §9 y
+`tasks/plan-mejoras-octubre.md`): botón de WhatsApp, alta de clientes de otra
+zona, estados de carga del panel y recordatorio "Ya pasó un mes" con baja.
+
+**Pendiente** (ver `tasks/todo.md`): pasar `ADMIN_EMAIL` a la casilla del
+peluquero, Vercel Pro y copias de seguridad de Supabase antes de usarla con
+clientes reales. CRM y reportes quedan para más adelante.
