@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "admin:credenciales": "node scripts/cambiar-credenciales-admin.mjs",
     "db:vaciar": "node scripts/vaciar-base.mjs",
-    "email:logo": "node scripts/generar-logo-email.mjs"
+    "email:logo": "node scripts/generar-logo-email.mjs",
+    "favicon": "node scripts/generar-favicon.mjs"
   },
   "dependencies": {
     "@date-fns/tz": "^1.5.0",
