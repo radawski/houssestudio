@@ -1,0 +1,555 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "Agenda.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Agenda",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "AgendaMes.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Agenda · mes",
+   "w": 390,
+   "x": 470,
+   "y": 1700
+  },
+  "AgendaSemana.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Agenda · semana",
+   "w": 390,
+   "x": 0,
+   "y": 1700
+  },
+  "Caja.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Caja",
+   "w": 390,
+   "x": 1410,
+   "y": 0
+  },
+  "Disponibilidad.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Disponibilidad",
+   "w": 390,
+   "x": 2350,
+   "y": 0
+  },
+  "Main.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Hoy",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "Mas.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Más",
+   "w": 390,
+   "x": 2820,
+   "y": 0
+  },
+  "Servicios.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Servicios",
+   "w": 390,
+   "x": 1880,
+   "y": 0
+  },
+  "SheetCobrar.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Hoja · cobrar turno",
+   "w": 390,
+   "x": 0,
+   "y": 3400
+  },
+  "SheetHorario.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Hoja · editar horario",
+   "w": 390,
+   "x": 470,
+   "y": 3400
+  },
+  "SheetServicio.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Hoja · nuevo servicio",
+   "w": 390,
+   "x": 940,
+   "y": 3400
+  },
+  "Solicitudes.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Solicitudes",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "VacioAgenda.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Vacío · Agenda",
+   "w": 390,
+   "x": 470,
+   "y": 5100
+  },
+  "VacioCaja.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Vacío · Caja",
+   "w": 390,
+   "x": 1410,
+   "y": 5100
+  },
+  "VacioHoy.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Vacío · Hoy",
+   "w": 390,
+   "x": 0,
+   "y": 5100
+  },
+  "VacioServicios.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Vacío · Servicios",
+   "w": 390,
+   "x": 1880,
+   "y": 5100
+  },
+  "VacioSolicitudes.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "title": "Vacío · Solicitudes",
+   "w": 390,
+   "x": 940,
+   "y": 5100
+  },
+  "SheetVentaSuelta.dc.html": {
+   "x": 1410,
+   "y": 3400,
+   "w": 390,
+   "h": 844,
+   "title": "Hoja · venta suelta",
+   "is_interactive": true
+  },
+  "SheetRechazar.dc.html": {
+   "x": 1880,
+   "y": 3400,
+   "w": 390,
+   "h": 844,
+   "title": "Hoja · rechazar turno",
+   "is_interactive": true
+  },
+  "CargaHoy.dc.html": {
+   "x": 0,
+   "y": 6800,
+   "w": 390,
+   "h": 844,
+   "title": "Carga · Hoy",
+   "is_interactive": true
+  },
+  "ErrorCarga.dc.html": {
+   "x": 470,
+   "y": 6800,
+   "w": 390,
+   "h": 844,
+   "title": "Error de carga",
+   "is_interactive": true
+  },
+  "AccionEnCurso.dc.html": {
+   "x": 940,
+   "y": 6800,
+   "w": 390,
+   "h": 844,
+   "title": "Acción en curso",
+   "is_interactive": true
+  },
+  "ToastExito.dc.html": {
+   "x": 1410,
+   "y": 6800,
+   "w": 390,
+   "h": 844,
+   "title": "Aviso · éxito",
+   "is_interactive": true
+  },
+  "ToastError.dc.html": {
+   "x": 1880,
+   "y": 6800,
+   "w": 390,
+   "h": 844,
+   "title": "Aviso · error",
+   "is_interactive": true
+  },
+  "CajaSemana.dc.html": {
+   "x": 940,
+   "y": 1700,
+   "w": 390,
+   "h": 844,
+   "title": "Caja · semana",
+   "is_interactive": true
+  },
+  "CajaMes.dc.html": {
+   "x": 1410,
+   "y": 1700,
+   "w": 390,
+   "h": 844,
+   "title": "Caja · mes",
+   "is_interactive": true
+  },
+  "SheetTurno.dc.html": {
+   "x": 2350,
+   "y": 3400,
+   "w": 390,
+   "h": 844,
+   "title": "Ficha · turno completado",
+   "is_interactive": true
+  },
+  "SheetTurnoCancelado.dc.html": {
+   "x": 2820,
+   "y": 3400,
+   "w": 390,
+   "h": 844,
+   "title": "Ficha · turno cancelado",
+   "is_interactive": true
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-09-19T12:00:00Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "notes": {
+  "t1": {
+   "kind": "title1",
+   "x": 0,
+   "y": -300,
+   "maxW": 3210,
+   "text": "Panel admin — iPhone 390 × 844"
+  },
+  "t2": {
+   "kind": "title1",
+   "x": 0,
+   "y": 1400,
+   "maxW": 1800,
+   "text": "Vistas por período — Agenda y Caja"
+  },
+  "t3": {
+   "kind": "title1",
+   "x": 0,
+   "y": 3100,
+   "maxW": 3210,
+   "text": "Hojas modales y fichas"
+  },
+  "t4": {
+   "kind": "title1",
+   "x": 0,
+   "y": 4800,
+   "maxW": 2270,
+   "text": "Estados vacíos"
+  },
+  "t5": {
+   "kind": "title1",
+   "x": 0,
+   "y": 6500,
+   "maxW": 2270,
+   "text": "Estados de carga y error"
+  },
+  "n-Agenda": {
+   "x": 470,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Agenda · día — app/admin/agenda/page.tsx (?vista=dia)\nmain gap 14:\n1. Toolbar: [◀ 44][▶ 44] + h1 16/600 con la fecha (flex-1, trunca) + botón \"Hoy\" 36px outline.\n2. Segmentado Día/Semana/Mes: contenedor #e7e9ec, padding 3, radio 6; cada opción es un <Link> de alto 36 que cambia ?vista=; la activa va sobre #fff con peso 500.\n3. Tira de la semana: 7 botones flex-1 de 56px, borde #dde0e4, radio 6, día abreviado 10 uppercase sobre número 15/600; el día activo va en ink sólido con texto paper. Reemplaza a las flechas para saltar de día.\n4. Lista del día: por cada turno una fila [canaleta 44px con la hora de inicio, 12/500 slate, alineada a la derecha][tarjeta flex-1]. La tarjeta es un <Link> a la ficha del turno: padding 12, gap 6, rango + StatusBadge, nombre 14/500, servicio · precio 13 slate. Sin botones adentro (un botón dentro de un link se traga el toque).\n5. Huecos: fila con el mismo formato, caja de 44px con borde punteado mist y texto \"Libre · N min\" 13 slate.\n6. FAB \"Venta suelta\": position absolute, right 16, bottom 100 (por encima de la barra), alto 48, radio 999, ink sólido, ícono + 18. Abre la hoja de venta suelta."
+  },
+  "n-AgendaMes": {
+   "x": 470,
+   "y": 2568,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Agenda · mes — ?vista=mes\nmain gap 14: toolbar con \"Septiembre 2026\" + segmentado con Mes activa.\n1. Tarjeta calendario, padding 8: fila de encabezados lun→dom (10 uppercase slate, centrados) y 5 filas de 7 celdas, grid gap 2.\n2. Celda: botón de 44px, columna centrada, número 14/600 tabular dentro de un cuadro de 26px. Sin puntos de densidad: los días con turnos van en ink 600, los días abiertos sin turnos en slate 400 y los de otro mes en mist. Hoy: círculo ink relleno con número paper y fondo de celda #f4f5f7.\n3. Debajo, encabezado 11 uppercase \"Sábado 19 · N turnos\" y la lista del día elegido: tarjeta con filas de padding 11/14 separadas por #eceef1, \"hora · nombre\" 14/500 tabular, servicio · precio 12 slate y el badge a la derecha.\nTocar una celda cambia el día listado, no navega."
+  },
+  "n-AgendaSemana": {
+   "x": 0,
+   "y": 2568,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Agenda · semana — ?vista=semana\nLa grilla de 7 columnas del escritorio no sirve acá: a 390px cada columna queda en 50px. Es una lista vertical por día.\nmain gap 14: toolbar con el rango \"14 – 20 de septiembre\" + segmentado con Semana activa.\nPor cada día, una fila [canaleta 40px: día abreviado 10 uppercase slate sobre número 15/600][contenido flex-1]:\n· Con turnos: tarjetas compactas de 9/11 de padding, gap 6, \"hora en 600 · nombre\" 13 y el StatusBadge a la derecha.\n· Sin turnos: caja de 38px con borde punteado mist y \"Sin turnos\" 13 slate.\n· El día de hoy lleva el número en círculo ink de 30px.\nSeparación entre días: cada bloque tiene padding 12 arriba y abajo y borde superior #dde0e4 a todo el ancho (incluida la canaleta); el primero no lo lleva. Es lo que hace legible dónde termina un día.\nEl FAB de venta suelta se mantiene."
+  },
+  "n-Caja": {
+   "x": 1410,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Caja · día — app/admin/caja/page.tsx (?vista=dia)\nmain gap 14:\n1. Toolbar igual a Agenda (flechas 44, título 16/600, \"Hoy\" 36) y segmentado Día/Semana/Mes como <Link> a ?vista=.\n2. Tarjeta única de resumen (reemplaza a las tres tarjetas del escritorio, que en 390px dejaban la mitad del alto vacío): padding 12/14, fila superior label 10 uppercase \"Total del día\" a la izquierda y monto 24/600 tabular a la derecha; debajo, separadas por borde #eceef1 y un divisor vertical de 1px, dos columnas Efectivo y Transferencia con etiqueta 12 slate y monto 15/600.\n3. Sección \"Movimientos · N\": la Table de shadcn no entra en 390px, así que es una lista de filas dentro de una tarjeta: padding 12/14, divisor #eceef1, izquierda servicio 14/500 + \"hora · origen\" 12 slate, derecha monto 15/600 tabular + medio de pago 12 slate. Sin scroll horizontal."
+  },
+  "n-Disponibilidad": {
+   "x": 2350,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Disponibilidad — app/admin/disponibilidad/page.tsx (se llega desde Más)\nEs la pantalla más larga del panel: en móvil se reparte en tres bloques y una barra fija, en vez de apilar veinte inputs de hora.\nmain gap 14:\n1. \"Ventana de reserva\" colapsada: botón de fila completa, padding 12/14, título 14/500 y resumen 13 slate (\"Hasta 7 días · anticipación mínima 60 min\"), chevron a la derecha. Abre su propia hoja con los dos campos de booking-window-form.\n2. \"Horario semanal\": tarjeta con 7 filas de 52px separadas por #eceef1. Cada fila: día 14/500 (62px), franjas 13 slate tabular (\"09:00–13:00 · 15:00–19:00\" o \"Cerrado\" en mist) como link a la hoja de edición, y el switch abierto/cerrado en un botón de 48×44 aparte — el switch no va dentro del link.\n3. \"Bloqueos\": botón outline a ancho completo \"+ Bloquear un rango\" y, debajo, la lista de bloqueos próximos o la línea \"No hay bloqueos próximos.\" 13 slate.\n4. Barra fija sobre la tab bar, solo con cambios sin guardar: fondo #fff, borde superior, [Descartar outline flex-1][Guardar cambios primario flex-2]. Reemplaza a los tres botones \"Guardar\" sueltos del escritorio."
+  },
+  "n-Main": {
+   "x": 0,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Hoy — app/admin/page.tsx (ruta /admin)\nOrden dentro de main (gap 16):\n1. h1 21/600 (-0.02em) con la fecha larga, primera letra en mayúscula + subtítulo 13 slate \"Tu día de un vistazo.\".\n2. Grid de 3 columnas (repeat(3, minmax(0,1fr)), gap 8). Cada tile: tarjeta, padding 10/12, min-height 62, contenido centrado vertical y horizontalmente, label 10/500 tracking .08em uppercase slate en una sola línea, valor 24/600 tabular. Etiquetas: Turnos hoy · Confirmados · Pendientes (esta última era \"Por responder\": en dos renglones rompía la simetría).\n3. Banner ámbar, solo si pending > 0: <Link href=\"/admin/solicitudes\"> como fila completa, min-height 56, padding 12/14, chevron 18 a la derecha. La fila entera es el área táctil, no un link dentro del texto.\n4. Sección \"Agenda del día\": h2 11/500 tracking .12em uppercase slate + lista de AppointmentCard, gap 10.\nAppointmentCard: padding 14, gap 10. Fila 1: rango horario 15/600 tabular + StatusBadge. Fila 2: nombre 15/500 y servicio · precio 13 slate. Fila 3 (solo pendiente o confirmado), alto 44: confirmado → [Cobrar primario flex-1][No vino outline flex-1][tel 44][mail 44]; pendiente → [Aceptar][Rechazar][tel][mail]. Cancelado y completado no llevan fila de acciones: se abren con la ficha.\nCobrar abre la hoja de cobro; teléfono y mail son <a href=\"tel:\"> y <a href=\"mailto:\">."
+  },
+  "n-Mas": {
+   "x": 2820,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Más — pantalla nueva, no existe en el repo (crear app/admin/mas/page.tsx o resolverla en el layout)\nExiste porque seis pestañas no entran en una barra inferior: Servicios y Disponibilidad, que se tocan poco y son de configuración, se mueven acá.\nmain gap 14:\n1. h1 21/600 \"Más\" + subtítulo 13 slate \"Ajustes del estudio.\".\n2. Tarjeta con dos filas de 60px separadas por #eceef1, cada una <Link>: ícono lucide 20 a la izquierda (Scissors, Clock), título 15/500 + descripción 12 slate, chevron 18 a la derecha.\n3. Tarjeta de sesión: mail del administrador 14/500 + \"Sesión de administrador\" 12 slate, y botón \"Salir\" 40px con texto #b0332a (form action={signOut}).\nEl botón de salir del header se mantiene en el resto de las pantallas."
+  },
+  "n-Servicios": {
+   "x": 1880,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Servicios — app/admin/servicios/page.tsx (se llega desde Más)\nHeader con ← que vuelve a Más; en la barra inferior queda Más activo.\nmain gap 14: texto 13 slate de contexto y lista de tarjetas gap 12.\nTarjeta de servicio, padding 14, gap 12:\n· Fila 1: nombre 15/600 y descripción 13 slate (line-height 1.35) a la izquierda; a la derecha el switch de visibilidad dentro de un botón de 48×44 (el switch dibuja 44×26, pero el área táctil es el botón).\n· Fila 2: chips 28px radio 999 con precio (ink 500) y duración (slate); a la derecha [editar 44×44][eliminar 44×44 en #b0332a].\n· El lápiz abre la misma hoja que \"Nuevo servicio\", precargada.\nFAB \"Nuevo servicio\" abajo a la derecha (48px, radio 999, ink) — la acción primaria no vive en el header, donde no llega el pulgar.\nServicio oculto: switch apagado (mist) y el resto de la tarjeta sin cambios."
+  },
+  "n-SheetCobrar": {
+   "x": 0,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Hoja · cobrar turno — CompleteAppointmentButton (components/admin/appointment-actions.tsx)\nSe abre desde \"Cobrar\" en una tarjeta confirmada. Sobre la pantalla Hoy.\nTítulo \"Cobrar turno\"; subtítulo con cliente · servicio · día y hora.\nCampos:\n1. Monto: input de texto con inputmode numeric, el \"$\" absoluto a 12px de la izquierda y padding-left 26 en el input, tabular-nums. Hint 12 slate: \"Sugerido por el servicio: $ X\" (viene de price_at_booking, editable).\n2. Medio de pago: dos opciones de 48px a ancho igual (Efectivo / Transferencia) con el círculo dibujado; la elegida lleva además el borde del botón en ink y el texto en 500. Reemplaza al Select del escritorio: dos opciones no justifican un desplegable en móvil.\nBotones: \"Cobrar y completar\" primario 50px y \"Cancelar\" ghost 48px.\nEn envío: el primario pasa a \"Cobrando…\" con spinner y se deshabilita (ver estados)."
+  },
+  "n-SheetHorario": {
+   "x": 470,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Hoja · editar horario del día — business-hours-form.tsx\nSe abre tocando las franjas de un día en Disponibilidad. Sobre esa pantalla.\nTítulo con el nombre del día; subtítulo \"Horario semanal · se aplica a todos los <día>\".\nContenido, gap 14:\n1. Fila con borde #dde0e4, padding 10/12: \"Abierto\" 14/500 + switch a la derecha. Apagado, los campos de hora se muestran deshabilitados.\n2. Desde / Hasta: dos campos <input type=\"time\"> de 48px en fila, flex-1 cada uno, con su label 13/500 arriba.\n3. Fila \"Horario partido\" con switch; encendida, aparece el segundo par Desde/Hasta con el mismo formato.\n4. Botón outline a ancho completo \"Copiar este horario a todos los días\" (13px, 44 de alto): cargar siete días a mano en un teléfono es el trabajo que hace que nadie configure la agenda.\nBotones: \"Guardar\" primario 50 y \"Cancelar\" ghost 48. Guardar solo escribe ese día; la barra fija de Disponibilidad queda para los cambios en lote."
+  },
+  "n-SheetServicio": {
+   "x": 940,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Hoja · nuevo servicio / editar servicio — ServiceDialog (app/admin/servicios/service-dialog.tsx)\nSe abre desde el FAB y desde el lápiz de cada tarjeta (misma hoja, precargada). Sobre Servicios.\nTítulo \"Nuevo servicio\"; subtítulo \"Se agrega al catálogo del portal público\".\nCampos, gap 14:\n1. Nombre: input 48, placeholder con un ejemplo real.\n2. Descripción: textarea de 72px, padding 12, line-height 1.35, resize none.\n3. Precio y Duración en fila (flex-1 cada uno): precio con \"$\" absoluto y padding-left 26, tabular; duración como <select> de 48 con los valores del catálogo (30 min, 45 min, 1 h, 1 h 30) — no un input libre de minutos.\n4. Fila con borde: \"Visible en el portal\" 14/500 + \"Los clientes lo van a poder reservar\" 12 slate, switch a la derecha (service.is_active).\nBotones: \"Crear servicio\" primario 50 y \"Cancelar\" ghost 48. En edición el primario dice \"Guardar cambios\"."
+  },
+  "n-Solicitudes": {
+   "x": 940,
+   "y": 868,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Solicitudes — app/admin/solicitudes/page.tsx\nmain gap 14: h1 21/600 \"Solicitudes\" + subtítulo 13 slate (\"Turnos esperando tu respuesta. Mientras estén pendientes ocupan el horario.\") y la lista de AppointmentCard con showDate, gap 12.\nCada tarjeta, padding 14, gap 12:\n1. Fecha larga 13 slate sobre rango horario 16/600 tabular, y a la derecha el badge Pendiente (ámbar).\n2. Nombre 15/500 + servicio · precio 13 slate.\n3. Fila de chips 30px, radio 999, borde #dde0e4, texto 12 slate: DNI con ícono de credencial (estático) y teléfono como <a href=\"tel:\"> — desde el celular, antes de aceptar, el camino natural es tocar el número.\n4. Nota del cliente, 13 slate, si existe.\n5. Dos botones de 48px a ancho igual: Aceptar primario con check 16, Rechazar outline con ✕ 16. Rechazar abre la hoja de motivo; nunca cancela directo.\nSin acciones destructivas en rojo dentro de la tarjeta: el rojo aparece recién en la hoja de confirmación."
+  },
+  "n-VacioAgenda": {
+   "x": 470,
+   "y": 5968,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Vacío · Agenda — día cerrado\nToolbar, segmentado y tira de días quedan intactos: hay que poder saltar a otro día desde acá.\nTarjeta vacía con ícono de reloj: \"El estudio está cerrado este día.\" + \"Domingo figura como cerrado en Disponibilidad.\" y botón outline \"Editar disponibilidad\".\nDistinguir dos casos en código: día cerrado (este) y día abierto sin turnos (\"Todavía no hay turnos este día.\", sin botón a Disponibilidad). El FAB de venta suelta se mantiene en los dos."
+  },
+  "n-VacioCaja": {
+   "x": 1410,
+   "y": 5968,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Vacío · Caja — período sin movimientos\nToolbar y segmentado intactos. La tarjeta de resumen se muestra igual, con $ 0 en los tres valores: el cero es información, no un estado de error.\nDebajo, encabezado \"Movimientos\" y tarjeta vacía con ícono de billetera: \"Sin movimientos en este período.\" + \"Cada turno cobrado y cada venta suelta se registran acá.\"."
+  },
+  "n-VacioHoy": {
+   "x": 0,
+   "y": 5968,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Vacío · Hoy — sin turnos en el día\nMantiene el h1 con la fecha y los tres tiles en 0 (el dato \"hoy no hay nada\" es parte de la respuesta, no se ocultan). Sin banner ámbar.\nEn lugar de la lista: tarjeta centrada, padding 34/20, gap 8 — círculo de 48px con fondo #f4f5f7 e ícono de calendario 24 slate, título 15/500 \"No hay turnos para hoy.\", texto 13 slate de máximo 250px \"Cuando alguien reserve desde el portal lo vas a ver acá.\" y botón outline de 44 \"Registrar una venta suelta\".\nEl vacío siempre ofrece la acción que corresponde, nunca queda en el mensaje."
+  },
+  "n-VacioServicios": {
+   "x": 1880,
+   "y": 5968,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Vacío · Servicios — catálogo sin cargar\nHeader con ← y el texto de contexto se mantienen. Tarjeta vacía con ícono de tijera: \"Todavía no hay servicios cargados.\" + \"Sin servicios activos el portal público no puede tomar reservas.\" y botón primario de 44 \"+ Crear el primero\" que abre la hoja.\nEs el único vacío con acción primaria (no outline): sin servicios la app entera no funciona."
+  },
+  "n-VacioSolicitudes": {
+   "x": 940,
+   "y": 5968,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Vacío · Solicitudes — nada pendiente\nh1 y subtítulo iguales a la pantalla llena. Tarjeta vacía con ícono de bandeja: \"No hay solicitudes pendientes.\" + \"Respondiste todo. Las nuevas reservas aparecen acá y en la pestaña Hoy.\"\nSin botón: no hay ninguna acción razonable. El badge del tab desaparece cuando pendingCount es 0."
+  },
+  "n-SheetVentaSuelta": {
+   "x": 1410,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Hoja · registrar venta suelta — WalkInSaleButton (components/admin/walk-in-sale-button.tsx)\nSe abre desde el FAB de Agenda. Sobre esa pantalla.\nTítulo \"Registrar venta suelta\"; subtítulo \"Para un corte que entró sin turno reservado. Se suma a la caja del día.\".\nCampos, gap 14:\n1. Servicio: <select> de 48px con \"nombre · precio\" de los servicios activos. Al elegir, completa el monto (handleServiceChange ya hace eso).\n2. Monto: input con \"$\" absoluto, tabular, hint 12 slate \"Se completa con el precio del servicio; podés cambiarlo.\".\n3. Medio de pago: los dos radios de 48px con círculo dibujado, igual que en la hoja de cobro — el mismo control para el mismo dato.\nBotones: \"Registrar venta\" primario 50 con ícono de bolsa 18, y \"Cancelar\" ghost 48.\nAl confirmar: aviso de éxito y la venta aparece en Caja como origen \"Venta suelta\"."
+  },
+  "n-SheetRechazar": {
+   "x": 1880,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Hoja · rechazar turno — CancelAppointmentButton (label \"Rechazar\" en Solicitudes, \"Cancelar\" en Hoy/Agenda)\nSobre Solicitudes. Título \"Rechazar turno\"; subtítulo con cliente, día y hora + \"El horario vuelve a quedar disponible al instante.\".\nCampos:\n1. Motivo (opcional): textarea de 88px, placeholder \"Se me superpuso con otro compromiso…\", hint 12 slate \"Se lo mandamos al cliente junto con el aviso.\".\n2. Tres chips de 36px, radio 999, borde #dde0e4, texto 13 slate: \"Me surgió un imprevisto\", \"Ese día no abro\", \"Horario ya ocupado\". Tocarlos rellena el textarea. Escribir un motivo con una mano es la fricción que hace que el campo quede vacío.\nBotones: \"Rechazar turno\" en #b0332a a ancho completo (50px, ícono ✕ 16) y \"Volver\" ghost 48.\nEs el único rojo sólido del panel: aparece recién en la confirmación, nunca en la tarjeta."
+  },
+  "n-CargaHoy": {
+   "x": 0,
+   "y": 7668,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Carga · Hoy — esqueleto\nEl header y la tab bar se pintan enseguida; solo main muestra esqueleto. Nada de spinner a pantalla completa.\nBarras #e3e6e9 radio 4 con la forma exacta del contenido que viene: 232×21 y 128×13 del título; tres tiles de 62px con barras de 64×9 y 22×20 centradas; encabezado de sección real (\"Agenda del día\", no una barra); tres tarjetas con barra de 96×15 + píldora de 88×22 r999, dos líneas de 140×14 y 182×12, y la fila de acciones 44 (dos flex-1 + dos de 44×44).\nAnimación: opacidad 1 → .5 → 1, 1.6s ease-in-out infinita, en todas las barras.\nRespetar las medidas: si el esqueleto no coincide con el contenido real, la pantalla salta al cargar."
+  },
+  "n-ErrorCarga": {
+   "x": 470,
+   "y": 7668,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Error de carga — falla la consulta de la pantalla\nSe conserva el h1 con la fecha (es dato del cliente, no del servidor) y se reemplaza solo la lista.\nTarjeta centrada: círculo 48 con fondo #fdeeec e ícono de alerta 24 en #b0332a; título 15/500 \"No pudimos cargar tu día.\"; texto 13 slate (máx 258px) \"Revisá la conexión y volvé a intentar. Tus turnos están guardados: no se perdió nada.\"; botón primario 44 \"Reintentar\" con ícono de refresco 18; y en 11px mist el tipo de error y la hora, para poder reportarlo.\nMismo patrón en las otras pestañas, cambiando la frase: lo que no cambia es que haya una salida (Reintentar) y que se aclare que no se perdieron datos."
+  },
+  "n-AccionEnCurso": {
+   "x": 940,
+   "y": 7668,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Acción en curso — envío optimista bloqueado por fila\nEstado de la primera tarjeta mientras corre completeAppointment:\n· El botón primario pasa a fondo slate #4a4f55, texto paper, spinner de 18 girando (0.8s lineal) y \"Cobrando…\".\n· \"No vino\" se deshabilita: fondo #f4f5f7, borde #dde0e4, texto mist. Es la acción que rompería el registro si se toca dos veces.\n· Teléfono y mail siguen activos; el resto de la pantalla no se bloquea y no hay overlay.\nSolo se deshabilita la fila que está en vuelo, no la lista entera: en un teléfono, bloquear toda la pantalla por una acción de 300ms se siente peor que el error que evita.\nAl terminar: la tarjeta pasa a Completado y aparece el aviso de éxito."
+  },
+  "n-ToastExito": {
+   "x": 1410,
+   "y": 7668,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Aviso · éxito — sonner\nPosición: absolute, left/right 16, bottom 96 — por encima de la tab bar (84) y despejado del botón flotante, que vive a bottom 100 pero a la derecha.\nCaja: fondo ink, texto paper, borde ink, radio 6, padding 13/14, ícono de check 18 a la izquierda y texto 14 a la derecha.\nEl mensaje dice qué quedó registrado, con el dato: \"Turno cobrado · $ 12.000 en efectivo.\" Un \"Listo\" no deja verificar nada.\nDuración corta, sin acción. Los avisos de éxito no piden decisión."
+  },
+  "n-ToastError": {
+   "x": 1880,
+   "y": 7668,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Aviso · error — sonner\nMisma posición que el de éxito (left/right 16, bottom 96), pero invertido: fondo blanco, borde 1px #b0332a, texto ink 14, ícono de alerta 18 en rojo.\nIncluye siempre la acción que reintenta, como botón de 32px alineado a la derecha, texto ink 13/600. Un error sin salida obliga al usuario a rehacer todo el camino.\nEl mensaje nombra la acción que falló y la causa probable: \"No se pudo aceptar el turno. Revisá la conexión.\".\nLa tarjeta de atrás vuelve a su estado anterior: nada de estados a medias."
+  },
+  "n-CajaSemana": {
+   "x": 940,
+   "y": 2568,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Caja · semana — ?vista=semana\nmain gap 14: toolbar con el rango + segmentado con Semana activa.\n1. Misma tarjeta de resumen que el día, con el label \"Total de la semana\".\n2. Sección \"Por día\": tarjeta con 7 filas de padding 11/14 separadas por #eceef1. Cada fila: [día + número 13 tabular, 52px][barra flex-1][monto 74px alineado a la derecha, 13/500 tabular].\nBarra: riel de 8px radio 999 en #f0f1f3 y relleno ink con ancho = monto / mejor día del período. Una sola serie, sin leyenda ni eje; el número al lado es la etiqueta directa.\nDía cerrado: sin barra, \"Cerrado\" 12 mist a la izquierda y \"—\" mist en la columna del monto. No es lo mismo no facturar que no abrir.\nHoy: monto en 600.\n3. Pie: \"Promedio por día abierto · $ X · N días abiertos\" 12 slate — el número comparable entre semanas."
+  },
+  "n-CajaMes": {
+   "x": 1410,
+   "y": 2568,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Caja · mes — ?vista=mes\nNo hereda la forma del día: con 30 movimientos por semana una lista plana no se lee. Son totales por día.\nmain gap 14: toolbar \"Septiembre 2026\" + segmentado con Mes activa.\n1. Tarjeta de resumen con label \"Total del mes\".\n2. Sección \"Por día\": tarjeta padding 8 con encabezados lun→dom y 5 filas de 7 celdas (grid gap 3). Celda de 50px: número 11 tabular arriba, total abreviado 12/600 abajo (\"42k\"). El fondo codifica la magnitud con un solo tono, tres pasos: ≤30k #eceef1, ≤45k #dfe2e6, >45k #cbd0d5. Día cerrado: fondo #f7f8f9 y \"—\" mist. Día futuro: blanco, número slate, sin monto. Otro mes: blanco, número mist. Hoy: anillo interior de 1px ink (box-shadow inset).\nUn solo tono en escala, nunca colores por categoría: la variable es magnitud.\n3. Tarjeta final con dos filas: \"Mejor día · sábado 12\" y \"Promedio por día abierto · N días\", etiqueta 13 slate y valor 14/600 tabular."
+  },
+  "n-SheetTurno": {
+   "x": 2350,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Ficha del turno (completado) — se abre tocando cualquier tarjeta de la agenda\nResuelve el hueco de hoy: un turno completado o cancelado no tiene fila de acciones y no había dónde ver DNI, nota ni historial.\nContenido de la hoja, gap 14:\n1. Cabecera: fecha larga 13 slate, rango 18/600 tabular y StatusBadge a la derecha; debajo \"servicio · duración · precio\" 14 slate.\n2. Tarjeta del cliente: nombre 15/600 con borde inferior, y tres filas de 48px separadas por #eceef1 — DNI (estática, etiqueta \"DNI\" a la derecha), teléfono y mail como <a href=\"tel:\"> / <a href=\"mailto:\"> con la acción escrita a la derecha (\"Llamar\", \"Escribir\"). La acción nombrada evita adivinar qué hace tocar el número.\n3. Nota del cliente con ícono 16 alineado arriba, 13 slate.\n4. Bloque de cobro: tarjeta con ícono billetera, label 10 uppercase \"Cobrado\", \"$ X · Efectivo\" 15/600 y la hora 12 slate a la derecha.\n5. \"Historial\": línea de tiempo de 3 hitos — punto de 9px (ink el último, mist los previos) unido por una línea de 1px #dde0e4; título 13/500 y \"fecha hora · autor\" 12 slate. Sale de created_at, confirmed_at y completed_at.\nBotones: \"Ver el movimiento en caja\" outline y \"Cerrar\" ghost."
+  },
+  "n-SheetTurnoCancelado": {
+   "x": 2820,
+   "y": 4268,
+   "w": 390,
+   "maxH": 440,
+   "size": "s",
+   "text": "Ficha del turno (cancelado) — misma hoja, otro estado\nEstructura idéntica a la ficha completada; cambian tres cosas:\n1. El badge es Cancelado (gris) en vez de Completado.\n2. Donde va el bloque de cobro va el motivo: caja con fondo #f4f5f7, borde #dde0e4, label 10 uppercase \"Motivo\" y el texto 14 ink (cancellation_reason). Si no hay motivo, la caja no se renderiza.\n3. El historial termina en \"Cancelado por el cliente\" con la fecha y el origen (\"desde el link del turno\" o \"vos\", según quién lo canceló).\nAcción: \"Ver el horario libre en la agenda\" outline + \"Cerrar\" ghost. No hay reabrir: el horario ya volvió a estar disponible y el cliente tendría que reservarlo de nuevo."
+  },
+  "n-sistema": {
+   "x": 3290,
+   "y": 0,
+   "w": 430,
+   "maxH": 860,
+   "size": "s",
+   "text": "SISTEMA — leer antes de escribir código\nTodo sale de app/tokens.css: no inventar valores.\n\nColor: ink #111315 · graphite #2a2d30 · slate #4a4f55 · mist #b8bdc3 · paper #f4f5f7 (fondo). Tarjeta #ffffff, borde #dde0e4, divisor interno #eceef1, riel de barra #f0f1f3. Ámbar (pendiente/aviso): fondo #fef3c7, borde #fde68a, texto #78350f, punto #b45309. Destructivo #b0332a.\n\nTipografía Roboto (--font-roboto). Escala usada: 10 label · 11 encabezado de sección · 12 meta · 13 secundario · 14 cuerpo y botón · 15 dato · 16 input y título de pantalla · 18 título de hoja · 21 h1 · 24 número grande.\n\nForma: radio 6px en tarjetas, inputs y botones; 999px en píldoras y switches. Sin sombras: la jerarquía la dan borde y espacio.\n\nChrome idéntico en todas las pantallas:\n· header 56px, fondo #fff, borde inferior, marca 13/700 tracking .18em, botón salir 44×44.\n· main flex column, padding 16, gap 14 (16 en Hoy), scroll propio, min-height 0.\n· tab bar 84px (56 de contenido + 22 de safe area), 5 ítems: Hoy, Agenda, Solicitudes con badge contador, Caja, Más. Activo ink 500, inactivo slate 400, icono lucide 22 stroke 1.75, label 10.\n· Servicios y Disponibilidad salen de la barra y cuelgan de Más: su header es ← + título 16/600 y en la barra queda Más activo.\n\nReglas no negociables: área táctil ≥44px; inputs 16px (menos zoomea iOS al enfocar); font-variant-numeric: tabular-nums en horas, montos y fechas; íconos lucide stroke 1.75; botón primario = ink sólido, secundario = borde mist sobre blanco, terciario = ghost slate."
+  },
+  "n-hojas": {
+   "x": 3290,
+   "y": 3400,
+   "w": 430,
+   "maxH": 760,
+   "size": "s",
+   "text": "PATRÓN DE HOJA (bottom sheet) — vale para las 7 hojas de esta fila\nReemplaza al Dialog de shadcn en móvil: el diálogo centrado deja el teclado encima de los campos.\n\n· Scrim rgba(17,19,21,.45) sobre toda la pantalla; tocar el scrim cierra (área libre por encima de la hoja).\n· Contenedor pegado abajo: fondo #fff, border-top-left/right-radius 14, borde superior #dde0e4, padding 8 arriba / 16 a los lados / 24 abajo, flex column gap 16.\n· Grabber 38×4 r999 #b8bdc3 centrado.\n· Título 18/600 (-0.01em) + subtítulo 13 slate con el contexto (cliente, fecha, alcance del cambio).\n· Campos: flex column gap 14; cada uno label 13/500 ink + control + hint 12 slate. Input alto 48, borde mist, radio 6, fuente 16.\n· Radios de una opción: label de 48 con el círculo dibujado a mano (18px, borde mist; seleccionado relleno ink con punto blanco de 6) y el input real oculto dentro del label — el control nativo no pinta el estado en todos los navegadores.\n· Botonera al pie, apilada y a ancho completo: primario 50px, secundario ghost 48px. Nunca en fila: a una mano, dos botones de 50% se tocan mal.\n· En código: mantener el Dialog de Radix por accesibilidad y foco, restyleado a hoja inferior (data-state + translate-y)."
+  },
+  "n-estados": {
+   "x": 2350,
+   "y": 6800,
+   "w": 430,
+   "maxH": 760,
+   "size": "s",
+   "text": "PATRÓN DE ESTADOS — carga, error y avisos\n· El chrome (header y tab bar) nunca entra en carga ni en error: se pinta desde el primer frame. Solo cambia el contenido de main.\n· Esqueleto: barras #e3e6e9 r4 con la forma real del contenido (tres tiles y tres tarjetas con su fila de acciones), animación de opacidad 1 → .5 → 1, 1.6s ease-in-out. Usar components/ui/skeleton.\n· Error de carga: tarjeta centrada, círculo 48 con fondo #fdeeec e ícono de alerta #b0332a, título 15/500, texto 13 slate (máx 258px), botón primario Reintentar y, en 11px mist, tipo de error + hora para reportarlo.\n· Acción en curso: el botón que disparó la acción pasa a fondo slate, spinner 18 girando 0.8s lineal y verbo en gerundio (Cobrando…); se deshabilita junto con las acciones que competirían por el mismo registro. Sin overlay: el resto de la pantalla sigue viva.\n· Avisos (sonner): a 96px del borde inferior, por encima de la barra y despejados del botón flotante; ancho completo menos 16 de cada lado. Éxito: fondo ink, texto paper, check 18. Error: fondo blanco, borde #b0332a, ícono rojo y acción Reintentar adentro — un error sin salida obliga a rehacer el camino."
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Agenda.dc.html",
+  "Solicitudes.dc.html",
+  "Caja.dc.html",
+  "Servicios.dc.html",
+  "Disponibilidad.dc.html",
+  "Mas.dc.html",
+  "AgendaSemana.dc.html",
+  "AgendaMes.dc.html",
+  "SheetCobrar.dc.html",
+  "SheetHorario.dc.html",
+  "SheetServicio.dc.html",
+  "VacioHoy.dc.html",
+  "VacioAgenda.dc.html",
+  "VacioSolicitudes.dc.html",
+  "VacioCaja.dc.html",
+  "VacioServicios.dc.html",
+  "SheetVentaSuelta.dc.html",
+  "SheetRechazar.dc.html",
+  "CargaHoy.dc.html",
+  "ErrorCarga.dc.html",
+  "AccionEnCurso.dc.html",
+  "ToastExito.dc.html",
+  "ToastError.dc.html",
+  "CajaSemana.dc.html",
+  "CajaMes.dc.html",
+  "SheetTurno.dc.html",
+  "SheetTurnoCancelado.dc.html"
+ ],
+ "pages": [],
+ "title": "HOUSSESTUDIO — Panel admin (iPhone)"
+}
