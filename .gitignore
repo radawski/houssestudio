@@ -45,3 +45,6 @@ next-env.d.ts
 # archivo que la app necesita es el logo, ya copiado en public/logo.png.
 # El patrón evita la "ó": macOS guarda el nombre en Unicode descompuesto.
 HOUSSESTUDIO*/
+
+# respaldos de la base (scripts/vaciar-base.mjs): tienen datos personales
+/respaldos/

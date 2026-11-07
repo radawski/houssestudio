@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "admin:credenciales": "node scripts/cambiar-credenciales-admin.mjs",
+    "db:vaciar": "node scripts/vaciar-base.mjs",
     "email:logo": "node scripts/generar-logo-email.mjs"
   },
   "dependencies": {
