@@ -96,7 +96,12 @@ export type Payment = {
   id: string;
   appointment_id: string;
   amount: number;
+  /** En un cobro dividido (0016), el método del monto mayor; para sumar por método mandan los dos montos. */
   method: PaymentMethod;
+  /** Cobro dividido (0016): cuánto fue en efectivo. Nulo en un cobro de un solo método. */
+  cash_amount: number | null;
+  /** Cobro dividido (0016): cuánto fue por transferencia. Nulo en un cobro de un solo método. */
+  transfer_amount: number | null;
   paid_at: string;
   created_at: string;
 };
@@ -143,6 +148,10 @@ export type WalkInSale = {
   unit_price: number;
   amount: number;
   method: PaymentMethod;
+  /** Venta dividida (0016): parte de este ítem pagada en efectivo. Nulo si fue de un solo método. */
+  cash_amount: number | null;
+  /** Venta dividida (0016): parte de este ítem pagada por transferencia. */
+  transfer_amount: number | null;
   sold_at: string;
   note: string | null;
   created_at: string;
@@ -212,10 +221,19 @@ export type Database = {
         | "completed_at"
         | "cancelled_at"
       >;
-      payments: TableShape<Payment, "paid_at">;
+      payments: TableShape<Payment, "paid_at" | "cash_amount" | "transfer_amount">;
       walk_in_sales: TableShape<
         WalkInSale,
-        "sale_id" | "kind" | "service_id" | "product_id" | "category_id" | "quantity" | "sold_at" | "note"
+        | "sale_id"
+        | "kind"
+        | "service_id"
+        | "product_id"
+        | "category_id"
+        | "quantity"
+        | "sold_at"
+        | "note"
+        | "cash_amount"
+        | "transfer_amount"
       >;
       product_categories: TableShape<ProductCategory, "sort_order">;
       products: TableShape<Product, "is_active" | "sort_order">;
@@ -254,6 +272,18 @@ export type Database = {
       complete_appointment_with_payment: {
         Args: { p_appointment_id: string; p_amount: number; p_method: PaymentMethod };
         Returns: void;
+      };
+      complete_appointment_with_split_payment: {
+        Args: { p_appointment_id: string; p_cash: number; p_transfer: number };
+        Returns: void;
+      };
+      record_walk_in_sale_split: {
+        Args: {
+          p_items: { kind: WalkInSaleKind; id: string; quantity: number }[];
+          p_cash: number;
+          p_note: string | null;
+        };
+        Returns: string;
       };
     };
     Enums: {

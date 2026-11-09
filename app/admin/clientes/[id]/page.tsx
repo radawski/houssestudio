@@ -7,6 +7,7 @@ import { AppointmentSheet } from "@/components/admin/appointment-sheet";
 import { BackHeader } from "@/components/admin/back-header";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { describePayment, splitFromColumns } from "@/lib/cashbox";
 import { initials } from "@/lib/customer-summary";
 import { getCustomerDetail, type CustomerHistoryItem } from "@/lib/data/customers";
 import { formatCurrency, formatDni, formatInTz, formatTime } from "@/lib/format";
@@ -129,7 +130,14 @@ function HistoryRow({ appointment, customer }: { appointment: CustomerHistoryIte
   const detail = [
     appointment.service_name_at_booking,
     appointment.payment
-      ? `${formatCurrency(appointment.payment.amount)} · ${appointment.payment.method}`
+      ? `${formatCurrency(appointment.payment.amount)} · ${describePayment(
+          {
+            amount: appointment.payment.amount,
+            method: appointment.payment.method,
+            split: splitFromColumns(appointment.payment.cash_amount, appointment.payment.transfer_amount),
+          },
+          formatCurrency,
+        ).toLowerCase()}`
       : appointment.status === "cancelado" && appointment.cancellation_reason
         ? `“${appointment.cancellation_reason}”`
         : null,

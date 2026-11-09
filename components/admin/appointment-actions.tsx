@@ -199,7 +199,18 @@ export function CompleteAppointmentButton({
 }) {
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(String(suggestedAmount));
-  const [method, setMethod] = useState<PaymentMethod>("efectivo");
+  const [method, setMethod] = useState<PaymentChoice>("efectivo");
+  const [cash, setCash] = useState("");
+
+  const total = Number(amount) || 0;
+  const cashValue = Math.min(Math.max(Number(cash) || 0, 0), total);
+  const split = method === "dividido";
+  const payment = split
+    ? { amount: total, method: "efectivo" as const, cash: cashValue }
+    : { amount: total, method };
+  const paidLabel = split
+    ? `${formatCurrency(cashValue)} en efectivo y ${formatCurrency(total - cashValue)} por transferencia`
+    : `${formatCurrency(total)} en ${method}`;
 
   return (
     <>
@@ -245,6 +256,10 @@ export function CompleteAppointmentButton({
             </div>
 
             <PaymentMethodPicker value={method} onChange={setMethod} />
+
+            {split ? (
+              <SplitAmounts total={total} cash={cash} onCashChange={setCash} idPrefix={`split-${id}`} />
+            ) : null}
           </div>
 
           <DialogFooter>
@@ -253,12 +268,12 @@ export function CompleteAppointmentButton({
             </Button>
             <Button
               size="touch-xl"
-              disabled={pending || !amount}
+              disabled={pending || !amount || (split && (Number(cash) || 0) > total)}
               onClick={function run() {
                 startTransition(async () => {
                   try {
-                    await completeAppointment(id, { amount: Number(amount), method });
-                    toast.success(`Turno cobrado · ${formatCurrency(Number(amount))} en ${method}.`);
+                    await completeAppointment(id, payment);
+                    toast.success(`Turno cobrado · ${paidLabel}.`);
                     setOpen(false);
                   } catch (error) {
                     toastActionError(error, "No se pudo cobrar el turno.", run);
@@ -280,22 +295,87 @@ export function CompleteAppointmentButton({
  * n-hojas): con dos opciones, un `<select>` no se justifica, y el estado
  * seleccionado tiene que leerse igual en cualquier navegador.
  */
+/** Medio de pago elegido en la hoja: uno de los dos, o los dos a la vez (0016). */
+export type PaymentChoice = PaymentMethod | "dividido";
+
+/**
+ * Montos de un pago dividido (plan de noviembre, P2): se escribe el efectivo y
+ * la transferencia se completa sola con lo que falta para el total.
+ */
+export function SplitAmounts({
+  total,
+  cash,
+  onCashChange,
+  idPrefix,
+}: {
+  total: number;
+  cash: string;
+  onCashChange: (value: string) => void;
+  idPrefix: string;
+}) {
+  const cashValue = Math.min(Math.max(Number(cash) || 0, 0), total);
+  const over = (Number(cash) || 0) > total;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-cash`}>Efectivo</Label>
+          <div className="relative">
+            <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm">$</span>
+            <Input
+              id={`${idPrefix}-cash`}
+              type="number"
+              min={0}
+              step={1}
+              inputMode="numeric"
+              className="h-12 pl-6.5 text-base tabular-nums"
+              value={cash}
+              onChange={(event) => onCashChange(event.target.value)}
+              aria-invalid={over}
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-transfer`}>Transferencia</Label>
+          <div className="relative">
+            <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm">$</span>
+            <Input
+              id={`${idPrefix}-transfer`}
+              readOnly
+              tabIndex={-1}
+              className="bg-background text-muted-foreground h-12 pl-6.5 text-base tabular-nums"
+              value={total - cashValue}
+            />
+          </div>
+        </div>
+      </div>
+      <p className={cn("text-xs", over ? "text-destructive" : "text-muted-foreground")}>
+        {over
+          ? `El efectivo no puede superar el total (${formatCurrency(total)}).`
+          : "Escribí lo que pagó en efectivo; el resto se completa solo."}
+      </p>
+    </div>
+  );
+}
+
 function PaymentMethodPicker({
   value,
   onChange,
 }: {
-  value: PaymentMethod;
-  onChange: (value: PaymentMethod) => void;
+  value: PaymentChoice;
+  onChange: (value: PaymentChoice) => void;
 }) {
-  const options: { value: PaymentMethod; label: string }[] = [
+  const options: { value: PaymentChoice; label: string }[] = [
     { value: "efectivo", label: "Efectivo" },
     { value: "transferencia", label: "Transferencia" },
+    { value: "dividido", label: "Dividido" },
   ];
 
   return (
     <div className="space-y-1.5">
       <Label>Medio de pago</Label>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {options.map((option) => {
           const selected = value === option.value;
           return (
@@ -305,7 +385,9 @@ function PaymentMethodPicker({
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
               className={cn(
-                "flex h-12 items-center gap-2.5 rounded-md border px-3 text-sm",
+                // Tres opciones en el ancho del celular: un poco más compactas
+                // para que "Transferencia" entre con su círculo.
+                "flex h-12 min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 text-[13px]",
                 selected ? "border-foreground font-medium" : "border-[var(--hs-mist)]",
               )}
             >

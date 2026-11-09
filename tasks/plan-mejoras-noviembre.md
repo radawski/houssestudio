@@ -140,13 +140,18 @@ tachados con su motivo. Hoy y el conteo de turnos siguen sin contarlos.
 ### Fase 2 — Pago dividido
 
 #### P1 — Migración compatible (S, riesgo alto)
-Migración `0016`:
-- `payments`: se reemplaza `unique(appointment_id)` por `unique(appointment_id, method)`, para
-  permitir una fila por método. Las filas existentes siguen válidas.
-- Nueva tabla `walk_in_sale_payments(sale_id, method, amount)` con RLS de admin.
-- Nuevas RPC `complete_appointment_with_payments(p_id, p_cash, p_transfer)` y
-  `record_walk_in_sale_split(...)`, que validan que la suma sea igual al total.
-- Las RPC viejas se mantienen hasta que el código nuevo esté publicado.
+**Hecho (2026-11-09), con otro diseño, más seguro que el original.** En vez de cambiar la
+restricción `unique(appointment_id)` y sumar una tabla, la migración `0016_pago_dividido.sql`
+solo **agrega**:
+- Las columnas opcionales `cash_amount` y `transfer_amount` en `payments` y en `walk_in_sales`.
+  Quedan en null en un cobro de un solo método, como todos los anteriores. En uno dividido, una
+  restricción exige que sumen `amount`, y `method` guarda el método del monto mayor.
+- `complete_appointment_with_split_payment(p_appointment_id, p_cash, p_transfer)`.
+- `record_walk_in_sale_split(p_items, p_cash, p_note)`, que reparte el efectivo entre los ítems
+  en proporción para que la Caja por categoría cierre al centavo.
+
+Probada en PGlite: es idempotente, no cambia los cobros viejos y 300 ventas al azar cuadran.
+Aplicada por el usuario en Supabase y verificada en la base real.
 
 #### P2 — Cobrar y venta suelta con dos montos (M)
 - El selector de método pasa a ofrecer "Efectivo / Transferencia / Dividido". Con "Dividido"

@@ -44,7 +44,7 @@ export async function getCustomerList(): Promise<CustomerListItem[]> {
 }
 
 export type CustomerHistoryItem = Omit<AppointmentWithCustomer, "customer" | "payment"> & {
-  payment: Pick<Payment, "amount" | "method" | "paid_at"> | null;
+  payment: Pick<Payment, "amount" | "method" | "paid_at" | "cash_amount" | "transfer_amount"> | null;
 };
 
 export type CustomerDetail = {
@@ -61,7 +61,7 @@ export async function getCustomerDetail(id: string): Promise<CustomerDetail | nu
     supabase.from("customers").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("appointments")
-      .select("*, payment:payments(amount, method, paid_at)")
+      .select("*, payment:payments(amount, method, paid_at, cash_amount, transfer_amount)")
       .eq("customer_id", id)
       .order("starts_at", { ascending: false }),
   ]);

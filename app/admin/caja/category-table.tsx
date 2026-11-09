@@ -4,7 +4,7 @@ import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { SERVICES_CATEGORY, type CashboxBreakdown, type CategoryGroup } from "@/lib/cashbox";
+import { SERVICES_CATEGORY, type CashboxBreakdown, type CategoryGroup, describePayment } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
 import { formatCurrency, formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -246,7 +246,7 @@ export function CategoryTable({
                         </td>
                         <td className={cn(TD, "text-muted-foreground")}>{formatTime(movement.at)}</td>
                         <td className={cn(TD, "text-muted-foreground")}>{ORIGIN_LABEL[movement.origin]}</td>
-                        <td className={cn(TD, "text-muted-foreground")}>{METHOD_LABEL[movement.method]}</td>
+                        <td className={cn(TD, "text-muted-foreground")}>{describePayment(movement, formatCurrency)}</td>
                         <td className={cn(TD, "text-right")}>{formatCurrency(movement.amount)}</td>
                         <td className={TD} />
                       </tr>

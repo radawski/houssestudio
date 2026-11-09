@@ -25,7 +25,7 @@ export type AppointmentWithCustomer = Appointment & {
    * base — `payments.appointment_id` es único, así que el embed devuelve un
    * solo objeto, no un arreglo.
    */
-  payment: Pick<Payment, "amount" | "method" | "paid_at"> | null;
+  payment: Pick<Payment, "amount" | "method" | "paid_at" | "cash_amount" | "transfer_amount"> | null;
   /**
    * Faltas y visitas anteriores del cliente, para el aviso "Faltó N veces".
    * Solo viene cuando la pantalla lo pidió con `withCustomerHistory`.
@@ -34,7 +34,7 @@ export type AppointmentWithCustomer = Appointment & {
 };
 
 const WITH_CUSTOMER =
-  "*, customer:customers(id, dni, full_name, phone, email), payment:payments(amount, method, paid_at)";
+  "*, customer:customers(id, dni, full_name, phone, email), payment:payments(amount, method, paid_at, cash_amount, transfer_amount)";
 
 export async function countPendingAppointments(): Promise<number> {
   const supabase = await createClient();

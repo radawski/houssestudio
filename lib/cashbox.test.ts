@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  amountsByMethod,
   type CategorizedCharge,
+  describePayment,
   groupByCategory,
+  splitFromColumns,
   OTHER_CATEGORY,
   SERVICES_CATEGORY,
   summarizeCharges,
@@ -122,5 +125,48 @@ describe("groupByCategory", () => {
   it("sin movimientos no hay categorías, y la parte es 0 si el total es 0", () => {
     expect(groupByCategory([])).toEqual([]);
     expect(groupByCategory([charge({ amount: 0, unitPrice: 0 })])[0].share).toBe(0);
+  });
+});
+
+describe("pago dividido", () => {
+  const split = { amount: 12000, method: "transferencia" as const, split: { efectivo: 5000, transferencia: 7000 } };
+
+  it("reparte un cobro dividido entre los dos métodos", () => {
+    expect(amountsByMethod(split)).toEqual({ efectivo: 5000, transferencia: 7000 });
+    expect(amountsByMethod({ amount: 3000, method: "efectivo" })).toEqual({ efectivo: 3000, transferencia: 0 });
+  });
+
+  it("suma los divididos en la caja sin perder un peso", () => {
+    expect(summarizeCharges([split, { amount: 3000, method: "efectivo" }])).toEqual({
+      total: 15000,
+      byMethod: { efectivo: 8000, transferencia: 7000 },
+    });
+  });
+
+  it("también en el agrupado por categoría y por concepto", () => {
+    const [group] = groupByCategory([
+      {
+        ...split,
+        categoryKey: SERVICES_CATEGORY.key,
+        categoryName: SERVICES_CATEGORY.name,
+        categoryOrder: 0,
+        concept: "Corte",
+        quantity: 1,
+        unitPrice: 12000,
+      },
+    ]);
+    expect(group.byMethod).toEqual({ efectivo: 5000, transferencia: 7000 });
+    expect(group.concepts[0].byMethod).toEqual({ efectivo: 5000, transferencia: 7000 });
+  });
+
+  it("lee la división de las columnas de la base", () => {
+    expect(splitFromColumns(null, null)).toBeNull();
+    expect(splitFromColumns(5000, 7000)).toEqual({ efectivo: 5000, transferencia: 7000 });
+  });
+
+  it("lo describe para mostrarlo", () => {
+    const money = (n: number) => `$${n}`;
+    expect(describePayment(split, money)).toBe("Efectivo $5000 + Transf. $7000");
+    expect(describePayment({ amount: 1, method: "transferencia" }, money)).toBe("Transferencia");
   });
 });

@@ -24,6 +24,8 @@ import { walkInSaleSchema } from "@/lib/validation/schemas";
 export async function recordWalkInSale(input: {
   items: { kind: WalkInSaleKind; id: string; quantity: number }[];
   method: PaymentMethod;
+  /** Pago dividido (0016): cuánto fue en efectivo; el resto, por transferencia. */
+  cash?: number;
   note?: string;
 }): Promise<ActionState> {
   const { supabase } = await requireAdmin();
@@ -31,15 +33,18 @@ export async function recordWalkInSale(input: {
   const parsed = walkInSaleSchema.safeParse(input);
   if (!parsed.success) return validationError(parsed.error);
 
-  const { error } = await supabase.rpc("record_walk_in_sale", {
-    p_items: parsed.data.items,
-    p_method: parsed.data.method,
-    p_note: parsed.data.note || null,
-  });
+  const { items, method, cash, note } = parsed.data;
+  const { error } =
+    cash === undefined
+      ? await supabase.rpc("record_walk_in_sale", { p_items: items, p_method: method, p_note: note || null })
+      : await supabase.rpc("record_walk_in_sale_split", { p_items: items, p_cash: cash, p_note: note || null });
 
   if (error) {
     if (error.message.includes("ya no esta disponible")) {
       return actionError("Un ítem de la venta ya no está en el catálogo. Revisá la venta y volvé a intentar.");
+    }
+    if (error.message.includes("no puede superar el total")) {
+      return actionError("El efectivo no puede superar el total de la venta.");
     }
     return actionError(`No se pudo registrar la venta: ${error.message}`);
   }

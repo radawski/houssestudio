@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CategoryGroup, ConceptTotal } from "@/lib/cashbox";
+import { describePayment, type CategoryGroup, type ConceptTotal } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
 import { formatCurrency, formatTime } from "@/lib/format";
 
@@ -38,7 +38,7 @@ function MovementRow({ movement }: { movement: CashboxMovement }) {
       </div>
       <div className="shrink-0 text-right">
         <p className="text-[15px] font-semibold tabular-nums">{formatCurrency(movement.amount)}</p>
-        <p className="text-muted-foreground mt-0.5 text-xs">{METHOD_LABEL[movement.method]}</p>
+        <p className="text-muted-foreground mt-0.5 text-xs">{describePayment(movement, formatCurrency)}</p>
       </div>
     </li>
   );

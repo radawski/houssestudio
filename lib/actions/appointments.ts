@@ -88,7 +88,7 @@ export async function confirmAppointment(id: string) {
  */
 export async function completeAppointment(
   id: string,
-  payment: { amount: number; method: PaymentMethod },
+  payment: { amount: number; method: PaymentMethod; cash?: number },
 ) {
   const { supabase } = await requireAdmin();
 
@@ -97,11 +97,21 @@ export async function completeAppointment(
     throw new Error(parsed.error.issues[0]?.message ?? "Datos de pago invalidos.");
   }
 
-  const { error } = await supabase.rpc("complete_appointment_with_payment", {
-    p_appointment_id: id,
-    p_amount: parsed.data.amount,
-    p_method: parsed.data.method,
-  });
+  // Con `cash`, el pago es dividido (migración 0016): esa parte en efectivo y
+  // el resto por transferencia, en la misma transacción.
+  const { amount, method, cash } = parsed.data;
+  const { error } =
+    cash === undefined
+      ? await supabase.rpc("complete_appointment_with_payment", {
+          p_appointment_id: id,
+          p_amount: amount,
+          p_method: method,
+        })
+      : await supabase.rpc("complete_appointment_with_split_payment", {
+          p_appointment_id: id,
+          p_cash: cash,
+          p_transfer: amount - cash,
+        });
 
   if (error) throw new Error(`No se pudo registrar el cobro: ${error.message}`);
 

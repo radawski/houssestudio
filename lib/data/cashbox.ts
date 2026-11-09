@@ -3,6 +3,7 @@ import "server-only";
 import {
   OTHER_CATEGORY,
   SERVICES_CATEGORY,
+  splitFromColumns,
   summarizeCharges,
   type CashboxBreakdown,
   type CategorizedCharge,
@@ -39,6 +40,8 @@ type PaymentRow = {
   id: string;
   amount: number;
   method: PaymentMethod;
+  cash_amount: number | null;
+  transfer_amount: number | null;
   paid_at: string;
   appointment: { service_name_at_booking: string; status: string } | null;
 };
@@ -52,12 +55,16 @@ export async function getCashboxSummary(range: {
   const [paymentsResult, salesResult, categoriesResult] = await Promise.all([
     supabase
       .from("payments")
-      .select("id, amount, method, paid_at, appointment:appointments(service_name_at_booking, status)")
+      .select(
+        "id, amount, method, cash_amount, transfer_amount, paid_at, appointment:appointments(service_name_at_booking, status)",
+      )
       .gte("paid_at", range.start)
       .lt("paid_at", range.end),
     supabase
       .from("walk_in_sales")
-      .select("id, kind, service_name, quantity, unit_price, category_id, amount, method, sold_at, note")
+      .select(
+        "id, kind, service_name, quantity, unit_price, category_id, amount, method, cash_amount, transfer_amount, sold_at, note",
+      )
       .gte("sold_at", range.start)
       .lt("sold_at", range.end),
     supabase.from("product_categories").select("id, name, sort_order"),
@@ -97,6 +104,7 @@ export async function getCashboxSummary(range: {
         serviceName,
         amount: row.amount,
         method: row.method,
+        split: splitFromColumns(row.cash_amount, row.transfer_amount),
         at: row.paid_at,
         note: null,
         ...services,
@@ -120,6 +128,7 @@ export async function getCashboxSummary(range: {
       serviceName: row.service_name,
       amount: row.amount,
       method: row.method,
+      split: splitFromColumns(row.cash_amount, row.transfer_amount),
       at: row.sold_at,
       note: row.note,
       ...placement,

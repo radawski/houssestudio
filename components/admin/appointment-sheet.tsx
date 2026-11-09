@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { buildAppointmentTimeline } from "@/lib/appointment-timeline";
 import { canMarkNoShow } from "@/lib/appointment-rules";
+import { describePayment, splitFromColumns } from "@/lib/cashbox";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import {
   formatCurrency,
@@ -137,8 +138,17 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
               Cobrado
             </p>
             <p className="mt-0.5 text-[15px] font-semibold tabular-nums">
-              {formatCurrency(appointment.payment.amount)} ·{" "}
-              {appointment.payment.method === "efectivo" ? "Efectivo" : "Transferencia"}
+              {formatCurrency(appointment.payment.amount)}
+            </p>
+            <p className="text-muted-foreground text-[13px] tabular-nums">
+              {describePayment(
+                {
+                  amount: appointment.payment.amount,
+                  method: appointment.payment.method,
+                  split: splitFromColumns(appointment.payment.cash_amount, appointment.payment.transfer_amount),
+                },
+                formatCurrency,
+              )}
             </p>
           </div>
           <span className="text-muted-foreground text-xs tabular-nums">

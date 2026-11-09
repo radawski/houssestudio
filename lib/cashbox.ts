@@ -6,19 +6,61 @@ import type { PaymentMethod } from "@/lib/supabase/database.types";
  * la base.
  */
 
-export type Charge = { amount: number; method: PaymentMethod };
+export type Charge = {
+  amount: number;
+  method: PaymentMethod;
+  /**
+   * Cobro dividido (migración 0016): cuánto fue en cada método. Si está, manda
+   * sobre `method`, que en ese caso solo guarda el método del monto mayor.
+   */
+  split?: Record<PaymentMethod, number> | null;
+};
 
 export type CashboxBreakdown = {
   total: number;
   byMethod: Record<PaymentMethod, number>;
 };
 
+/**
+ * Cuánto de un cobro fue en cada método: todo a su `method`, o lo que diga
+ * la división si fue dividido. Toda suma por método pasa por acá.
+ */
+export function amountsByMethod(charge: Charge): Record<PaymentMethod, number> {
+  if (charge.split) return { efectivo: charge.split.efectivo, transferencia: charge.split.transferencia };
+  return charge.method === "efectivo"
+    ? { efectivo: charge.amount, transferencia: 0 }
+    : { efectivo: 0, transferencia: charge.amount };
+}
+
+/** Arma la división a partir de las columnas de la base, o `null` si no fue dividido. */
+export function splitFromColumns(
+  cashAmount: number | null | undefined,
+  transferAmount: number | null | undefined,
+): Record<PaymentMethod, number> | null {
+  if (cashAmount == null || transferAmount == null) return null;
+  return { efectivo: Number(cashAmount), transferencia: Number(transferAmount) };
+}
+
+/** "Efectivo", "Transferencia" o "Efectivo $ 5.000 + Transf. $ 7.000". */
+export function describePayment(charge: Charge, formatAmount: (n: number) => string): string {
+  if (charge.split) {
+    return `Efectivo ${formatAmount(charge.split.efectivo)} + Transf. ${formatAmount(charge.split.transferencia)}`;
+  }
+  return charge.method === "efectivo" ? "Efectivo" : "Transferencia";
+}
+
+function addAmounts(target: Record<PaymentMethod, number>, charge: Charge) {
+  const amounts = amountsByMethod(charge);
+  target.efectivo += amounts.efectivo;
+  target.transferencia += amounts.transferencia;
+}
+
 export function summarizeCharges(charges: Charge[]): CashboxBreakdown {
   const byMethod: Record<PaymentMethod, number> = { efectivo: 0, transferencia: 0 };
   let total = 0;
 
   for (const charge of charges) {
-    byMethod[charge.method] += charge.amount;
+    addAmounts(byMethod, charge);
     total += charge.amount;
   }
 
@@ -114,7 +156,7 @@ export function groupByCategory<T extends CategorizedCharge>(charges: T[]): Cate
 
     group.quantity += charge.quantity;
     group.total += charge.amount;
-    group.byMethod[charge.method] += charge.amount;
+    addAmounts(group.byMethod, charge);
     group.charges.push(charge);
 
     let concept = group.concepts.find((c) => c.name === charge.concept);
@@ -124,7 +166,7 @@ export function groupByCategory<T extends CategorizedCharge>(charges: T[]): Cate
     }
     concept.quantity += charge.quantity;
     concept.total += charge.amount;
-    concept.byMethod[charge.method] += charge.amount;
+    addAmounts(concept.byMethod, charge);
     if (concept.unitPrice !== charge.unitPrice) concept.unitPrice = null;
   }
 

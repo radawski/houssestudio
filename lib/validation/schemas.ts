@@ -212,11 +212,18 @@ export const cancelByTokenSchema = z.object({
   reason: z.string().trim().max(300, "El motivo es demasiado largo").optional(),
 });
 
-export const paymentSchema = z.object({
-  appointmentId: z.uuid(),
-  amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
-  method: z.enum(["efectivo", "transferencia"]),
-});
+export const paymentSchema = z
+  .object({
+    appointmentId: z.uuid(),
+    amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
+    method: z.enum(["efectivo", "transferencia"]),
+    /** Pago dividido (0016): cuánto fue en efectivo; el resto, por transferencia. */
+    cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").optional(),
+  })
+  .refine((payment) => payment.cash === undefined || payment.cash <= payment.amount, {
+    message: "El efectivo no puede superar el total.",
+    path: ["cash"],
+  });
 
 /**
  * Una venta suelta con carrito (tasks/plan-productos.md, P3): uno o más
@@ -238,6 +245,11 @@ export const walkInSaleSchema = z.object({
       "Un ítem aparece dos veces",
     ),
   method: z.enum(["efectivo", "transferencia"]),
+  /**
+   * Pago dividido (0016): cuánto fue en efectivo; el resto, por transferencia.
+   * Que no supere el total lo controla la base, que es la que conoce los precios.
+   */
+  cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").max(10_000_000).optional(),
   note: z.string().trim().max(200, "La nota es demasiado larga").optional(),
 });
 

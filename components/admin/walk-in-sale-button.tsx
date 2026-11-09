@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { ChevronDown, ChevronRight, Minus, Plus, Search, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
+import { SplitAmounts, type PaymentChoice } from "@/components/admin/appointment-actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +20,7 @@ import { recordWalkInSale } from "@/lib/actions/sales";
 import { SERVICES_CATEGORY } from "@/lib/cashbox";
 import type { SaleCatalog } from "@/lib/data/products";
 import { formatCurrency } from "@/lib/format";
-import type { PaymentMethod, WalkInSaleKind } from "@/lib/supabase/database.types";
+import type { WalkInSaleKind } from "@/lib/supabase/database.types";
 import { toastActionError, toastError } from "@/lib/toast-error";
 import { cn } from "@/lib/utils";
 
@@ -88,7 +89,8 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
   // Cortes abierta de entrada: un corte sin turno es la venta más común.
   const [expanded, setExpanded] = useState<Set<string>>(new Set([SERVICES_CATEGORY.key]));
   const [query, setQuery] = useState("");
-  const [method, setMethod] = useState<PaymentMethod>("efectivo");
+  const [method, setMethod] = useState<PaymentChoice>("efectivo");
+  const [cash, setCash] = useState("");
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -97,6 +99,7 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
     setExpanded(new Set([SERVICES_CATEGORY.key]));
     setQuery("");
     setMethod("efectivo");
+    setCash("");
     setNote("");
   }
 
@@ -135,10 +138,16 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
   const total = lines.reduce((sum, line) => sum + line.quantity * line.item.price, 0);
   const summary = lines.map((line) => (line.quantity > 1 ? `${line.item.name} × ${line.quantity}` : line.item.name)).join(", ");
 
+  const split = method === "dividido";
+  const cashOver = split && (Number(cash) || 0) > total;
+
   function submit() {
     const input = {
       items: lines.map((line) => ({ kind: line.group.kind, id: line.item.id, quantity: line.quantity })),
-      method,
+      // Dividido: el efectivo viaja aparte y el resto va por transferencia
+      // (`record_walk_in_sale_split`); `method` ahí no se usa para sumar.
+      method: split ? ("efectivo" as const) : method,
+      cash: split ? Math.min(Math.max(Number(cash) || 0, 0), total) : undefined,
       note: note.trim() || undefined,
     };
     startTransition(async () => {
@@ -285,8 +294,8 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
 
         <div className="space-y-1.5">
           <Label>Medio de pago</Label>
-          <div role="group" aria-label="Medio de pago" className="bg-muted grid grid-cols-2 gap-0.5 rounded-md p-0.5">
-            {(["efectivo", "transferencia"] as const).map((option) => (
+          <div role="group" aria-label="Medio de pago" className="bg-muted grid grid-cols-3 gap-0.5 rounded-md p-0.5">
+            {(["efectivo", "transferencia", "dividido"] as const).map((option) => (
               <button
                 key={option}
                 type="button"
@@ -302,6 +311,8 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
             ))}
           </div>
         </div>
+
+        {split ? <SplitAmounts total={total} cash={cash} onCashChange={setCash} idPrefix="walkin-split" /> : null}
 
         <div className="space-y-1.5">
           <Label htmlFor="walkin-note">Nota (opcional)</Label>
@@ -324,7 +335,7 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
             </p>
             <p className="text-lg font-semibold tabular-nums">{formatCurrency(total)}</p>
           </div>
-          <Button size="touch-lg" disabled={units === 0 || pending} onClick={submit}>
+          <Button size="touch-lg" disabled={units === 0 || pending || cashOver} onClick={submit}>
             {pending ? "Registrando…" : "Registrar venta"}
           </Button>
         </div>
