@@ -56,12 +56,22 @@ export default async function AppointmentPage({
 
   return (
     <main className="flex min-h-dvh flex-1 flex-col px-6 py-10 sm:px-10">
-      <Link
-        href="/"
-        className="text-xs tracking-[var(--hs-tracking-wide)] uppercase"
-      >
-        {BUSINESS_NAME}
-      </Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          href="/"
+          className="text-xs tracking-[var(--hs-tracking-wide)] uppercase"
+        >
+          {BUSINESS_NAME}
+        </Link>
+        {/* Desde acá se llega a los otros turnos del cliente, sin buscar
+            cada mail. */}
+        <Link
+          href="/mis-turnos"
+          className="text-muted-foreground hover:text-foreground flex min-h-11 items-center text-sm"
+        >
+          Mis turnos
+        </Link>
+      </div>
 
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center py-12">
         {nuevo ? (
