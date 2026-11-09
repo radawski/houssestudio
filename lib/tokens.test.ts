@@ -2,8 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-const { deriveManageToken, deriveUnsubscribeToken, hashManageToken, manageTokenMatches, readUnsubscribeToken } =
-  await import("@/lib/tokens");
+const {
+  createMyAppointmentsSession,
+  deriveManageToken,
+  deriveUnsubscribeToken,
+  hashManageToken,
+  manageTokenMatches,
+  MY_APPOINTMENTS_SESSION_SECONDS,
+  readMyAppointmentsSession,
+  readUnsubscribeToken,
+} = await import("@/lib/tokens");
 
 const ID = "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b";
 
@@ -76,4 +84,43 @@ describe("deriveUnsubscribeToken / readUnsubscribeToken", () => {
       expect(readUnsubscribeToken(value, SECRET)).toBeNull();
     },
   );
+});
+
+describe("createMyAppointmentsSession / readMyAppointmentsSession", () => {
+  const SECRET = "secreto-a";
+  const NOW = new Date("2026-11-10T15:00:00.000Z");
+  const session = createMyAppointmentsSession(ID, NOW, SECRET);
+
+  it("devuelve el cliente mientras la sesión está vigente", () => {
+    expect(readMyAppointmentsSession(session, NOW, SECRET)).toBe(ID);
+    const almost = new Date(NOW.getTime() + MY_APPOINTMENTS_SESSION_SECONDS * 1000 - 1);
+    expect(readMyAppointmentsSession(session, almost, SECRET)).toBe(ID);
+  });
+
+  it("vence a los 30 minutos", () => {
+    const later = new Date(NOW.getTime() + MY_APPOINTMENTS_SESSION_SECONDS * 1000);
+    expect(readMyAppointmentsSession(session, later, SECRET)).toBeNull();
+  });
+
+  it("no lleva DNI ni teléfono, solo el id del cliente", () => {
+    expect(session.startsWith(`${ID}.`)).toBe(true);
+    expect(session.split(".")).toHaveLength(3);
+  });
+
+  it("rechaza una sesión con el vencimiento estirado", () => {
+    const [id, expiresAt, signature] = session.split(".");
+    const stretched = `${id}.${Number(expiresAt) + 3_600_000}.${signature}`;
+    expect(readMyAppointmentsSession(stretched, NOW, SECRET)).toBeNull();
+  });
+
+  it("rechaza otro secreto, otro cliente y tokens de otro propósito", () => {
+    expect(readMyAppointmentsSession(session, NOW, "secreto-b")).toBeNull();
+    const [, expiresAt, signature] = session.split(".");
+    expect(readMyAppointmentsSession(`8f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b.${expiresAt}.${signature}`, NOW, SECRET)).toBeNull();
+    expect(readMyAppointmentsSession(deriveUnsubscribeToken(ID, SECRET), NOW, SECRET)).toBeNull();
+  });
+
+  it.each([undefined, "", "basura", "a.b.c", `${ID}.no-es-numero.firma`])("rechaza %s", (value) => {
+    expect(readMyAppointmentsSession(value, NOW, SECRET)).toBeNull();
+  });
 });

@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { cancelAffordance } from "@/lib/cancellation";
 import { BUSINESS_NAME } from "@/lib/config";
 import { getSettings } from "@/lib/data/availability";
+import { getMyAppointmentsCustomerId } from "@/lib/data/my-appointments";
 import { getAppointmentByToken } from "@/lib/data/public";
 import { formatCurrency, formatLongDate, formatTime } from "@/lib/format";
 
@@ -47,7 +48,9 @@ export default async function AppointmentPage({
   const appointment = await getAppointmentByToken(token);
   if (!appointment) notFound();
 
-  const settings = await getSettings();
+  const [settings, sessionCustomerId] = await Promise.all([getSettings(), getMyAppointmentsCustomerId()]);
+  // Llegó desde "Mis turnos" (y es su turno): se le ofrece volver a la lista.
+  const fromMyAppointments = sessionCustomerId !== null && sessionCustomerId === appointment.customer_id;
   const affordance = cancelAffordance({
     status: appointment.status,
     startsAt: appointment.starts_at,
@@ -64,12 +67,20 @@ export default async function AppointmentPage({
           {BUSINESS_NAME}
         </Link>
         {/* Desde acá se llega a los otros turnos del cliente, sin buscar
-            cada mail. */}
+            cada mail. Con la sesión de "Mis turnos" vigente, vuelve directo
+            a la lista. */}
         <Link
           href="/mis-turnos"
-          className="text-muted-foreground hover:text-foreground flex min-h-11 items-center text-sm"
+          className="text-muted-foreground hover:text-foreground flex min-h-11 items-center gap-1 text-sm"
         >
-          Mis turnos
+          {fromMyAppointments ? (
+            <>
+              <ArrowLeft className="size-4" aria-hidden />
+              Volver a mis turnos
+            </>
+          ) : (
+            "Mis turnos"
+          )}
         </Link>
       </div>
 
@@ -147,6 +158,18 @@ export default async function AppointmentPage({
             >
               <ArrowLeft className="size-4" />
               Volver al inicio
+            </Link>
+          </div>
+        ) : fromMyAppointments ? (
+          // Llegó tocando un turno de su lista: el botón para volver queda
+          // también abajo, donde termina de leer.
+          <div className="border-border mt-10 border-t pt-6">
+            <Link
+              href="/mis-turnos"
+              className="border-foreground hover:bg-[var(--hs-surface-raised)] focus-visible:ring-ring inline-flex min-h-11 items-center gap-2 border px-6 py-3 text-sm tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <ArrowLeft className="size-4" />
+              Volver a mis turnos
             </Link>
           </div>
         ) : null}

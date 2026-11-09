@@ -220,7 +220,10 @@ migración (se compara la caja del último mes).
 - Cada turno enlaza a `/turno/[token]`, donde ya se ve el detalle y se cancela.
 - El acceso se suma en la portada, debajo de "Reservar turno", y en la barra superior de
   `/turno`.
-- No se guarda nada en el dispositivo.
+- Al identificarse queda una sesión corta (cookie firmada `httpOnly`, 30 minutos) con el id del
+  cliente, nunca el DNI ni el teléfono. Así, desde un turno, "Volver a mis turnos" (arriba y
+  abajo en `/turno`) y el botón "atrás" vuelven a la lista sin pedir los datos. "Salir" la
+  cierra. (Pedido del usuario el 2026-11-09.)
 
 **Archivos:** `app/mis-turnos/page.tsx` (nuevo), `components/public/my-appointments.tsx` (nuevo),
 `lib/actions/my-appointments.ts` (nuevo), `components/public/site-hero.tsx`.

@@ -109,3 +109,53 @@ export function readUnsubscribeToken(token: string, secret = manageTokenSecret()
 export function unsubscribeUrlFor(customerId: string): string {
   return `${siteUrl()}/baja/${deriveUnsubscribeToken(customerId)}`;
 }
+
+// ---------------------------------------------------------------------------
+// Sesión corta de "Mis turnos"
+// ---------------------------------------------------------------------------
+
+/** Otro propósito más: una sesión de "Mis turnos" no sirve como link de turno ni de baja. */
+const MY_APPOINTMENTS_PURPOSE = "my-appointments:";
+
+/** Lo que dura la sesión: alcanza para mirar un turno y volver, no mucho más. */
+export const MY_APPOINTMENTS_SESSION_SECONDS = 30 * 60;
+
+function myAppointmentsSignature(payload: string, secret: string): string {
+  return createHmac("sha256", secret).update(MY_APPOINTMENTS_PURPOSE + payload).digest("base64url");
+}
+
+/**
+ * Sesión de "Mis turnos": `<id del cliente>.<vence (ms)>.<firma>`.
+ *
+ * Después de identificarse con DNI + teléfono, el cliente puede ir a un turno
+ * y volver a la lista sin escribir todo de nuevo. Lleva el id del cliente (un
+ * uuid sin otro uso público), nunca el DNI ni el teléfono; el vencimiento va
+ * firmado, así que no se puede estirar.
+ */
+export function createMyAppointmentsSession(
+  customerId: string,
+  now: Date = new Date(),
+  secret = manageTokenSecret(),
+): string {
+  const payload = `${customerId}.${now.getTime() + MY_APPOINTMENTS_SESSION_SECONDS * 1000}`;
+  return `${payload}.${myAppointmentsSignature(payload, secret)}`;
+}
+
+/** El cliente de la sesión, o `null` si es inválida o ya venció. */
+export function readMyAppointmentsSession(
+  token: string | undefined,
+  now: Date = new Date(),
+  secret = manageTokenSecret(),
+): string | null {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [customerId, expiresAt, signature] = parts;
+  if (!UUID_PATTERN.test(customerId) || !/^\d+$/.test(expiresAt)) return null;
+
+  const given = Buffer.from(signature);
+  const expected = Buffer.from(myAppointmentsSignature(`${customerId}.${expiresAt}`, secret));
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) return null;
+
+  return Number(expiresAt) > now.getTime() ? customerId : null;
+}

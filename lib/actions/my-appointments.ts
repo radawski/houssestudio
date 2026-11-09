@@ -1,29 +1,21 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 
-import { formatCurrency, formatLongDate, formatTime } from "@/lib/format";
-import { firstName, phonesMatch, splitMyAppointments } from "@/lib/my-appointments";
+import {
+  loadMyAppointments,
+  MY_APPOINTMENTS_COOKIE,
+  type MyAppointmentsList,
+} from "@/lib/data/my-appointments";
+import { phonesMatch } from "@/lib/my-appointments";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { AppointmentStatus } from "@/lib/supabase/database.types";
-import { deriveManageToken, manageTokenMatches } from "@/lib/tokens";
+import { createMyAppointmentsSession, MY_APPOINTMENTS_SESSION_SECONDS } from "@/lib/tokens";
 import { identifySchema } from "@/lib/validation/schemas";
-
-export type MyAppointment = {
-  id: string;
-  date: string;
-  time: string;
-  service: string;
-  price: string;
-  status: AppointmentStatus;
-  /** `/turno/<token>`, o `null` para turnos anteriores a los tokens derivados. */
-  href: string | null;
-};
 
 export type MyAppointmentsResult =
   | { status: "idle" }
-  | { status: "found"; name: string; upcoming: MyAppointment[]; past: MyAppointment[] }
+  | ({ status: "found" } & MyAppointmentsList)
   | { status: "error"; message: string };
 
 /**
@@ -45,10 +37,13 @@ async function getClientIp(): Promise<string> {
  * "Mis turnos": devuelve los turnos de un cliente que se identifica con su DNI
  * y el teléfono de su ficha.
  *
- * No hay sesión: cada consulta vuelve a pedir los dos datos. Cada turno lleva
- * el link a `/turno/<token>`, la misma página del mail, que es donde se ve el
- * detalle y se cancela. Así no hay un segundo camino de cancelación que
- * mantener.
+ * Si coinciden, deja una sesión corta (cookie firmada, 30 minutos) para que el
+ * cliente pueda ir a un turno y volver a la lista sin escribir todo de nuevo.
+ * La cookie lleva el id del cliente, nunca el DNI ni el teléfono.
+ *
+ * Cada turno lleva el link a `/turno/<token>`, la misma página del mail, que
+ * es donde se ve el detalle y se cancela. Así no hay un segundo camino de
+ * cancelación que mantener.
  *
  * Límite de 5 consultas por minuto por IP y otras 5 por DNI: el de IP frena a
  * quien prueba muchos DNI, el de DNI a quien prueba muchos teléfonos para uno
@@ -76,7 +71,7 @@ export async function lookupMyAppointments(
   const supabase = createAdminClient();
   const { data: customer } = await supabase
     .from("customers")
-    .select("id, full_name, phone")
+    .select("id, phone")
     .eq("dni", dni)
     .maybeSingle();
 
@@ -84,32 +79,25 @@ export async function lookupMyAppointments(
     return { status: "error", message: NOT_FOUND };
   }
 
-  const { data: rows, error } = await supabase
-    .from("appointments")
-    .select("id, starts_at, ends_at, status, service_name_at_booking, price_at_booking, manage_token_hash")
-    .eq("customer_id", customer.id)
-    .order("starts_at", { ascending: false })
-    .limit(50);
-
-  if (error) {
+  const list = await loadMyAppointments(customer.id);
+  if (!list) {
     return { status: "error", message: "No pudimos cargar tus turnos. Probá de nuevo en un momento." };
   }
 
-  const toItem = (row: NonNullable<typeof rows>[number]): MyAppointment => ({
-    id: row.id,
-    date: formatLongDate(row.starts_at),
-    time: `${formatTime(row.starts_at)} – ${formatTime(row.ends_at)}`,
-    service: row.service_name_at_booking,
-    price: formatCurrency(row.price_at_booking),
-    status: row.status,
-    href: manageTokenMatches(row.id, row.manage_token_hash) ? `/turno/${deriveManageToken(row.id)}` : null,
+  const store = await cookies();
+  store.set(MY_APPOINTMENTS_COOKIE, createMyAppointmentsSession(customer.id), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: MY_APPOINTMENTS_SESSION_SECONDS,
   });
 
-  const { upcoming, past } = splitMyAppointments(rows ?? []);
-  return {
-    status: "found",
-    name: firstName(customer.full_name),
-    upcoming: upcoming.map(toItem),
-    past: past.map(toItem),
-  };
+  return { status: "found", ...list };
+}
+
+/** "Salir": cierra la sesión de "Mis turnos" en este navegador. */
+export async function exitMyAppointments(): Promise<void> {
+  const store = await cookies();
+  store.delete(MY_APPOINTMENTS_COOKIE);
 }

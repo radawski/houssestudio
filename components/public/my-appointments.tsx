@@ -7,10 +7,11 @@ import { ChevronRight } from "lucide-react";
 import { Field, inputClass } from "@/components/public/form-field";
 import { StatusBadge } from "@/components/status-badge";
 import {
+  exitMyAppointments,
   lookupMyAppointments,
-  type MyAppointment,
   type MyAppointmentsResult,
 } from "@/lib/actions/my-appointments";
+import type { MyAppointment, MyAppointmentsList } from "@/lib/data/my-appointments";
 import { cn } from "@/lib/utils";
 
 const primaryButton =
@@ -20,14 +21,17 @@ type Found = Extract<MyAppointmentsResult, { status: "found" }>;
 
 /**
  * "Mis turnos": el cliente escribe su DNI y su teléfono y ve sus turnos, sin
- * buscar el mail. Nada queda guardado en el dispositivo: al recargar o tocar
- * "Salir" vuelve al formulario.
+ * buscar el mail.
  *
  * Cada turno abre `/turno/<token>`, la misma página del mail, donde se ve el
- * detalle y se cancela dentro de la ventana permitida.
+ * detalle y se cancela dentro de la ventana permitida. Al volver, la página
+ * trae la lista de la sesión corta (`initial`) y no pide los datos de nuevo.
  */
-export function MyAppointments() {
-  const [state, formAction, pending] = useActionState(lookupMyAppointments, { status: "idle" });
+export function MyAppointments({ initial }: { initial: MyAppointmentsList | null }) {
+  const [state, formAction, pending] = useActionState<MyAppointmentsResult, FormData>(
+    lookupMyAppointments,
+    initial ? { status: "found", ...initial } : { status: "idle" },
+  );
   // "Salir" vuelve al formulario sin otra consulta: se recuerda qué resultado
   // se descartó, y solo se muestra la lista si llega uno nuevo.
   const [dismissed, setDismissed] = useState<MyAppointmentsResult | null>(null);
@@ -41,10 +45,12 @@ export function MyAppointments() {
       <AppointmentList
         result={state}
         onExit={() => {
-          // "Salir" también borra los datos: el celular puede ser prestado.
+          // "Salir" cierra la sesión y borra los datos: el celular puede ser
+          // prestado. La lista se oculta al toque, sin esperar al servidor.
           setDismissed(state);
           setDni("");
           setPhone("");
+          void exitMyAppointments();
         }}
       />
     );
@@ -107,7 +113,9 @@ export function MyAppointments() {
         </button>
       </form>
 
-      <p className="text-muted-foreground text-center text-xs">No guardamos estos datos en tu celular.</p>
+      <p className="text-muted-foreground text-center text-xs">
+        No guardamos tu DNI ni tu teléfono. La sesión se cierra sola a los 30 minutos.
+      </p>
     </div>
   );
 }
