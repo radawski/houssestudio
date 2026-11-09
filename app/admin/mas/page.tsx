@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { AddCustomerSheet } from "@/app/admin/mas/add-customer-sheet";
 import { MasRows } from "@/app/admin/mas/mas-rows";
 import { SessionCard, SessionCardSkeleton } from "@/app/admin/mas/session-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,10 +22,10 @@ export default function MasPage() {
         <p className="text-muted-foreground text-sm">Ajustes del estudio.</p>
       </div>
 
+      {/* "Agregar cliente" se mudó a Clientes (plan de noviembre, C1). */}
       <Card className="py-0">
         <CardContent className="divide-y divide-[var(--hs-divider)] p-0">
           <MasRows />
-          <AddCustomerSheet />
         </CardContent>
       </Card>
 

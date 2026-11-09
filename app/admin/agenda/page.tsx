@@ -11,6 +11,7 @@ import {
   getAppointmentsBetween,
   getBusinessHoursForDay,
   getTimeBlocksForDay,
+  withCustomerHistory,
 } from "@/lib/data/appointments";
 import { getSaleCatalog } from "@/lib/data/products";
 import { dayRange, monthRange, todayKey, weekRange } from "@/lib/dates";
@@ -46,8 +47,11 @@ export default async function AgendaPage({ searchParams }: PageProps<"/admin/age
 
   if (view === "dia") {
     const { start, end } = dayRange(dateKey);
+    // El día muestra también los cancelados (tachados, con su motivo) y el
+    // aviso de faltas de cada cliente. Los huecos libres no cuentan los
+    // cancelados (`GAP_BUSY_STATUSES`): ese horario está libre de verdad.
     const [appointments, hours, blocks] = await Promise.all([
-      getAppointmentsBetween(start, end),
+      getAppointmentsBetween(start, end, { includeCancelled: true }).then(withCustomerHistory),
       getBusinessHoursForDay(dateKey),
       getTimeBlocksForDay(dateKey),
     ]);

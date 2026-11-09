@@ -94,6 +94,15 @@ export const customerSchema = z.object({
   email: emailSchema.optional(),
 });
 
+/**
+ * Edición de la ficha desde Clientes. El DNI no se edita: es la llave con la
+ * que el cliente reserva y se identifica en "Mis turnos".
+ */
+export const customerEditSchema = customerSchema.omit({ dni: true });
+
+/** Notas privadas del peluquero sobre un cliente. */
+export const customerNotesSchema = z.string().trim().max(1000, "Las notas son demasiado largas");
+
 export const serviceSchema = z.object({
   name: z.string().trim().min(2, "Ingresa un nombre").max(60),
   description: z.string().trim().max(200).optional(),

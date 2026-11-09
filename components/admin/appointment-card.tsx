@@ -6,6 +6,7 @@ import {
   ConfirmedAppointmentActions,
 } from "@/components/admin/appointment-actions";
 import { AppointmentSheet } from "@/components/admin/appointment-sheet";
+import { CustomerHistoryChip } from "@/components/admin/customer-history-chip";
 import { StatusBadge } from "@/components/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -90,6 +91,8 @@ export function AppointmentCard({
           ) : null}
         </div>
       ) : null}
+
+      {isOpen ? <CustomerHistoryChip history={appointment.history} /> : null}
 
       {appointment.customer_note ? (
         <p className="text-muted-foreground flex gap-1.5 text-sm">

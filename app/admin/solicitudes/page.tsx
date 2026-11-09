@@ -4,14 +4,16 @@ import { Inbox } from "lucide-react";
 import { RequestCard } from "@/app/admin/solicitudes/request-card";
 import { AppointmentCard } from "@/components/admin/appointment-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { getPendingAppointments } from "@/lib/data/appointments";
+import { getPendingAppointments, withCustomerHistory } from "@/lib/data/appointments";
 
 export const metadata: Metadata = { title: "Solicitudes" };
 
 export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
-  const pending = await getPendingAppointments();
+  // Con el historial de cada cliente: faltas previas o "Primera vez", para
+  // decidir si aceptar.
+  const pending = await getPendingAppointments().then(withCustomerHistory);
 
   return (
     <div className="space-y-4">

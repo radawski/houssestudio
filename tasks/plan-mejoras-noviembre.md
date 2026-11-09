@@ -104,8 +104,10 @@ tachados con su motivo. Hoy y el conteo de turnos siguen sin contarlos.
 - Chip "Faltó 1 vez" / "Faltó N veces · última dd/mm" en `RequestCard`, `AppointmentCard`,
   `AgendaAppointmentRow` y la hoja del turno.
 - La lógica pura va en `lib/no-shows.ts` (+ test).
-- Migración `0015`: `appointments.no_show_at timestamptz` (nullable). `markNoShow` la completa y
-  el historial del turno la muestra.
+- **Pendiente:** migración `0015`, `appointments.no_show_at timestamptz` (nullable). `markNoShow`
+  la completaría y el historial del turno la mostraría. Se dejó para después porque requiere
+  aplicar SQL a mano en Supabase antes del deploy; las faltas se cuentan igual con el estado
+  `no_show`.
 
 **Archivos:** `lib/data/appointments.ts`, `lib/actions/appointments.ts`,
 `lib/appointment-timeline.ts`, `app/admin/solicitudes/request-card.tsx`,

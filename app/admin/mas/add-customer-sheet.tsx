@@ -36,7 +36,7 @@ const inputClass = "h-12 text-base md:h-9 md:text-sm";
  * reservar solo con su DNI. Sin foco automático al abrir, como todas las
  * hojas del panel.
  */
-export function AddCustomerSheet() {
+export function AddCustomerSheet({ variant = "row" }: { variant?: "row" | "button" }) {
   const [open, setOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>();
   const [pending, startTransition] = useTransition();
@@ -74,17 +74,25 @@ export function AddCustomerSheet() {
       }}
     >
       <DialogTrigger asChild>
-        <button
-          type="button"
-          className="hover:bg-accent flex h-15 w-full items-center gap-3 px-4 text-left transition-colors"
-        >
-          <UserPlus className="text-muted-foreground size-5 shrink-0" strokeWidth={1.75} />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium">Agregar cliente</p>
-            <p className="text-muted-foreground text-xs">Para quien tiene un número de otra zona.</p>
-          </div>
-          <ChevronRight className="text-muted-foreground size-4.5 shrink-0" />
-        </button>
+        {variant === "button" ? (
+          // En Clientes: botón al lado del título de la lista.
+          <Button variant="outline" size="touch" className="shrink-0">
+            <UserPlus className="size-4" />
+            Agregar
+          </Button>
+        ) : (
+          <button
+            type="button"
+            className="hover:bg-accent flex h-15 w-full items-center gap-3 px-4 text-left transition-colors"
+          >
+            <UserPlus className="text-muted-foreground size-5 shrink-0" strokeWidth={1.75} />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Agregar cliente</p>
+              <p className="text-muted-foreground text-xs">Para quien tiene un número de otra zona.</p>
+            </div>
+            <ChevronRight className="text-muted-foreground size-4.5 shrink-0" />
+          </button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">

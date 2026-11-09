@@ -1,5 +1,7 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import {
   actionError,
   actionSuccess,
@@ -7,7 +9,7 @@ import {
   type ActionState,
 } from "@/lib/actions/result";
 import { requireAdmin } from "@/lib/auth";
-import { customerSchema } from "@/lib/validation/schemas";
+import { customerEditSchema, customerNotesSchema, customerSchema } from "@/lib/validation/schemas";
 
 /**
  * Alta de un cliente desde el panel (Más → Agregar cliente).
@@ -51,9 +53,59 @@ export async function addCustomer(_prev: ActionState, formData: FormData): Promi
 
   if (error) return actionError(`No se pudo guardar el cliente: ${error.message}`);
 
+  revalidatePath("/admin/clientes");
   return actionSuccess(
     existing
       ? `Ese DNI ya tenía ficha: actualizamos los datos de ${fullName}.`
       : `${fullName} ya puede reservar desde la web con su DNI.`,
   );
+}
+
+/**
+ * Edita nombre, teléfono y email de un cliente desde su ficha. A diferencia
+ * del alta, acá un email vacío sí lo borra: es una edición explícita.
+ */
+export async function updateCustomer(
+  id: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const parsed = customerEditSchema.safeParse({
+    fullName: formData.get("fullName"),
+    phone: formData.get("phone"),
+    email: formData.get("email") || undefined,
+  });
+  if (!parsed.success) return validationError(parsed.error);
+
+  const { fullName, phone, email } = parsed.data;
+  const { error } = await supabase
+    .from("customers")
+    .update({ full_name: fullName, phone, email: email ?? null })
+    .eq("id", id);
+
+  if (error) return actionError(`No se pudieron guardar los datos: ${error.message}`);
+
+  revalidatePath(`/admin/clientes/${id}`);
+  revalidatePath("/admin/clientes");
+  return actionSuccess("Datos guardados.");
+}
+
+/** Guarda las notas privadas del peluquero sobre un cliente. */
+export async function updateCustomerNotes(id: string, notes: string): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const parsed = customerNotesSchema.safeParse(notes);
+  if (!parsed.success) return actionError(parsed.error.issues[0]?.message ?? "Notas inválidas.");
+
+  const { error } = await supabase
+    .from("customers")
+    .update({ notes: parsed.data || null })
+    .eq("id", id);
+
+  if (error) return actionError(`No se pudieron guardar las notas: ${error.message}`);
+
+  revalidatePath(`/admin/clientes/${id}`);
+  return actionSuccess("Notas guardadas.");
 }

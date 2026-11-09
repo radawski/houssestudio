@@ -3,6 +3,7 @@ import "server-only";
 import { weekdayOf, type DayHours, type Interval } from "@/lib/availability";
 import { fetchBusinessDays, toDayHours } from "@/lib/data/availability";
 import { dayRange } from "@/lib/dates";
+import { summarizeCustomerHistory, type CustomerHistory } from "@/lib/no-shows";
 import { createClient } from "@/lib/supabase/server";
 import type { Appointment, Customer, Payment, Service } from "@/lib/supabase/database.types";
 
@@ -25,6 +26,11 @@ export type AppointmentWithCustomer = Appointment & {
    * solo objeto, no un arreglo.
    */
   payment: Pick<Payment, "amount" | "method" | "paid_at"> | null;
+  /**
+   * Faltas y visitas anteriores del cliente, para el aviso "Faltó N veces".
+   * Solo viene cuando la pantalla lo pidió con `withCustomerHistory`.
+   */
+  history?: CustomerHistory | null;
 };
 
 const WITH_CUSTOMER =
@@ -53,26 +59,57 @@ export async function getPendingAppointments(): Promise<AppointmentWithCustomer[
 }
 
 /**
- * Turnos que arrancan dentro de un rango absoluto de tiempo, sin los
- * cancelados: Hoy y Agenda (sus únicos lectores) no los muestran, a pedido
- * del usuario — un turno cancelado ya no ocupa la agenda. El dato sigue en la
- * base, y Caja no depende de esta lectura.
+ * Turnos que arrancan dentro de un rango absoluto de tiempo.
+ *
+ * Sin los cancelados, salvo que se pidan: Hoy, la semana y el mes no los
+ * muestran (un turno cancelado ya no ocupa la agenda), pero la Agenda del día
+ * sí, tachados y con su motivo (plan de noviembre, decisión 5). Caja no
+ * depende de esta lectura.
  */
 export async function getAppointmentsBetween(
   start: Date,
   end: Date,
+  { includeCancelled = false }: { includeCancelled?: boolean } = {},
 ): Promise<AppointmentWithCustomer[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("appointments")
     .select(WITH_CUSTOMER)
-    .neq("status", "cancelado")
     .gte("starts_at", start.toISOString())
-    .lt("starts_at", end.toISOString())
-    .order("starts_at", { ascending: true });
+    .lt("starts_at", end.toISOString());
+  if (!includeCancelled) query = query.neq("status", "cancelado");
+
+  const { data, error } = await query.order("starts_at", { ascending: true });
 
   if (error) throw new Error(`No se pudieron leer los turnos: ${error.message}`);
   return (data ?? []) as unknown as AppointmentWithCustomer[];
+}
+
+/**
+ * Suma a cada turno el historial corto de su cliente (faltas y visitas), con
+ * una sola consulta para toda la pantalla. Si la consulta falla, los turnos
+ * se muestran igual, sin el aviso: es información de apoyo.
+ */
+export async function withCustomerHistory(
+  appointments: AppointmentWithCustomer[],
+): Promise<AppointmentWithCustomer[]> {
+  const ids = [...new Set(appointments.map((a) => a.customer_id))];
+  if (ids.length === 0) return appointments;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("customer_id, status, starts_at")
+    .in("customer_id", ids)
+    .in("status", ["no_show", "completado"]);
+
+  if (error) {
+    console.error(`No se pudo leer el historial de los clientes: ${error.message}`);
+    return appointments;
+  }
+
+  const history = summarizeCustomerHistory(data ?? []);
+  return appointments.map((a) => ({ ...a, history: history.get(a.customer_id) ?? null }));
 }
 
 export async function getAppointmentsForDay(

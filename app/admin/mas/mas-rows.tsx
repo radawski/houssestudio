@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, Clock, Package, Scissors } from "lucide-react";
+import { ChevronRight, Clock, Package, Scissors, Users } from "lucide-react";
 
 import {
   isFreshReturn,
@@ -14,6 +14,13 @@ import {
 
 const LINKS = [
   {
+    href: "/admin/clientes",
+    label: "Clientes",
+    description: "Fichas, historial y faltas.",
+    icon: Users,
+    isNew: true,
+  },
+  {
     href: "/admin/servicios",
     label: "Servicios",
     description: "Catálogo, precios y duración.",
@@ -24,7 +31,6 @@ const LINKS = [
     label: "Productos",
     description: "Categorías, productos y precios.",
     icon: Package,
-    isNew: true,
   },
   {
     href: "/admin/disponibilidad",

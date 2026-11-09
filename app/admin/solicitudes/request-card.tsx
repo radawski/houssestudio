@@ -4,6 +4,7 @@ import {
   CancelAppointmentButton,
   ConfirmAppointmentButton,
 } from "@/components/admin/appointment-actions";
+import { CustomerHistoryChip } from "@/components/admin/customer-history-chip";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import { formatCurrency, formatDni, formatLongDate, formatTime } from "@/lib/format";
@@ -47,6 +48,7 @@ export function RequestCard({ appointment }: { appointment: AppointmentWithCusto
 
       {customer ? (
         <div className="flex flex-wrap gap-2">
+          <CustomerHistoryChip history={appointment.history} showFirstVisit className="h-[30px]" />
           <span className={CHIP}>
             <IdCard className="size-3.5" />
             DNI {formatDni(customer.dni)}

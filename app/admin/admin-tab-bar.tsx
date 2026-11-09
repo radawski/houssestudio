@@ -22,7 +22,13 @@ const LINKS = [
   { href: "/admin/mas", label: "Más", icon: MoreHorizontal },
 ] as const;
 
-const MAS_PREFIXES = ["/admin/mas", "/admin/servicios", "/admin/productos", "/admin/disponibilidad"];
+const MAS_PREFIXES = [
+  "/admin/mas",
+  "/admin/clientes",
+  "/admin/servicios",
+  "/admin/productos",
+  "/admin/disponibilidad",
+];
 
 export function AdminTabBar({ pendingCount }: { pendingCount: number }) {
   const pathname = usePathname();

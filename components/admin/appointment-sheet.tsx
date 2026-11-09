@@ -1,15 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { IdCard, Mail, Phone, StickyNote, Wallet } from "lucide-react";
+import { ChevronRight, CircleAlert, IdCard, Mail, Phone, StickyNote, Wallet } from "lucide-react";
 
-import { CancelAppointmentButton } from "@/components/admin/appointment-actions";
+import { CancelAppointmentButton, ConfirmedAppointmentActions } from "@/components/admin/appointment-actions";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { buildAppointmentTimeline } from "@/lib/appointment-timeline";
+import { canMarkNoShow } from "@/lib/appointment-rules";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
-import { formatCurrency, formatDateTime, formatDuration, formatLongDate, formatTime } from "@/lib/format";
+import {
+  formatCurrency,
+  formatDateTime,
+  formatDuration,
+  formatInTz,
+  formatLongDate,
+  formatTime,
+} from "@/lib/format";
+import { noShowCountLabel } from "@/lib/no-shows";
 import { cn } from "@/lib/utils";
 
 function ClientRow({
@@ -58,6 +67,7 @@ function ClientRow({
 export function AppointmentSheet({ appointment }: { appointment: AppointmentWithCustomer }) {
   const { customer, status } = appointment;
   const timeline = buildAppointmentTimeline(appointment);
+  const isOpen = status === "pendiente" || status === "confirmado";
 
   return (
     <DialogContent showCloseButton={false} className="sm:max-w-md">
@@ -83,7 +93,27 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
 
       {customer ? (
         <div className="overflow-hidden rounded-md border border-[var(--hs-border-card)]">
-          <p className="px-3.5 py-3 text-sm font-semibold">{customer.full_name}</p>
+          <Link
+            href={`/admin/clientes/${customer.id}`}
+            className="hover:bg-accent flex min-h-12 items-center justify-between gap-3 px-3.5 py-3"
+          >
+            <span className="text-sm font-semibold">{customer.full_name}</span>
+            <span className="flex items-center gap-1 text-xs font-medium">
+              Ver ficha
+              <ChevronRight className="size-4" aria-hidden />
+            </span>
+          </Link>
+          {isOpen && appointment.history?.noShows ? (
+            <div className="mx-3.5 mb-3 flex items-start gap-2.5 rounded-md bg-[#fdeeec] px-3 py-2.5 text-[13px] leading-snug text-[#9a2a22]">
+              <CircleAlert className="mt-px size-4 shrink-0" aria-hidden />
+              <span>
+                <strong className="font-semibold">{noShowCountLabel(appointment.history)}</strong>
+                {appointment.history.lastNoShowAt
+                  ? `. La última, el ${formatInTz(appointment.history.lastNoShowAt, "d 'de' MMMM")}.`
+                  : "."}
+              </span>
+            </div>
+          ) : null}
           <ClientRow icon={IdCard} value={formatDni(customer.dni)} action="DNI" />
           <ClientRow icon={Phone} value={customer.phone} action="Llamar" href={`tel:${customer.phone}`} />
           {customer.email ? (
@@ -164,15 +194,31 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
           <Button asChild variant="outline" size="touch">
             <Link href="/admin/agenda">Ver el horario libre en la agenda</Link>
           </Button>
-        ) : status === "pendiente" || status === "confirmado" ? (
-          <CancelAppointmentButton
-            id={appointment.id}
-            label={status === "pendiente" ? "Rechazar" : "Cancelar"}
-            triggerLabel={status === "pendiente" ? "Rechazar solicitud" : "Cancelar turno"}
-            triggerClassName="w-full text-destructive hover:text-destructive"
-            clientName={customer?.full_name}
-            startsAt={appointment.starts_at}
-          />
+        ) : isOpen ? (
+          <>
+            {status === "confirmado" ? (
+              // Cobrar y "No vino" (este último recién cuando empezó el
+              // turno), con el mismo estado "en vuelo" que en Hoy.
+              <div className="flex gap-2">
+                <ConfirmedAppointmentActions
+                  id={appointment.id}
+                  suggestedAmount={appointment.price_at_booking}
+                  clientName={customer?.full_name ?? "Cliente eliminado"}
+                  serviceName={appointment.service_name_at_booking}
+                  startsAt={appointment.starts_at}
+                  showMarkNoShow={canMarkNoShow({ status, startsAt: appointment.starts_at })}
+                />
+              </div>
+            ) : null}
+            <CancelAppointmentButton
+              id={appointment.id}
+              label={status === "pendiente" ? "Rechazar" : "Cancelar"}
+              triggerLabel={status === "pendiente" ? "Rechazar solicitud" : "Cancelar turno"}
+              triggerClassName="w-full text-destructive hover:text-destructive"
+              clientName={customer?.full_name}
+              startsAt={appointment.starts_at}
+            />
+          </>
         ) : null}
         <DialogClose asChild>
           <Button variant="ghost" size="touch-lg">

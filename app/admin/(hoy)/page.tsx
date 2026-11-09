@@ -3,7 +3,11 @@ import Link from "next/link";
 
 import { AppointmentCard } from "@/components/admin/appointment-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { getAppointmentsForDay, getPendingAppointments } from "@/lib/data/appointments";
+import {
+  getAppointmentsForDay,
+  getPendingAppointments,
+  withCustomerHistory,
+} from "@/lib/data/appointments";
 import { todayKey } from "@/lib/dates";
 import { formatLongDate } from "@/lib/format";
 import { dayRange } from "@/lib/dates";
@@ -27,7 +31,7 @@ export default async function AdminHomePage() {
   const today = todayKey();
 
   const [appointments, pending] = await Promise.all([
-    getAppointmentsForDay(today),
+    getAppointmentsForDay(today).then(withCustomerHistory),
     getPendingAppointments(),
   ]);
 
