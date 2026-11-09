@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { IdCard, Mail, Phone, StickyNote, Wallet } from "lucide-react";
 
+import { CancelAppointmentButton } from "@/components/admin/appointment-actions";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -46,8 +47,13 @@ function ClientRow({
  * Ficha del turno (design/admin-iphone n-SheetTurno / n-SheetTurnoCancelado):
  * se abre tocando una tarjeta completada, cancelada o ausente en `AppointmentCard`
  * — ahi un pendiente o confirmado sigue resolviendose con la fila de acciones
- * — y ademas cualquier turno desde la lista de Agenda (n-Agenda), donde no hay
- * botones y la ficha es de solo lectura para todos los estados.
+ * — y ademas cualquier turno desde la lista de Agenda (n-Agenda), donde la
+ * tarjeta no lleva botones.
+ *
+ * Por eso, para un turno pendiente o confirmado, la ficha ofrece rechazarlo o
+ * cancelarlo: es la única forma de hacerlo desde la Agenda del celular. Abre
+ * la misma hoja de confirmación con motivo que la tarjeta de Hoy; nunca
+ * cancela de un toque.
  */
 export function AppointmentSheet({ appointment }: { appointment: AppointmentWithCustomer }) {
   const { customer, status } = appointment;
@@ -158,6 +164,15 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
           <Button asChild variant="outline" size="touch">
             <Link href="/admin/agenda">Ver el horario libre en la agenda</Link>
           </Button>
+        ) : status === "pendiente" || status === "confirmado" ? (
+          <CancelAppointmentButton
+            id={appointment.id}
+            label={status === "pendiente" ? "Rechazar" : "Cancelar"}
+            triggerLabel={status === "pendiente" ? "Rechazar solicitud" : "Cancelar turno"}
+            triggerClassName="w-full text-destructive hover:text-destructive"
+            clientName={customer?.full_name}
+            startsAt={appointment.starts_at}
+          />
         ) : null}
         <DialogClose asChild>
           <Button variant="ghost" size="touch-lg">

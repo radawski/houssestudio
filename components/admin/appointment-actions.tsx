@@ -65,11 +65,17 @@ export function CancelAppointmentButton({
   label = "Rechazar",
   clientName,
   startsAt,
+  triggerLabel,
+  triggerClassName,
 }: {
   id: string;
   label?: string;
   clientName?: string;
   startsAt?: string;
+  /** Texto del botón que abre la hoja; por defecto, `label`. */
+  triggerLabel?: string;
+  /** Clases del botón que abre la hoja; por defecto ocupa su parte de una fila. */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -81,9 +87,9 @@ export function CancelAppointmentButton({
 
   return (
     <>
-      <Button size="touch" variant="outline" className="flex-1" onClick={() => setOpen(true)}>
+      <Button size="touch" variant="outline" className={triggerClassName ?? "flex-1"} onClick={() => setOpen(true)}>
         <X className="size-4" />
-        {label}
+        {triggerLabel ?? label}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
