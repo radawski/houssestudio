@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "admin:crear": "node scripts/crear-admin.mjs",
     "admin:credenciales": "node scripts/cambiar-credenciales-admin.mjs",
     "db:vaciar": "node scripts/vaciar-base.mjs",
     "email:logo": "node scripts/generar-logo-email.mjs",
