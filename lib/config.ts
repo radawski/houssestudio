@@ -14,6 +14,21 @@ export const LOCALE = "es-AR";
 export const BUSINESS_NAME = "HOUSSESTUDIO";
 
 /**
+ * Dirección del local, tal cual tiene que figurar en todos lados (sitio, datos
+ * estructurados, Google Business, Instagram). Para el SEO local pesa que sea
+ * idéntica en cada lugar, así que se cambia acá y en esos perfiles a la vez.
+ */
+export const BUSINESS_ADDRESS = {
+  street: "Av. Luján 3540",
+  locality: "Santo Tomé",
+  region: "Santa Fe",
+  postalCode: "S3016",
+  country: "AR",
+} as const;
+
+export const BUSINESS_INSTAGRAM = "https://www.instagram.com/santiagospitale/";
+
+/**
  * Anticipacion minima con la que un cliente puede reservar. Evita que alguien
  * tome un turno que arranca en cinco minutos y el barbero no llegue a verlo.
  */

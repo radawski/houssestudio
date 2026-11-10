@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
-import { BUSINESS_NAME, siteUrl } from "@/lib/config";
+import { BUSINESS_ADDRESS, BUSINESS_NAME, siteUrl } from "@/lib/config";
 import "./globals.css";
 
 // Pocos pesos a propósito: el sistema es minimalista y la jerarquía la dan el
@@ -14,8 +14,8 @@ const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
 });
 
-const DEFAULT_TITLE = `${BUSINESS_NAME} — Barbería · Reservá tu turno online`;
-const DESCRIPTION = "Reservá tu turno de barbería online, sin llamadas y sin seña previa.";
+const DEFAULT_TITLE = `${BUSINESS_NAME} — Barbería en ${BUSINESS_ADDRESS.locality} · Reservá tu turno online`;
+const DESCRIPTION = `Barbería en ${BUSINESS_ADDRESS.street}, ${BUSINESS_ADDRESS.locality}, ${BUSINESS_ADDRESS.region}. Reservá tu turno online, sin llamadas y sin seña previa.`;
 
 export const metadata: Metadata = {
   // Base para las URLs absolutas que piden `og:image`, `og:url` y el canonical.

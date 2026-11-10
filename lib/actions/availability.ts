@@ -16,6 +16,8 @@ import { formatTime } from "@/lib/format";
 import { businessHourSchema, timeBlockSchema } from "@/lib/validation/schemas";
 
 function revalidateAvailability() {
+  // La portada muestra el horario semanal (texto y datos estructurados).
+  revalidatePath("/");
   revalidatePath("/admin/disponibilidad");
   revalidatePath("/admin/agenda");
   revalidatePath("/reservar");

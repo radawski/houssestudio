@@ -10,7 +10,7 @@ import { BUSINESS_NAME } from "@/lib/config";
  * acá y no en el layout raíz: así la bajan únicamente las páginas que muestran
  * la portada, y el resto del sitio y el panel siguen solo con Roboto.
  */
-const anton = Anton({ weight: "400", subsets: ["latin"] });
+export const anton = Anton({ weight: "400", subsets: ["latin"] });
 
 /**
  * Portada a pantalla completa.
