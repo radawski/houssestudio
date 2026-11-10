@@ -374,7 +374,8 @@ Editor antes del deploy.
 - Estadísticas: ingresos, turnos y faltas, clientes (sin ranking de los que
   más vienen), "Mismo día, semana a semana" con +n / −n (sin porcentajes),
   frecuencia media de retorno y movimiento por día y hora.
-- Portada: "Barbería" y el título en Anton a 56 px.
+- Portada: "Barbería" y el título en Anton a 56 px. "Barbería" también en el
+  encabezado de los mails al cliente y en la descripción del sitio.
 
 **Cliente: "Mis turnos" (`/mis-turnos`)**
 - `lookupMyAppointments` compara DNI y teléfono (`phonesMatch`), con límite de
@@ -432,5 +433,4 @@ Editor antes del deploy.
 **Pendiente**
 - V2: migración `0015` con `appointments.no_show_at` para que el historial del
   turno muestre cuándo se marcó la falta. El número 0015 queda reservado.
-- B1: decidir si "peluquería" pasa a "barbería" también fuera de la portada
-  (textos y mails).
+

@@ -1,6 +1,6 @@
 # HOUSSESTUDIO
 
-Sistema de turnos y gestión comercial para una peluquería de operación
+Sistema de turnos y gestión comercial para una barbería de operación
 unipersonal: un profesional, una estación de trabajo.
 
 - **Portal público** (`/`, `/reservar`, `/turno/[token]`, `/mis-turnos`,
@@ -193,10 +193,9 @@ zona, estados de carga del panel y recordatorio "Ya pasó un mes" con baja.
 
 **Mejoras de noviembre completas** (ver `SPEC.md` §10 y
 `tasks/plan-mejoras-noviembre.md`): "Mis turnos" para el cliente, portada de
-barbería, cancelados y faltas a la vista, Clientes con ficha, pago dividido,
+barbería (también en los mails y la descripción del sitio), cancelados y faltas a la vista, Clientes con ficha, pago dividido,
 turno manual, turno fijo y estadísticas.
 
 **Pendiente** (ver `tasks/todo.md`): pasar `ADMIN_EMAIL` a la casilla del
 peluquero, Vercel Pro y copias de seguridad de Supabase antes de usarla con
-clientes reales. De noviembre quedan `no_show_at` (migración 0015) y decidir
-si "peluquería" pasa a "barbería" fuera de la portada.
+clientes reales. De noviembre queda `no_show_at` (migración 0015).

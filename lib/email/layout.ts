@@ -195,7 +195,7 @@ function logoImg(baseUrl: string, kind: keyof typeof EMAIL_LOGOS): string {
 }
 
 function clientHeader(baseUrl: string): string {
-  return `<tr><td bgcolor="${EMAIL_COLORS.header}" style="background:${EMAIL_COLORS.header};padding:28px 24px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle">${logoImg(baseUrl, "cliente")}</td><td valign="middle" style="padding-left:16px;"><p style="margin:0;font-family:${FONT};font-size:20px;line-height:20px;font-weight:500;letter-spacing:0.02em;color:#ffffff;">${BUSINESS_NAME}</p><p style="margin:6px 0 0;font-family:${FONT};font-size:11px;line-height:14px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55);">Peluquería</p></td></tr></table></td></tr>`;
+  return `<tr><td bgcolor="${EMAIL_COLORS.header}" style="background:${EMAIL_COLORS.header};padding:28px 24px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle">${logoImg(baseUrl, "cliente")}</td><td valign="middle" style="padding-left:16px;"><p style="margin:0;font-family:${FONT};font-size:20px;line-height:20px;font-weight:500;letter-spacing:0.02em;color:#ffffff;">${BUSINESS_NAME}</p><p style="margin:6px 0 0;font-family:${FONT};font-size:11px;line-height:14px;letter-spacing:0.28em;text-transform:uppercase;color:rgba(255,255,255,0.55);">Barbería</p></td></tr></table></td></tr>`;
 }
 
 function panelHeader(baseUrl: string): string {

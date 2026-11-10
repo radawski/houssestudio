@@ -131,7 +131,7 @@ describe("emailDocument", () => {
     expect(cliente).toContain(
       'src="https://houssestudio.vercel.app/email/logo-92.png" alt="HOUSSESTUDIO" width="46" height="52"',
     );
-    expect(cliente).toContain("Peluquería");
+    expect(cliente).toContain("Barbería");
     expect(cliente).toContain("Recibís este email porque pediste un turno.");
 
     const panel = doc("panel");

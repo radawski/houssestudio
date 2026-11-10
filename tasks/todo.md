@@ -505,8 +505,9 @@
 - [x] M1, M2 — "Mis turnos" con DNI + teléfono (POST, límite por IP y DNI,
       error genérico), sesión de 30 min y "Volver a mis turnos" desde el turno
 - [x] B1 — Portada: "Barbería" y título en Anton
-- [ ] B1 — Decidir si "peluquería" pasa a "barbería" en los otros ~7 lugares
-      (textos y mails)
+- [x] B1 — "Barbería" también en el encabezado de los mails al cliente y en
+      la descripción del sitio (lo único visible; "peluquero" solo queda en
+      comentarios del código)
 - [x] V1 — Cancelados tachados con su motivo en la Agenda del día
 - [x] V2 — Chip de faltas en Hoy, Solicitudes, Agenda y la hoja del turno
 - [ ] V2 — Migración 0015 `appointments.no_show_at` (diferida: hoy las faltas

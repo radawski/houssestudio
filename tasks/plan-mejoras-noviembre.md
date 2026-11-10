@@ -16,7 +16,7 @@ Todo hecho y subido a `main`, salvo lo marcado como pendiente:
 | E1 Estadísticas | Hecho | `e48d956` |
 | F1 Documentación | Hecho | este commit |
 | V2 `no_show_at` (0015) | **Pendiente**, diferida | — |
-| B1 "barbería" fuera de la portada | **Pendiente**, falta decidir | — |
+| B1 "barbería" en mails y descripción | Hecho | este commit |
 
 ## Contexto
 

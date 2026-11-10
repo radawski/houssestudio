@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: `%s · ${BUSINESS_NAME}`,
   },
   description:
-    "Reserva tu turno de peluqueria online, sin llamadas y sin sena previa.",
+    "Reserva tu turno de barbería online, sin llamadas y sin seña previa.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
