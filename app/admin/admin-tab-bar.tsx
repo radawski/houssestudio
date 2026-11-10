@@ -25,6 +25,7 @@ const LINKS = [
 const MAS_PREFIXES = [
   "/admin/mas",
   "/admin/clientes",
+  "/admin/estadisticas",
   "/admin/servicios",
   "/admin/productos",
   "/admin/disponibilidad",

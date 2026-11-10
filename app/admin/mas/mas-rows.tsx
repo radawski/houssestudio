@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, Clock, Package, Scissors, Users } from "lucide-react";
+import { ChartColumn, ChevronRight, Clock, Package, Scissors, Users } from "lucide-react";
 
 import {
   isFreshReturn,
@@ -18,6 +18,13 @@ const LINKS = [
     label: "Clientes",
     description: "Fichas, historial y faltas.",
     icon: Users,
+    isNew: true,
+  },
+  {
+    href: "/admin/estadisticas",
+    label: "Estadísticas",
+    description: "Ingresos, turnos, clientes y movimiento.",
+    icon: ChartColumn,
     isNew: true,
   },
   {

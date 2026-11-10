@@ -14,7 +14,7 @@ import { formatInTz, formatLongDate } from "@/lib/format";
 export type PeriodView = "dia" | "semana" | "mes";
 
 /** Páginas que navegan por período con `?vista=` y `?fecha=`. */
-export type PeriodBasePath = "/admin/agenda" | "/admin/caja";
+export type PeriodBasePath = "/admin/agenda" | "/admin/caja" | "/admin/estadisticas";
 
 /** Cuánto se mueve cada flecha en Día y Semana. */
 const STEP_DAYS = { dia: 1, semana: 7 } as const;

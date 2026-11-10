@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Clock, Home, Inbox, Package, Scissors, Users, Wallet } from "lucide-react";
+import { CalendarDays, ChartColumn, Clock, Home, Inbox, Package, Scissors, Users, Wallet } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/admin/solicitudes", label: "Solicitudes", icon: Inbox },
   { href: "/admin/caja", label: "Caja", icon: Wallet },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/estadisticas", label: "Estadísticas", icon: ChartColumn },
   { href: "/admin/servicios", label: "Servicios", icon: Scissors },
   { href: "/admin/productos", label: "Productos", icon: Package },
   { href: "/admin/disponibilidad", label: "Disponibilidad", icon: Clock },
