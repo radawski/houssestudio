@@ -51,18 +51,23 @@ export function AgendaNewActions({ catalog, dateKey }: { catalog: SaleCatalog; d
         Venta suelta
       </Button>
 
-      {/* Celular: FAB por encima de la tab bar (84 = 6 + 56 + 6 + 16 de aire). */}
-      <Button
-        size="touch-lg"
-        aria-haspopup="menu"
-        aria-expanded={menuOpen}
-        onClick={() => setMenuOpen(true)}
-        // Con el menú abierto la X ocupa su lugar: el botón no se ve detrás.
-        className={`fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden ${menuOpen ? "invisible" : ""}`}
-      >
-        <Plus className="size-[18px]" />
-        Nuevo
-      </Button>
+      {/* Celular: FAB por encima de la tab bar (84 = 6 + 56 + 6 + 16 de aire).
+          Con el menú abierto la X ocupa su lugar, así que el botón se desmonta
+          en vez de ocultarse con `invisible`: el `transition-all` de `Button`
+          también anima `visibility`, y el botón seguía pintado detrás de la X
+          hasta que terminaba la transición. */}
+      {menuOpen ? null : (
+        <Button
+          size="touch-lg"
+          aria-haspopup="menu"
+          aria-expanded={false}
+          onClick={() => setMenuOpen(true)}
+          className="fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
+        >
+          <Plus className="size-[18px]" />
+          Nuevo
+        </Button>
+      )}
 
       {menuOpen ? (
         <div className="fixed inset-0 z-40 md:hidden">
