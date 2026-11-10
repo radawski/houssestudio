@@ -8,6 +8,7 @@ import { CategoryTable, DesktopSummary } from "@/app/admin/caja/category-table";
 import { PeriodNavigation } from "@/components/admin/period-navigation";
 import { groupByCategory } from "@/lib/cashbox";
 import { getCashboxSummary } from "@/lib/data/cashbox";
+import { getSaleCatalog } from "@/lib/data/products";
 import { dayRange, exactMonthRange, todayKey, weekRange } from "@/lib/dates";
 import type { PeriodView } from "@/lib/period-nav";
 
@@ -36,10 +37,12 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
     typeof fecha === "string" && DATE_KEY_PATTERN.test(fecha) ? fecha : todayKey();
 
   const range = rangeFor(view, dateKey);
-  const { movements, breakdown } = await getCashboxSummary({
-    start: range.start.toISOString(),
-    end: range.end.toISOString(),
-  });
+  // El catálogo solo hace falta en el día, que es donde se corrigen los
+  // movimientos ("Anular y volver a cargar" una venta suelta).
+  const [{ movements, breakdown }, catalog] = await Promise.all([
+    getCashboxSummary({ start: range.start.toISOString(), end: range.end.toISOString() }),
+    view === "dia" ? getSaleCatalog() : Promise.resolve(undefined),
+  ]);
 
   const groups = groupByCategory(movements);
   const detail = view === "dia" ? "movimientos" : "conceptos";
@@ -55,8 +58,8 @@ export default async function CajaPage({ searchParams }: PageProps<"/admin/caja"
 
             <DesktopSummary label={SUMMARY_LABEL[view]} breakdown={breakdown} groups={groups} />
 
-            <CategoryCards groups={groups} detail={detail} />
-            <CategoryTable groups={groups} breakdown={breakdown} detail={detail} />
+            <CategoryCards groups={groups} detail={detail} catalog={catalog} />
+            <CategoryTable groups={groups} breakdown={breakdown} detail={detail} catalog={catalog} />
           </div>
         </CajaBody>
       </div>

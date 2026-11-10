@@ -3,9 +3,11 @@
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+import { MovementCorrection } from "@/app/admin/caja/movement-correction";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SERVICES_CATEGORY, type CashboxBreakdown, type CategoryGroup, describePayment } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
+import type { SaleCatalog } from "@/lib/data/products";
 import { formatCurrency, formatTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -117,10 +119,13 @@ export function CategoryTable({
   groups,
   breakdown,
   detail,
+  catalog,
 }: {
   groups: CategoryGroup<CashboxMovement>[] | null;
   breakdown: CashboxBreakdown | null;
   detail: "movimientos" | "conceptos";
+  /** Catálogo de la venta suelta: con él, cada movimiento del día lleva "Corregir". */
+  catalog?: SaleCatalog;
 }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -163,6 +168,7 @@ export function CategoryTable({
 
   const units = groups.reduce((sum, group) => sum + group.quantity, 0);
   const byDay = detail === "movimientos";
+  const movements = groups.flatMap((group) => group.charges);
 
   return (
     <section className={`${CARD} hidden overflow-hidden md:block`}>
@@ -248,7 +254,18 @@ export function CategoryTable({
                         <td className={cn(TD, "text-muted-foreground")}>{ORIGIN_LABEL[movement.origin]}</td>
                         <td className={cn(TD, "text-muted-foreground")}>{describePayment(movement, formatCurrency)}</td>
                         <td className={cn(TD, "text-right")}>{formatCurrency(movement.amount)}</td>
-                        <td className={TD} />
+                        <td className={cn(TD, "pr-5 text-right")}>
+                          {catalog ? (
+                            <MovementCorrection
+                              movement={movement}
+                              movements={movements}
+                              catalog={catalog}
+                              className="text-muted-foreground hover:text-foreground w-auto text-[13px] underline-offset-4 hover:underline"
+                            >
+                              Corregir
+                            </MovementCorrection>
+                          ) : null}
+                        </td>
                       </tr>
                     ))
                   : null}

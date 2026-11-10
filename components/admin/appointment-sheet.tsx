@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { ChevronRight, CircleAlert, IdCard, Mail, Phone, StickyNote, Wallet } from "lucide-react";
 
-import { CancelAppointmentButton, ConfirmedAppointmentActions } from "@/components/admin/appointment-actions";
+import {
+  CancelAppointmentButton,
+  ConfirmedAppointmentActions,
+  CorrectPaymentButton,
+  RestoreAppointmentButton,
+  UndoNoShowButton,
+} from "@/components/admin/appointment-actions";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { buildAppointmentTimeline } from "@/lib/appointment-timeline";
-import { canMarkNoShow } from "@/lib/appointment-rules";
+import { canMarkNoShow, restoreTarget } from "@/lib/appointment-rules";
 import { describePayment, splitFromColumns } from "@/lib/cashbox";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import {
@@ -69,6 +75,11 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
   const { customer, status } = appointment;
   const timeline = buildAppointmentTimeline(appointment);
   const isOpen = status === "pendiente" || status === "confirmado";
+  const restoreTo = restoreTarget({
+    status,
+    cancelledBy: appointment.cancelled_by,
+    confirmedAt: appointment.confirmed_at,
+  });
 
   return (
     <DialogContent showCloseButton={false} className="sm:max-w-md">
@@ -197,13 +208,37 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
 
       <div className="flex flex-col gap-2">
         {status === "completado" ? (
-          <Button asChild variant="outline" size="touch">
-            <Link href="/admin/caja">Ver el movimiento en caja</Link>
-          </Button>
+          <>
+            {appointment.payment ? (
+              <CorrectPaymentButton
+                id={appointment.id}
+                payment={appointment.payment}
+                clientName={customer?.full_name}
+                serviceName={appointment.service_name_at_booking}
+                startsAt={appointment.starts_at}
+              />
+            ) : null}
+            <Button asChild variant="outline" size="touch">
+              <Link href="/admin/caja">Ver el movimiento en caja</Link>
+            </Button>
+          </>
+        ) : status === "no_show" ? (
+          <UndoNoShowButton id={appointment.id} />
         ) : status === "cancelado" ? (
-          <Button asChild variant="outline" size="touch">
-            <Link href="/admin/agenda">Ver el horario libre en la agenda</Link>
-          </Button>
+          <>
+            {restoreTo ? (
+              <RestoreAppointmentButton
+                id={appointment.id}
+                target={restoreTo}
+                clientName={customer?.full_name}
+                startsAt={appointment.starts_at}
+                hasEmail={Boolean(customer?.email)}
+              />
+            ) : null}
+            <Button asChild variant="outline" size="touch">
+              <Link href="/admin/agenda">Ver el horario libre en la agenda</Link>
+            </Button>
+          </>
         ) : isOpen ? (
           <>
             {status === "confirmado" ? (

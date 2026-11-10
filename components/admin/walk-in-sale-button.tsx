@@ -64,6 +64,20 @@ function Stepper({ name, quantity, onChange }: { name: string; quantity: number;
 }
 
 /**
+ * Una venta ya registrada que se vuelve a cargar para corregirla ("Anular y
+ * volver a cargar", 0018). `missing` cuenta los ítems que ya no están en el
+ * catálogo y no se pueden volver a poner.
+ */
+export type SaleDraft = {
+  saleId: string;
+  items: { kind: WalkInSaleKind; id: string; quantity: number }[];
+  method: PaymentChoice;
+  cash: string;
+  note: string;
+  missing: number;
+};
+
+/**
  * Venta suelta con carrito (design VentaC / iPhoneVentaC): lo que entró sin
  * turno, uno o más ítems del catálogo. Los servicios son la categoría
  * "Cortes" y los productos van por su categoría; cada una se despliega con su
@@ -78,8 +92,11 @@ export function WalkInSaleButton({
   open: controlledOpen,
   onOpenChange,
   withTriggers = true,
+  initial,
 }: {
   catalog: SaleCatalog;
+  /** Corregir una venta ya registrada: arranca con sus datos y, al guardar, la reemplaza. */
+  initial?: SaleDraft;
   /** Abierto desde afuera (el menú "+ Nuevo" de la Agenda). Sin esto, maneja su propio estado. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -102,22 +119,31 @@ export function WalkInSaleButton({
     if (controlledOpen === undefined) setInternalOpen(next);
     onOpenChange?.(next);
   }
-  const [cart, setCart] = useState<Map<string, number>>(new Map());
-  // Cortes abierta de entrada: un corte sin turno es la venta más común.
-  const [expanded, setExpanded] = useState<Set<string>>(new Set([SERVICES_CATEGORY.key]));
+  const initialCart = () => new Map(initial?.items.map((item) => [itemKey(item.kind, item.id), item.quantity]));
+  // Cortes abierta de entrada: un corte sin turno es la venta más común. Al
+  // corregir, además, las categorías de lo que ya estaba en la venta.
+  const initialExpanded = () =>
+    new Set([
+      SERVICES_CATEGORY.key,
+      ...groups
+        .filter((group) => group.items.some((item) => initial?.items.some((i) => i.kind === group.kind && i.id === item.id)))
+        .map((group) => group.key),
+    ]);
+  const [cart, setCart] = useState<Map<string, number>>(initialCart);
+  const [expanded, setExpanded] = useState<Set<string>>(initialExpanded);
   const [query, setQuery] = useState("");
-  const [method, setMethod] = useState<PaymentChoice>("efectivo");
-  const [cash, setCash] = useState("");
-  const [note, setNote] = useState("");
+  const [method, setMethod] = useState<PaymentChoice>(initial?.method ?? "efectivo");
+  const [cash, setCash] = useState(initial?.cash ?? "");
+  const [note, setNote] = useState(initial?.note ?? "");
   const [pending, startTransition] = useTransition();
 
   function reset() {
-    setCart(new Map());
-    setExpanded(new Set([SERVICES_CATEGORY.key]));
+    setCart(initialCart());
+    setExpanded(initialExpanded());
     setQuery("");
-    setMethod("efectivo");
-    setCash("");
-    setNote("");
+    setMethod(initial?.method ?? "efectivo");
+    setCash(initial?.cash ?? "");
+    setNote(initial?.note ?? "");
   }
 
   function setQuantity(kind: WalkInSaleKind, id: string, quantity: number) {
@@ -166,6 +192,7 @@ export function WalkInSaleButton({
       method: split ? ("efectivo" as const) : method,
       cash: split ? Math.min(Math.max(Number(cash) || 0, 0), total) : undefined,
       note: note.trim() || undefined,
+      replacesSaleId: initial?.saleId,
     };
     startTransition(async () => {
       try {
@@ -225,8 +252,16 @@ export function WalkInSaleButton({
           `DialogContent`, con su alto máximo y desplazamiento propio. */}
       <DialogContent className="flex h-[calc(100dvh-40px)] max-h-none flex-col pb-0 sm:grid sm:h-auto sm:max-w-lg sm:pb-0 [&>div:nth-child(2)]:flex-1">
         <DialogHeader>
-          <DialogTitle>Registrar venta suelta</DialogTitle>
-          <DialogDescription>Un corte que entró sin turno reservado, o un producto.</DialogDescription>
+          <DialogTitle>{initial ? "Corregir venta" : "Registrar venta suelta"}</DialogTitle>
+          <DialogDescription>
+            {initial
+              ? `Al guardar, esta venta reemplaza a la anterior.${
+                  initial.missing > 0
+                    ? ` ${initial.missing === 1 ? "Un ítem ya no está" : `${initial.missing} ítems ya no están`} en el catálogo y no se puede volver a cargar.`
+                    : ""
+                }`
+              : "Un corte que entró sin turno reservado, o un producto."}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative">
@@ -356,7 +391,7 @@ export function WalkInSaleButton({
             <p className="text-lg font-semibold tabular-nums">{formatCurrency(total)}</p>
           </div>
           <Button size="touch-lg" disabled={units === 0 || pending || cashOver} onClick={submit}>
-            {pending ? "Registrando…" : "Registrar venta"}
+            {initial ? (pending ? "Guardando…" : "Guardar venta") : pending ? "Registrando…" : "Registrar venta"}
           </Button>
         </div>
       </DialogContent>

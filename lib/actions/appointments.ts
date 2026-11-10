@@ -1,12 +1,26 @@
 "use server";
 
+import {
+  actionError,
+  actionSuccess,
+  validationError,
+  type ActionState,
+} from "@/lib/actions/result";
+import { correctedPaidAt, restoreTarget } from "@/lib/appointment-rules";
 import { revalidateAgenda } from "@/lib/cache";
 import { requireAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/data/availability";
 import { sendAppointmentConfirmed, sendCancellationNotice } from "@/lib/email/send";
 import { manageUrlFor } from "@/lib/tokens";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
-import { paymentSchema } from "@/lib/validation/schemas";
+import { paymentCorrectionSchema, paymentSchema } from "@/lib/validation/schemas";
+
+/** Código de Postgres para violación de restricción de exclusión (turnos superpuestos). */
+const EXCLUSION_VIOLATION = "23P01";
+const SLOT_TAKEN = "Ese horario ya lo ocupa otro turno. Movelo o cancelalo antes.";
+
+const CONFIRMED_SELECT =
+  "service_name_at_booking, price_at_booking, starts_at, ends_at, manage_token_hash, customer:customers(full_name, email)";
 
 /**
  * Los tipos de `database.types.ts` no declaran relaciones (son manuales, no
@@ -47,16 +61,21 @@ export async function confirmAppointment(id: string) {
     .update({ status: "confirmado", confirmed_at: new Date().toISOString() })
     .eq("id", id)
     .eq("status", "pendiente")
-    .select(
-      "service_name_at_booking, price_at_booking, starts_at, ends_at, manage_token_hash, customer:customers(full_name, email)",
-    )
+    .select(CONFIRMED_SELECT)
     .maybeSingle();
 
   if (error) throw new Error(`No se pudo confirmar el turno: ${error.message}`);
 
   revalidateAgenda();
 
-  const appointment = data as unknown as ConfirmedAppointment | null;
+  await notifyConfirmed(id, data as unknown as ConfirmedAppointment | null);
+}
+
+/**
+ * Manda el email de turno confirmado (1b). Lo usan la aceptación de una
+ * solicitud y la restauración de un turno cancelado por error.
+ */
+async function notifyConfirmed(id: string, appointment: ConfirmedAppointment | null) {
   if (!appointment?.customer) return;
 
   // El plazo se lee en el momento del envío, igual que `app/turno/[token]`:
@@ -193,4 +212,160 @@ export async function cancelAppointment(id: string, reason: string) {
       cancelledBy: "barbero",
     });
   }
+}
+
+// -----------------------------------------------------------------------------
+// Correcciones (tasks/plan-correcciones-cobros.md)
+//
+// Devuelven `ActionState` en vez de lanzar: en producción Next reemplaza el
+// mensaje de un error lanzado por uno genérico, y acá el motivo ("ese
+// horario ya lo ocupa otro turno") es justo lo que el peluquero necesita leer.
+// -----------------------------------------------------------------------------
+
+/** Deshace un "No vino" marcado por error: el turno vuelve a confirmado. */
+export async function undoNoShow(id: string): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ status: "confirmado" })
+    .eq("id", id)
+    .eq("status", "no_show")
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    if (error.code === EXCLUSION_VIOLATION) return actionError(SLOT_TAKEN);
+    return actionError(`No se pudo deshacer el "No vino": ${error.message}`);
+  }
+  if (!data) return actionError('Ese turno ya no está marcado como "No vino".');
+
+  revalidateAgenda();
+  return actionSuccess('Listo: el turno vuelve a estar confirmado.');
+}
+
+/**
+ * Restaura un turno que el peluquero canceló o rechazó por error. Vuelve a
+ * confirmado (y se le reenvía al cliente el email de turno confirmado, si el
+ * turno todavía no pasó) o, si era una solicitud, a pendiente.
+ *
+ * Volver a un estado que ocupa la agenda lo hace pasar de nuevo por
+ * `appointments_no_overlap`: si el horario ya lo tomó otro turno, la base lo
+ * rechaza y el turno sigue cancelado.
+ */
+export async function restoreAppointment(id: string): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const { data: current, error: readError } = await supabase
+    .from("appointments")
+    .select("status, cancelled_by, confirmed_at")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (readError) return actionError(`No se pudo restaurar el turno: ${readError.message}`);
+  const target = current
+    ? restoreTarget({
+        status: current.status,
+        cancelledBy: current.cancelled_by,
+        confirmedAt: current.confirmed_at,
+      })
+    : null;
+  if (!target) return actionError("Ese turno ya no se puede restaurar.");
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({
+      status: target,
+      cancelled_at: null,
+      cancelled_by: null,
+      cancellation_reason: null,
+    })
+    .eq("id", id)
+    .eq("status", "cancelado")
+    .eq("cancelled_by", "barbero")
+    .select(CONFIRMED_SELECT)
+    .maybeSingle();
+
+  if (error) {
+    if (error.code === EXCLUSION_VIOLATION) return actionError(SLOT_TAKEN);
+    return actionError(`No se pudo restaurar el turno: ${error.message}`);
+  }
+  if (!data) return actionError("Ese turno ya no se puede restaurar.");
+
+  revalidateAgenda();
+
+  if (target === "pendiente") return actionSuccess("Listo: la solicitud volvió a Solicitudes.");
+
+  const appointment = data as unknown as ConfirmedAppointment;
+  if (new Date(appointment.starts_at).getTime() > Date.now()) {
+    await notifyConfirmed(id, appointment);
+    return actionSuccess(
+      appointment.customer?.email
+        ? "Turno restaurado. Le reenviamos el mail de confirmación."
+        : "Turno restaurado.",
+    );
+  }
+  return actionSuccess("Turno restaurado.");
+}
+
+/** Corrige monto, medio de pago y día de un cobro ya registrado. */
+export async function correctPayment(
+  id: string,
+  payment: { amount: number; method: PaymentMethod; cash?: number; paidOn: string },
+): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const parsed = paymentCorrectionSchema.safeParse({ appointmentId: id, ...payment });
+  if (!parsed.success) return validationError(parsed.error);
+
+  const { data: current, error: readError } = await supabase
+    .from("payments")
+    .select("paid_at")
+    .eq("appointment_id", id)
+    .maybeSingle();
+  if (readError) return actionError(`No se pudo corregir el cobro: ${readError.message}`);
+  if (!current) return actionError("Ese turno ya no tiene un cobro para corregir.");
+
+  const paidAt = correctedPaidAt({ originalPaidAt: current.paid_at, paidOn: parsed.data.paidOn });
+  if (!paidAt) return actionError("El día del cobro no puede ser posterior a hoy.", { paidOn: "Elegí hoy o un día anterior." });
+
+  const { amount, method, cash } = parsed.data;
+  const { error } = await supabase.rpc("update_appointment_payment", {
+    p_appointment_id: id,
+    p_amount: amount,
+    p_method: method,
+    p_cash: cash ?? null,
+    p_paid_at: paidAt.toISOString(),
+  });
+
+  if (error) {
+    if (error.message.includes("no tiene un cobro")) {
+      return actionError("Ese turno ya no tiene un cobro para corregir.");
+    }
+    return actionError(`No se pudo corregir el cobro: ${error.message}`);
+  }
+
+  revalidateAgenda();
+  return actionSuccess("Cobro corregido.");
+}
+
+/**
+ * Deshace un cobro (se cobró el turno equivocado, o antes de tiempo): borra
+ * el pago y el turno vuelve a confirmado, en una sola transacción.
+ */
+export async function undoPayment(id: string): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const { error } = await supabase.rpc("undo_appointment_payment", { p_appointment_id: id });
+
+  if (error) {
+    if (error.code === EXCLUSION_VIOLATION) return actionError(SLOT_TAKEN);
+    if (error.message.includes("no tiene un cobro")) {
+      return actionError("Ese turno ya no tiene un cobro para deshacer.");
+    }
+    return actionError(`No se pudo deshacer el cobro: ${error.message}`);
+  }
+
+  revalidateAgenda();
+  return actionSuccess("Cobro deshecho: el turno vuelve a estar confirmado.");
 }

@@ -126,6 +126,8 @@ tachados con su motivo. Hoy y el conteo de turnos siguen sin contarlos.
   la completaría y el historial del turno la mostraría. Se dejó para después porque requiere
   aplicar SQL a mano en Supabase antes del deploy; las faltas se cuentan igual con el estado
   `no_show`.
+- Al hacerla, `undoNoShow` (`lib/actions/appointments.ts`, plan de correcciones) también tiene
+  que volver `no_show_at` a null.
 
 **Archivos:** `lib/data/appointments.ts`, `lib/actions/appointments.ts`,
 `lib/appointment-timeline.ts`, `app/admin/solicitudes/request-card.tsx`,

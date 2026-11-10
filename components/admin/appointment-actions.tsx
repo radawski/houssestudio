@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, type TransitionStartFunction } from "react";
-import { Banknote, Check, Mail, Phone, UserX, X } from "lucide-react";
+import { Banknote, Check, Mail, Pencil, Phone, RotateCcw, Undo2, UserX, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,16 @@ import {
   cancelAppointment,
   completeAppointment,
   confirmAppointment,
+  correctPayment,
   markNoShow,
+  restoreAppointment,
+  undoNoShow,
+  undoPayment,
 } from "@/lib/actions/appointments";
-import { formatCurrency, formatDateTime, formatDayAndTime } from "@/lib/format";
-import { toastActionError } from "@/lib/toast-error";
+import type { ActionState } from "@/lib/actions/result";
+import { todayKey } from "@/lib/dates";
+import { businessDateKey, formatCurrency, formatDateTime, formatDayAndTime } from "@/lib/format";
+import { toastActionError, toastError } from "@/lib/toast-error";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
@@ -359,7 +365,7 @@ export function SplitAmounts({
   );
 }
 
-function PaymentMethodPicker({
+export function PaymentMethodPicker({
   value,
   onChange,
 }: {
@@ -495,6 +501,322 @@ export function ConfirmedAppointmentActions({
           </a>
         </Button>
       ) : null}
+    </>
+  );
+}
+
+// -----------------------------------------------------------------------------
+// Correcciones (tasks/plan-correcciones-cobros.md)
+// -----------------------------------------------------------------------------
+
+/**
+ * Corre una acción de corrección y avisa el resultado. Las correcciones
+ * devuelven `ActionState` (ver `lib/actions/appointments.ts`): un rechazo de
+ * la base ya viene explicado y va sin "Reintentar"; un error de red sí lo
+ * lleva.
+ */
+async function runCorrection(
+  action: () => Promise<ActionState>,
+  fallback: string,
+  retry: () => void,
+): Promise<boolean> {
+  try {
+    const result = await action();
+    if (result.status === "success") {
+      toast.success(result.message ?? "Listo.");
+      return true;
+    }
+    toastError(result.message ?? fallback);
+    return false;
+  } catch (error) {
+    toastActionError(error, fallback, retry);
+    return false;
+  }
+}
+
+/** Ficha de un turno "No vino": lo devuelve a confirmado (el cliente llegó tarde). */
+export function UndoNoShowButton({ id }: { id: string }) {
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <Button
+      size="touch"
+      variant="outline"
+      disabled={pending}
+      onClick={function run() {
+        startTransition(async () => {
+          await runCorrection(() => undoNoShow(id), 'No se pudo deshacer el "No vino".', run);
+        });
+      }}
+    >
+      <Undo2 className="size-4" />
+      {pending ? "Deshaciendo…" : "Deshacer \u201cNo vino\u201d"}
+    </Button>
+  );
+}
+
+/**
+ * Ficha de un turno que canceló o rechazó el peluquero: lo restaura. La hoja
+ * dice adónde vuelve y si sale el mail, antes de tocar nada.
+ */
+export function RestoreAppointmentButton({
+  id,
+  target,
+  clientName,
+  startsAt,
+  hasEmail,
+}: {
+  id: string;
+  target: "confirmado" | "pendiente";
+  clientName?: string;
+  startsAt: string;
+  hasEmail: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const upcoming = new Date(startsAt).getTime() > Date.now();
+  const context = [clientName, formatDayAndTime(startsAt)].filter(Boolean).join(" · ");
+  const outcome =
+    target === "pendiente"
+      ? "Vuelve a Solicitudes como pendiente, para que la aceptes o la rechaces de nuevo."
+      : upcoming && hasEmail
+        ? "Vuelve a la agenda como confirmado y le reenviamos al cliente el mail de turno confirmado."
+        : "Vuelve a la agenda como confirmado.";
+
+  return (
+    <>
+      <Button size="touch" variant="outline" className="w-full" onClick={() => setOpen(true)}>
+        <RotateCcw className="size-4" />
+        Restaurar turno
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Restaurar turno</DialogTitle>
+            <DialogDescription>
+              {context}. {outcome} Si el horario ya lo ocupa otro turno, no se puede restaurar.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" size="touch-lg" onClick={() => setOpen(false)} disabled={pending}>
+              Volver
+            </Button>
+            <Button
+              size="touch-xl"
+              disabled={pending}
+              onClick={function run() {
+                startTransition(async () => {
+                  const ok = await runCorrection(() => restoreAppointment(id), "No se pudo restaurar el turno.", run);
+                  if (ok) setOpen(false);
+                });
+              }}
+            >
+              {pending ? "Restaurando…" : "Restaurar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+export type RecordedPayment = {
+  amount: number;
+  method: PaymentMethod;
+  cash_amount: number | null;
+  transfer_amount: number | null;
+  paid_at: string;
+};
+
+/**
+ * Corregir un cobro ya registrado: monto, medio (o dividido) y día. Es el
+ * mismo formulario que "Cobrar", con lo que se cargó ya puesto. Adentro está
+ * "Deshacer cobro", con su propia confirmación, para cuando se cobró el turno
+ * equivocado o antes de tiempo.
+ *
+ * Por defecto el disparador es un botón; Caja pasa su fila como `children`.
+ */
+export function CorrectPaymentButton({
+  id,
+  payment,
+  clientName,
+  serviceName,
+  startsAt,
+  children,
+  triggerClassName,
+}: {
+  id: string;
+  payment: RecordedPayment;
+  clientName?: string;
+  serviceName: string;
+  startsAt?: string;
+  children?: React.ReactNode;
+  /** Clases del disparador cuando es `children` (una fila de Caja). */
+  triggerClassName?: string;
+}) {
+  const initialSplit = payment.cash_amount !== null && payment.transfer_amount !== null;
+  const [open, setOpen] = useState(false);
+  const [confirmUndo, setConfirmUndo] = useState(false);
+  const [amount, setAmount] = useState(String(payment.amount));
+  const [method, setMethod] = useState<PaymentChoice>(initialSplit ? "dividido" : payment.method);
+  const [cash, setCash] = useState(initialSplit ? String(payment.cash_amount) : "");
+  const [paidOn, setPaidOn] = useState(businessDateKey(payment.paid_at));
+  const [pending, startTransition] = useTransition();
+
+  // Cada vez que se abre, arranca desde lo registrado (no desde un intento
+  // anterior que se cerró sin guardar).
+  function openDialog() {
+    setAmount(String(payment.amount));
+    setMethod(initialSplit ? "dividido" : payment.method);
+    setCash(initialSplit ? String(payment.cash_amount) : "");
+    setPaidOn(businessDateKey(payment.paid_at));
+    setConfirmUndo(false);
+    setOpen(true);
+  }
+
+  const total = Number(amount) || 0;
+  const split = method === "dividido";
+  const cashValue = Math.min(Math.max(Number(cash) || 0, 0), total);
+  const today = todayKey();
+  const context = [clientName, serviceName, startsAt ? formatDateTime(startsAt) : null].filter(Boolean).join(" · ");
+
+  return (
+    <>
+      {children ? (
+        <button type="button" className={triggerClassName ?? "w-full text-left"} onClick={openDialog}>
+          {children}
+        </button>
+      ) : (
+        <Button size="touch" variant="outline" className="w-full" onClick={openDialog}>
+          <Pencil className="size-4" />
+          Corregir cobro
+        </Button>
+      )}
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md">
+          {confirmUndo ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Deshacer cobro</DialogTitle>
+                <DialogDescription>
+                  {context}. Se borra el cobro de {formatCurrency(payment.amount)} y el turno vuelve a
+                  estar confirmado, para cobrarlo de nuevo o marcar que no vino. No se puede volver atrás.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="ghost" size="touch-lg" onClick={() => setConfirmUndo(false)} disabled={pending}>
+                  Volver
+                </Button>
+                <Button
+                  size="touch-xl"
+                  className="bg-destructive hover:bg-destructive/90 text-white"
+                  disabled={pending}
+                  onClick={function run() {
+                    startTransition(async () => {
+                      const ok = await runCorrection(() => undoPayment(id), "No se pudo deshacer el cobro.", run);
+                      if (ok) setOpen(false);
+                    });
+                  }}
+                >
+                  {pending ? "Deshaciendo…" : "Deshacer cobro"}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Corregir cobro</DialogTitle>
+                <DialogDescription>{context}</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor={`fix-amount-${id}`}>Monto</Label>
+                  <div className="relative">
+                    <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm tabular-nums">
+                      $
+                    </span>
+                    <Input
+                      id={`fix-amount-${id}`}
+                      type="number"
+                      min={0}
+                      step={1}
+                      inputMode="numeric"
+                      className="h-12 pl-6.5 text-base tabular-nums"
+                      value={amount}
+                      onChange={(event) => setAmount(event.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <PaymentMethodPicker value={method} onChange={setMethod} />
+
+                {split ? (
+                  <SplitAmounts total={total} cash={cash} onCashChange={setCash} idPrefix={`fix-split-${id}`} />
+                ) : null}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor={`fix-day-${id}`}>Día del cobro</Label>
+                  <Input
+                    id={`fix-day-${id}`}
+                    type="date"
+                    max={today}
+                    className="h-12 text-base tabular-nums"
+                    value={paidOn}
+                    onChange={(event) => setPaidOn(event.target.value)}
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Es el día en que entra en Caja. Cambialo si lo cobraste otro día.
+                  </p>
+                </div>
+              </div>
+
+              <DialogFooter className="flex-col gap-2 sm:flex-col">
+                <Button
+                  size="touch-xl"
+                  disabled={
+                    pending ||
+                    !amount ||
+                    !paidOn ||
+                    paidOn > today ||
+                    (split && (Number(cash) || 0) > total)
+                  }
+                  onClick={function run() {
+                    startTransition(async () => {
+                      const ok = await runCorrection(
+                        () =>
+                          correctPayment(id, {
+                            amount: total,
+                            method: split ? "efectivo" : method,
+                            cash: split ? cashValue : undefined,
+                            paidOn,
+                          }),
+                        "No se pudo corregir el cobro.",
+                        run,
+                      );
+                      if (ok) setOpen(false);
+                    });
+                  }}
+                >
+                  {pending ? "Guardando…" : "Guardar corrección"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="touch-lg"
+                  className="text-destructive hover:text-destructive"
+                  disabled={pending}
+                  onClick={() => setConfirmUndo(true)}
+                >
+                  <Undo2 className="size-4" />
+                  Deshacer cobro
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

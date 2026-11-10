@@ -29,6 +29,14 @@ export type CashboxMovement = CategorizedCharge & {
   at: string;
   /** Nota opcional de una venta suelta; los cobros de turnos no llevan. */
   note: string | null;
+  /**
+   * Para corregir el movimiento desde Caja (0018). Un cobro de turno lleva su
+   * turno; un ítem de venta suelta, la venta a la que pertenece (todos sus
+   * ítems se anulan juntos) y su id de catálogo (para volver a cargarla).
+   */
+  correction:
+    | { kind: "turno"; appointmentId: string; clientName: string | null; startsAt: string | null }
+    | { kind: "venta"; saleId: string; itemKind: "servicio" | "producto"; catalogId: string | null };
 };
 
 /**
@@ -38,12 +46,18 @@ export type CashboxMovement = CategorizedCharge & {
  */
 type PaymentRow = {
   id: string;
+  appointment_id: string;
   amount: number;
   method: PaymentMethod;
   cash_amount: number | null;
   transfer_amount: number | null;
   paid_at: string;
-  appointment: { service_name_at_booking: string; status: string } | null;
+  appointment: {
+    service_name_at_booking: string;
+    status: string;
+    starts_at: string;
+    customer: { full_name: string } | null;
+  } | null;
 };
 
 export async function getCashboxSummary(range: {
@@ -56,14 +70,14 @@ export async function getCashboxSummary(range: {
     supabase
       .from("payments")
       .select(
-        "id, amount, method, cash_amount, transfer_amount, paid_at, appointment:appointments(service_name_at_booking, status)",
+        "id, appointment_id, amount, method, cash_amount, transfer_amount, paid_at, appointment:appointments(service_name_at_booking, status, starts_at, customer:customers(full_name))",
       )
       .gte("paid_at", range.start)
       .lt("paid_at", range.end),
     supabase
       .from("walk_in_sales")
       .select(
-        "id, kind, service_name, quantity, unit_price, category_id, amount, method, cash_amount, transfer_amount, sold_at, note",
+        "id, sale_id, kind, service_id, product_id, service_name, quantity, unit_price, category_id, amount, method, cash_amount, transfer_amount, sold_at, note",
       )
       .gte("sold_at", range.start)
       .lt("sold_at", range.end),
@@ -107,6 +121,12 @@ export async function getCashboxSummary(range: {
         split: splitFromColumns(row.cash_amount, row.transfer_amount),
         at: row.paid_at,
         note: null,
+        correction: {
+          kind: "turno" as const,
+          appointmentId: row.appointment_id,
+          clientName: row.appointment?.customer?.full_name ?? null,
+          startsAt: row.appointment?.starts_at ?? null,
+        },
         ...services,
         concept: serviceName,
         quantity: 1,
@@ -131,6 +151,12 @@ export async function getCashboxSummary(range: {
       split: splitFromColumns(row.cash_amount, row.transfer_amount),
       at: row.sold_at,
       note: row.note,
+      correction: {
+        kind: "venta" as const,
+        saleId: row.sale_id,
+        itemKind: row.kind,
+        catalogId: row.kind === "producto" ? row.product_id : row.service_id,
+      },
       ...placement,
       concept: row.service_name,
       quantity: row.quantity,

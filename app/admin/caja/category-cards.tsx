@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+import { MovementCorrection } from "@/app/admin/caja/movement-correction";
 import { Skeleton } from "@/components/ui/skeleton";
 import { describePayment, type CategoryGroup, type ConceptTotal } from "@/lib/cashbox";
 import type { CashboxMovement } from "@/lib/data/cashbox";
+import type { SaleCatalog } from "@/lib/data/products";
 import { formatCurrency, formatTime } from "@/lib/format";
 
 const METHOD_LABEL = { efectivo: "Efectivo", transferencia: "Transferencia" } as const;
@@ -18,10 +20,38 @@ function methodSplit(byMethod: ConceptTotal["byMethod"]) {
   return `Ef. ${formatCurrency(byMethod.efectivo)} · Tr. ${formatCurrency(byMethod.transferencia)}`;
 }
 
-/** Fila de un movimiento (día): concepto, hora · origen, nota, monto y medio. */
-function MovementRow({ movement }: { movement: CashboxMovement }) {
+/**
+ * Fila de un movimiento (día): concepto, hora · origen, nota, monto y medio.
+ * Con `catalog`, tocarla abre su corrección (`MovementCorrection`).
+ */
+function MovementRow({
+  movement,
+  movements,
+  catalog,
+}: {
+  movement: CashboxMovement;
+  movements: CashboxMovement[];
+  catalog?: SaleCatalog;
+}) {
+  const content = <MovementContent movement={movement} />;
+  if (!catalog) return <li className="flex items-start justify-between gap-3 px-3.5 py-3">{content}</li>;
   return (
-    <li className="flex items-start justify-between gap-3 px-3.5 py-3">
+    <li>
+      <MovementCorrection
+        movement={movement}
+        movements={movements}
+        catalog={catalog}
+        className="hover:bg-accent flex items-start justify-between gap-3 px-3.5 py-3"
+      >
+        {content}
+      </MovementCorrection>
+    </li>
+  );
+}
+
+function MovementContent({ movement }: { movement: CashboxMovement }) {
+  return (
+    <>
       <div className="min-w-0">
         <p className="text-sm font-medium">
           {movement.concept}
@@ -40,7 +70,7 @@ function MovementRow({ movement }: { movement: CashboxMovement }) {
         <p className="text-[15px] font-semibold tabular-nums">{formatCurrency(movement.amount)}</p>
         <p className="text-muted-foreground mt-0.5 text-xs">{describePayment(movement, formatCurrency)}</p>
       </div>
-    </li>
+    </>
   );
 }
 
@@ -87,10 +117,13 @@ const SKELETON_WIDTHS = [
 export function CategoryCards({
   groups,
   detail,
+  catalog,
 }: {
   groups: CategoryGroup<CashboxMovement>[] | null;
   /** `movimientos` en el día, `conceptos` en semana y mes. */
   detail: "movimientos" | "conceptos";
+  /** Catálogo de la venta suelta: con él, cada movimiento del día se puede corregir. */
+  catalog?: SaleCatalog;
 }) {
   // Todas cerradas de entrada (pedido del usuario; el diseño las mostraba
   // abiertas): al entrar a Caja se ve el resumen por categoría de un vistazo.
@@ -133,6 +166,8 @@ export function CategoryCards({
     });
   }
 
+  const movements = groups.flatMap((group) => group.charges);
+
   return (
     <div className="flex flex-col gap-3 md:hidden">
       {groups.map((group) => {
@@ -159,7 +194,12 @@ export function CategoryCards({
               <ul className="divide-y divide-[var(--hs-divider)] border-t border-[var(--hs-divider)]">
                 {detail === "movimientos"
                   ? group.charges.map((movement) => (
-                      <MovementRow key={`${movement.origin}-${movement.id}`} movement={movement} />
+                      <MovementRow
+                        key={`${movement.origin}-${movement.id}`}
+                        movement={movement}
+                        movements={movements}
+                        catalog={catalog}
+                      />
                     ))
                   : group.concepts.map((concept) => <ConceptRow key={concept.name} concept={concept} />)}
               </ul>

@@ -7,8 +7,10 @@ import {
   identifySchema,
   normalizeDni,
   normalizePhone,
+  paymentCorrectionSchema,
   productCategorySchema,
   productSchema,
+  walkInSalePaymentSchema,
   walkInSaleSchema,
 } from "@/lib/validation/schemas";
 
@@ -243,5 +245,41 @@ describe("productCategorySchema / productSchema", () => {
     });
     expect(productSchema.safeParse({ categoryId: "x", name: "Agua", price: 100 }).success).toBe(false);
     expect(productSchema.safeParse({ categoryId: "7f0c1e2a-3b4d-4e5f-8a9b-0c1d2e3f4a5b", name: "Agua", price: -1 }).success).toBe(false);
+  });
+});
+
+describe("paymentCorrectionSchema", () => {
+  const base = {
+    appointmentId: "8f1c2b8e-5c43-4c51-9a3e-2f1d6b7a9c10",
+    amount: 12000,
+    method: "efectivo",
+    paidOn: "2026-11-09",
+  };
+
+  it("acepta una corrección de un solo método", () => {
+    expect(paymentCorrectionSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("acepta un dividido que no supera el total", () => {
+    expect(paymentCorrectionSchema.safeParse({ ...base, cash: 5000 }).success).toBe(true);
+  });
+
+  it("rechaza efectivo mayor que el total", () => {
+    const result = paymentCorrectionSchema.safeParse({ ...base, cash: 15000 });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["cash"]);
+  });
+
+  it("exige el día del cobro con formato yyyy-MM-dd", () => {
+    expect(paymentCorrectionSchema.safeParse({ ...base, paidOn: "9/11/2026" }).success).toBe(false);
+  });
+});
+
+describe("walkInSalePaymentSchema", () => {
+  it("acepta un cambio de medio con efectivo opcional", () => {
+    const saleId = "8f1c2b8e-5c43-4c51-9a3e-2f1d6b7a9c10";
+    expect(walkInSalePaymentSchema.safeParse({ saleId, method: "transferencia" }).success).toBe(true);
+    expect(walkInSalePaymentSchema.safeParse({ saleId, method: "efectivo", cash: 300 }).success).toBe(true);
+    expect(walkInSalePaymentSchema.safeParse({ saleId, method: "efectivo", cash: -1 }).success).toBe(false);
   });
 });

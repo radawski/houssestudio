@@ -226,6 +226,31 @@ export const paymentSchema = z
   });
 
 /**
+ * Corrección de un cobro ya registrado (0018): lo mismo que `paymentSchema`
+ * más el día del cobro, `yyyy-MM-dd` en hora local. Que el día no sea futuro
+ * lo decide `correctedPaidAt`, que es la que conoce la hora del cobro original.
+ */
+export const paymentCorrectionSchema = z
+  .object({
+    appointmentId: z.uuid(),
+    amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
+    method: z.enum(["efectivo", "transferencia"]),
+    cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").optional(),
+    paidOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Elegí el día del cobro"),
+  })
+  .refine((payment) => payment.cash === undefined || payment.cash <= payment.amount, {
+    message: "El efectivo no puede superar el total.",
+    path: ["cash"],
+  });
+
+/** Cambio del medio de pago de una venta suelta ya registrada (0018). */
+export const walkInSalePaymentSchema = z.object({
+  saleId: z.uuid(),
+  method: z.enum(["efectivo", "transferencia"]),
+  cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").max(10_000_000).optional(),
+});
+
+/**
  * Una venta suelta con carrito (tasks/plan-productos.md, P3): uno o más
  * ítems del catálogo, servicios o productos, con su cantidad. Solo catálogo:
  * no viaja ningún precio, el servidor lo toma de Servicios y Productos.

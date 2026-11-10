@@ -325,6 +325,34 @@ export type Database = {
         };
         Returns: string;
       };
+      update_appointment_payment: {
+        Args: {
+          p_appointment_id: string;
+          p_amount: number;
+          p_method: PaymentMethod;
+          p_cash: number | null;
+          p_paid_at: string;
+        };
+        Returns: void;
+      };
+      undo_appointment_payment: {
+        Args: { p_appointment_id: string };
+        Returns: void;
+      };
+      update_walk_in_sale_payment: {
+        Args: { p_sale_id: string; p_method: PaymentMethod; p_cash: number | null };
+        Returns: void;
+      };
+      replace_walk_in_sale: {
+        Args: {
+          p_sale_id: string;
+          p_items: { kind: WalkInSaleKind; id: string; quantity: number }[];
+          p_method: PaymentMethod;
+          p_cash: number | null;
+          p_note: string | null;
+        };
+        Returns: string;
+      };
     };
     Enums: {
       appointment_status: AppointmentStatus;
