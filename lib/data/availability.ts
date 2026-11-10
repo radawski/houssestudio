@@ -142,6 +142,17 @@ export async function getAvailableSlots(
   serviceId: string,
   dateKey: string,
   now: Date = new Date(),
+  {
+    ignoreBookingWindow = false,
+  }: {
+    /**
+     * Para el turno que agenda el peluquero desde el panel (plan de
+     * noviembre, T1): la misma grilla, sin el límite de días ni la
+     * anticipación mínima de la reserva online. Los horarios ya pasados
+     * siguen sin ofrecerse.
+     */
+    ignoreBookingWindow?: boolean;
+  } = {},
 ): Promise<Interval[]> {
   const service = await getActiveService(serviceId);
   if (!service) return [];
@@ -160,8 +171,8 @@ export async function getAvailableSlots(
     hours: dayHours ? toDayHours(dayHours) : null,
     busy,
     now,
-    minLeadMinutes: settings.min_booking_lead_minutes,
-    maxDateKey: lastBookableDateKey(settings, now),
+    minLeadMinutes: ignoreBookingWindow ? 0 : settings.min_booking_lead_minutes,
+    maxDateKey: ignoreBookingWindow ? undefined : lastBookableDateKey(settings, now),
   });
 }
 

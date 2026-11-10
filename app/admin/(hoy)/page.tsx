@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AppointmentCard } from "@/components/admin/appointment-card";
+import { RecurringSkipNotice } from "@/components/admin/recurring-skip-notice";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   getAppointmentsForDay,
   getPendingAppointments,
   withCustomerHistory,
 } from "@/lib/data/appointments";
+import { getOpenSkips } from "@/lib/data/recurring";
 import { todayKey } from "@/lib/dates";
 import { formatLongDate } from "@/lib/format";
 import { dayRange } from "@/lib/dates";
@@ -30,9 +32,10 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 export default async function AdminHomePage() {
   const today = todayKey();
 
-  const [appointments, pending] = await Promise.all([
+  const [appointments, pending, skips] = await Promise.all([
     getAppointmentsForDay(today).then(withCustomerHistory),
     getPendingAppointments(),
+    getOpenSkips(),
   ]);
 
   const confirmed = appointments.filter((a) => a.status === "confirmado");
@@ -64,6 +67,8 @@ export default async function AdminHomePage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {skips.length > 0 ? <RecurringSkipNotice skips={skips} /> : null}
 
       <section className="space-y-3">
         <h2 className="text-muted-foreground text-xs font-medium tracking-widest uppercase">

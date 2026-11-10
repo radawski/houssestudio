@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 import { CustomerNotes, EditCustomerSheet } from "@/app/admin/clientes/[id]/customer-edit";
+import { CustomerRecurring } from "@/app/admin/clientes/[id]/customer-recurring";
 import { AppointmentSheet } from "@/components/admin/appointment-sheet";
 import { BackHeader } from "@/components/admin/back-header";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
@@ -10,6 +11,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { describePayment, splitFromColumns } from "@/lib/cashbox";
 import { initials } from "@/lib/customer-summary";
 import { getCustomerDetail, type CustomerHistoryItem } from "@/lib/data/customers";
+import { getCustomerRecurring, toRule } from "@/lib/data/recurring";
 import { formatCurrency, formatDni, formatInTz, formatTime } from "@/lib/format";
 import type { Customer } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
@@ -48,7 +50,7 @@ function DataRow({ label, children }: { label: string; children: React.ReactNode
  */
 export default async function CustomerPage({ params }: PageProps<"/admin/clientes/[id]">) {
   const { id } = await params;
-  const detail = await getCustomerDetail(id);
+  const [detail, recurring] = await Promise.all([getCustomerDetail(id), getCustomerRecurring(id)]);
   if (!detail) notFound();
 
   const { customer, summary, appointments } = detail;
@@ -104,6 +106,20 @@ export default async function CustomerPage({ params }: PageProps<"/admin/cliente
 
       <CustomerNotes id={customer.id} initial={customer.notes ?? ""} />
 
+      {recurring.length > 0 ? (
+        <CustomerRecurring
+          items={recurring.map((item) => ({
+            id: item.id,
+            rule: toRule(item),
+            startTime: item.start_time,
+            active: item.active,
+            serviceName: item.service?.name ?? null,
+            nextAt: item.nextAt,
+            lastAt: item.lastAt,
+          }))}
+        />
+      ) : null}
+
       <section className="space-y-2">
         <h3 className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
           Historial · {appointments.length} {appointments.length === 1 ? "turno" : "turnos"}
@@ -129,6 +145,7 @@ export default async function CustomerPage({ params }: PageProps<"/admin/cliente
 function HistoryRow({ appointment, customer }: { appointment: CustomerHistoryItem; customer: Customer }) {
   const detail = [
     appointment.service_name_at_booking,
+    appointment.recurring_id && appointment.status !== "cancelado" && !appointment.payment ? "turno fijo" : null,
     appointment.payment
       ? `${formatCurrency(appointment.payment.amount)} · ${describePayment(
           {

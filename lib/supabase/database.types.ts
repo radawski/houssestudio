@@ -90,7 +90,41 @@ export type Appointment = {
   confirmed_at: string | null;
   completed_at: string | null;
   cancelled_at: string | null;
+  /** Turno fijo (0017) que generó este turno. Nulo en los turnos sueltos. */
+  recurring_id: string | null;
 } & Timestamps;
+
+/**
+ * Turno fijo (0017): la regla de un cliente. Exactamente una de
+ * `every_weeks` (cada 1, 2 o 3 semanas) o `monthly_nth` (el n-ésimo día de
+ * la semana de cada mes, 5 = el último si el mes no tiene quinto).
+ */
+export type RecurringAppointment = {
+  id: string;
+  customer_id: string;
+  service_id: string | null;
+  /** Primera fecha, `yyyy-MM-dd` local. El día de la semana sale de acá. */
+  anchor_date: string;
+  /** Hora local de inicio, `HH:MM:SS`. */
+  start_time: string;
+  every_weeks: 1 | 2 | 3 | null;
+  monthly_nth: number | null;
+  /** `false` con `ended_at` nulo = pausado; con `ended_at` = terminado. */
+  active: boolean;
+  created_at: string;
+  ended_at: string | null;
+};
+
+/** Turno fijo (0017): una fecha que no se pudo agendar, para el aviso de Hoy. */
+export type RecurringSkip = {
+  id: string;
+  recurring_id: string;
+  /** `yyyy-MM-dd` local. */
+  skipped_on: string;
+  reason: string;
+  resolved_at: string | null;
+  created_at: string;
+};
 
 export type Payment = {
   id: string;
@@ -220,7 +254,13 @@ export type Database = {
         | "confirmed_at"
         | "completed_at"
         | "cancelled_at"
+        | "recurring_id"
       >;
+      recurring_appointments: TableShape<
+        RecurringAppointment,
+        "service_id" | "every_weeks" | "monthly_nth" | "active" | "ended_at"
+      >;
+      recurring_skips: TableShape<RecurringSkip, "resolved_at">;
       payments: TableShape<Payment, "paid_at" | "cash_amount" | "transfer_amount">;
       walk_in_sales: TableShape<
         WalkInSale,

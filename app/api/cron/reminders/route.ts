@@ -1,9 +1,11 @@
 import { timingSafeEqual } from "node:crypto";
 
+import { revalidateAgenda } from "@/lib/cache";
 import { pickComebacks } from "@/lib/comebacks";
 import { runIsolated } from "@/lib/cron";
 import { getSettings } from "@/lib/data/availability";
 import { getComebackInputs } from "@/lib/data/comebacks";
+import { fillRecurring } from "@/lib/data/recurring";
 import { getReminderCandidates } from "@/lib/data/reminders";
 import { todayKey } from "@/lib/dates";
 import { sendComeback, sendReminder, type ReminderOutcome } from "@/lib/email/send";
@@ -17,8 +19,11 @@ import { manageUrlFor, unsubscribeUrlFor } from "@/lib/tokens";
  * variable existe. Sin ese encabezado responde 401: es una dirección pública
  * y manda mails.
  *
- * Corre dos trabajos, cada uno aislado (`runIsolated`): si uno falla, el
- * otro corre igual.
+ * Corre tres trabajos, cada uno aislado (`runIsolated`): si uno falla, los
+ * otros corren igual.
+ * - `turnosFijos`: completa las próximas 4 fechas de cada turno fijo (T2,
+ *   tasks/plan-mejoras-noviembre.md). Va primero para que un turno fijo de
+ *   mañana recién agendado también reciba su recordatorio.
  * - `recordatorios`: el del día anterior (Fase 3, tasks/plan-recordatorios.md).
  * - `vuelta`: "Ya pasó un mes" (Fase 4, tasks/plan-mejoras-octubre.md).
  *
@@ -38,6 +43,13 @@ export async function GET(request: Request) {
   if (!authorized(request)) {
     return Response.json({ error: "No autorizado" }, { status: 401 });
   }
+
+  const turnosFijos = await runIsolated("turnos-fijos", async () => {
+    const { agendados, salteados } = await fillRecurring();
+    // Turnos nuevos en la agenda: igual que cualquier otro alta de turno.
+    if (agendados > 0) revalidateAgenda();
+    return { agendados, salteados: salteados.length };
+  });
 
   const recordatorios = await runIsolated("recordatorios", async () => {
     const range = tomorrowRange();
@@ -83,7 +95,7 @@ export async function GET(request: Request) {
     return { clientes: send.length + skipped, salteados: skipped, ...outcomes };
   });
 
-  const summary = { recordatorios, vuelta };
+  const summary = { turnosFijos, recordatorios, vuelta };
   console.log("Recordatorios:", JSON.stringify(summary));
   return Response.json(summary);
 }

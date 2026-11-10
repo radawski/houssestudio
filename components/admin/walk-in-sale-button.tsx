@@ -73,7 +73,19 @@ function Stepper({ name, quantity, onChange }: { name: string; quantity: number;
  * nombre libre. El precio que se muestra es el de lista; el que se guarda lo
  * toma el servidor del mismo catálogo.
  */
-export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
+export function WalkInSaleButton({
+  catalog,
+  open: controlledOpen,
+  onOpenChange,
+  withTriggers = true,
+}: {
+  catalog: SaleCatalog;
+  /** Abierto desde afuera (el menú "+ Nuevo" de la Agenda). Sin esto, maneja su propio estado. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Sus propios botones (escritorio y FAB). La Agenda los reemplaza por "+ Nuevo". */
+  withTriggers?: boolean;
+}) {
   const groups: Group[] = useMemo(
     () => [
       { key: SERVICES_CATEGORY.key, name: SERVICES_CATEGORY.name, kind: "servicio", items: catalog.services },
@@ -84,7 +96,12 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
     [catalog],
   );
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = controlledOpen ?? internalOpen;
+  function setOpen(next: boolean) {
+    if (controlledOpen === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  }
   const [cart, setCart] = useState<Map<string, number>>(new Map());
   // Cortes abierta de entrada: un corte sin turno es la venta más común.
   const [expanded, setExpanded] = useState<Set<string>>(new Set([SERVICES_CATEGORY.key]));
@@ -169,32 +186,35 @@ export function WalkInSaleButton({ catalog }: { catalog: SaleCatalog }) {
 
   return (
     <Dialog
-      open={open}
+      open={isOpen}
       onOpenChange={(next) => {
         setOpen(next);
         if (!next) reset();
       }}
     >
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="hidden md:inline-flex">
-          <ShoppingBag className="size-4" />
-          Venta suelta
-        </Button>
-      </DialogTrigger>
+      {withTriggers ? (
+        <>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="hidden md:inline-flex">
+              <ShoppingBag className="size-4" />
+              Venta suelta
+            </Button>
+          </DialogTrigger>
 
-      {/* FAB (design/admin-iphone n-Agenda): mismo diálogo, disparador propio
-          para mobile, fijo por encima de la tab bar inferior. 84 = alto de
-          la tab bar (6 + 56 + 6) + 16 de aire; sin `env()` porque el layout
-          no usa `viewportFit: "cover"` y en Safari vale 0 igual. */}
-      <DialogTrigger asChild>
-        <Button
-          size="touch-lg"
-          className="fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
-        >
-          <Plus className="size-[18px]" />
-          Venta suelta
-        </Button>
-      </DialogTrigger>
+          {/* FAB (design/admin-iphone n-Agenda): mismo diálogo, disparador
+              propio para mobile, fijo por encima de la tab bar inferior. 84 =
+              alto de la tab bar (6 + 56 + 6) + 16 de aire. */}
+          <DialogTrigger asChild>
+            <Button
+              size="touch-lg"
+              className="fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
+            >
+              <Plus className="size-[18px]" />
+              Venta suelta
+            </Button>
+          </DialogTrigger>
+        </>
+      ) : null}
 
       {/* En el celular, hoja casi de pantalla completa (design iPhoneVentaC):
           la lista se desplaza y el pie con el total queda fijo abajo. Con

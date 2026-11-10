@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { AgendaNewActions } from "@/app/admin/agenda/agenda-new-actions";
 import { usePeriodLink, usePeriodNavigation } from "@/components/admin/period-navigation";
-import { WalkInSaleButton } from "@/components/admin/walk-in-sale-button";
 import type { SaleCatalog } from "@/lib/data/products";
 import { Button } from "@/components/ui/button";
 import { dayNumber } from "@/lib/agenda-day";
@@ -134,12 +134,11 @@ export function AgendaToolbar({ catalog }: { catalog: SaleCatalog }) {
       </div>
 
       {/* `contents` en mobile: el wrapper no genera caja propia, así que
-          `WalkInSaleButton` (que monta su FAB fixed sin envoltorio, Radix no
-          agrega DOM) no queda escondido por un ancestro `hidden` — solo pasa
+          `AgendaNewActions` (que monta su FAB fixed sin envoltorio) no queda escondido por un ancestro `hidden` — solo pasa
           a agrupar con `ViewSegments` cuando existe como fila real en
           desktop. */}
       <div className="contents md:flex md:items-center md:gap-3">
-        <WalkInSaleButton catalog={catalog} />
+        <AgendaNewActions catalog={catalog} dateKey={dateKey} />
         <ViewSegments view={view} dateKey={dateKey} className="hidden md:flex" />
       </div>
 

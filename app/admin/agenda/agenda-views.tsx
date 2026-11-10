@@ -1,3 +1,5 @@
+import { Repeat } from "lucide-react";
+
 import { AppointmentCard } from "@/components/admin/appointment-card";
 import { AppointmentSheet } from "@/components/admin/appointment-sheet";
 import { CustomerHistoryChip } from "@/components/admin/customer-history-chip";
@@ -83,6 +85,12 @@ function AgendaAppointmentRow({ appointment }: { appointment: AppointmentWithCus
                 {appointment.service_name_at_booking} · {formatCurrency(appointment.price_at_booking)}
               </p>
             )}
+            {open && appointment.recurring_id ? (
+              <span className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
+                <Repeat className="size-3.5" strokeWidth={1.75} aria-hidden />
+                Turno fijo
+              </span>
+            ) : null}
             {open ? <CustomerHistoryChip history={appointment.history} className="mt-2" /> : null}
           </button>
         </DialogTrigger>
