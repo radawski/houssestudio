@@ -271,9 +271,11 @@
       tiene backups y pausa el proyecto tras 7 días sin uso)
 
 ## A futuro (quizás; sin fecha ni especificación)
-- CRM: ficha de cliente con historial de turnos, gasto, ausencias y notas
-- Reportes: comparativas entre meses, servicios más vendidos, horarios
-  pico, ausencias, clientes nuevos vs. recurrentes
+- ~~CRM: ficha de cliente con historial de turnos, gasto, ausencias y notas~~
+  — hecho en noviembre (Clientes)
+- Reportes: ~~comparativas entre meses, horarios pico, ausencias, clientes
+  nuevos vs. recurrentes~~ (hecho en noviembre, Estadísticas); queda
+  "servicios más vendidos"
 
 ## Categorías, productos, venta con carrito y Caja por categoría (ver tasks/plan-productos.md)
 - [x] Decisiones: categorías reemplazan barras/calendario en Caja iPhone;
@@ -496,3 +498,36 @@
 - [x] F1 — SPEC (decisiones de octubre en §2 y nueva §9) y README (portal,
       panel, variables de mail y `CRON_SECRET`, migraciones 0013 y 0014,
       mapa del código y estado) al día
+
+## Mejoras de noviembre (ver tasks/plan-mejoras-noviembre.md)
+- [x] D1 — Prototipo navegable aprobado el 2026-11-09
+      (https://claude.ai/artifact/FXxvsmpuobzM89xRqmRhvf)
+- [x] M1, M2 — "Mis turnos" con DNI + teléfono (POST, límite por IP y DNI,
+      error genérico), sesión de 30 min y "Volver a mis turnos" desde el turno
+- [x] B1 — Portada: "Barbería" y título en Anton
+- [ ] B1 — Decidir si "peluquería" pasa a "barbería" en los otros ~7 lugares
+      (textos y mails)
+- [x] V1 — Cancelados tachados con su motivo en la Agenda del día
+- [x] V2 — Chip de faltas en Hoy, Solicitudes, Agenda y la hoja del turno
+- [ ] V2 — Migración 0015 `appointments.no_show_at` (diferida: hoy las faltas
+      se cuentan con el estado)
+- [x] V3 — Hoja del turno: Ver ficha, Cobrar / No vino, Cancelar / Rechazar
+- [x] C1 — Clientes: lista con buscador y ficha (datos, notas, contadores,
+      historial)
+- [x] Hojas inferiores: cerrar deslizando hacia abajo
+- [x] P1, P2 — Pago dividido (0016, aplicada) en cobros y ventas sueltas;
+      Caja suma por método con la división
+- [x] T1 — "+ Nuevo" en la Agenda: Nuevo turno (buscar o crear cliente,
+      horario de la grilla, confirmado) o Venta suelta
+- [x] T2 — Turno fijo (0017, aplicada): Repetir 1/2/3 semanas o mes, 4 fechas
+      siempre agendadas, tarea diaria `turnos-fijos`, aviso en Hoy, Pausar /
+      Reanudar / Terminar en la ficha. Probado contra la base con un bloqueo
+      (fecha salteada, reemplazo, reanudar sin duplicar, terminar); datos de
+      prueba borrados
+- [x] E1 — Estadísticas por semana o mes; números comparados a mano con
+      visitas de prueba (borradas)
+- [x] F1 — SPEC §10, README y este archivo al día
+- [ ] Revisar en los logs de Vercel la primera corrida de la tarea diaria con
+      `turnosFijos` en la respuesta
+- [ ] Checkpoint — el usuario prueba Nuevo turno, turno fijo y Estadísticas en
+      el iPhone

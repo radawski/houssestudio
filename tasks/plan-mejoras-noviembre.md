@@ -1,5 +1,23 @@
 # Plan — Clientes, pago dividido, turnos manuales y fijos, "Mis turnos" y estadísticas
 
+## Estado (2026-11-09)
+
+Todo hecho y subido a `main`, salvo lo marcado como pendiente:
+
+| Tarea | Estado | Commit |
+|---|---|---|
+| D1 Prototipo | Aprobado | — |
+| M1, M2, B1 Mis turnos y portada | Hecho | `a703806`, `030c998` |
+| V3 Cancelar desde la hoja | Hecho | `c338a81` |
+| Hojas: cerrar deslizando | Hecho | `b1d604d` |
+| V1, V2, V3, C1 Cancelados, faltas, hoja, Clientes | Hecho | `904bf40` |
+| P1, P2 Pago dividido (0016) | Hecho | `38da03c` |
+| T1, T2 Turno manual y fijo (0017) | Hecho | `8dfabc9` |
+| E1 Estadísticas | Hecho | `e48d956` |
+| F1 Documentación | Hecho | este commit |
+| V2 `no_show_at` (0015) | **Pendiente**, diferida | — |
+| B1 "barbería" fuera de la portada | **Pendiente**, falta decidir | — |
+
 ## Contexto
 
 El peluquero empieza a usar la app ya, y estas mejoras se suman después **sin tocar los turnos

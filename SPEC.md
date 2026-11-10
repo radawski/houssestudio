@@ -351,3 +351,86 @@ Construido sobre Fase 2 y Fase 3, con los diseños "Botón WhatsApp",
   recordatorio del día anterior y este, aislados (`runIsolated`).
 - Baja en `/baja/<id>.<firma>` (HMAC con propósito propio sobre
   `MANAGE_TOKEN_SECRET`): abrir el link no cambia nada, la baja es el botón.
+
+## 10. Actualización de noviembre de 2026 (`tasks/plan-mejoras-noviembre.md`)
+
+Construida sobre el prototipo aprobado el 2026-11-09
+(https://claude.ai/artifact/FXxvsmpuobzM89xRqmRhvf). La app ya se usa en
+producción, así que todas las migraciones son **solo aditivas**: columnas y
+tablas nuevas, nunca borrar ni renombrar. Las aplica el usuario en el SQL
+Editor antes del deploy.
+
+**Decisiones del usuario (no volver a preguntarlas)**
+- "Mis turnos": el cliente se identifica con DNI + teléfono.
+- Turno fijo: cada 1, 2 o 3 semanas, o cada mes (el mismo n-ésimo día de la
+  semana; si el mes no tiene quinto, el último). Siempre 4 fechas agendadas,
+  confirmadas. Una fecha ocupada se saltea y queda un aviso en Hoy. Las fechas
+  generadas no mandan mail de confirmación (solo el recordatorio del día
+  anterior) y terminar un turno fijo no le avisa al cliente.
+- Pago dividido: en el cobro de turnos y en las ventas sueltas.
+- Motivo de cancelación: opcional, pero visible en el panel.
+- Turno manual: solo horarios de la grilla de la reserva online.
+- Faltas: cuenta solo "No vino" (`no_show`).
+- Estadísticas: ingresos, turnos y faltas, clientes (sin ranking de los que
+  más vienen), "Mismo día, semana a semana" con +n / −n (sin porcentajes),
+  frecuencia media de retorno y movimiento por día y hora.
+- Portada: "Barbería" y el título en Anton a 56 px.
+
+**Cliente: "Mis turnos" (`/mis-turnos`)**
+- `lookupMyAppointments` compara DNI y teléfono (`phonesMatch`), con límite de
+  5 intentos por minuto por IP y por DNI y un error genérico que no dice si el
+  DNI existe. Va por POST (`useActionState`): los datos nunca quedan en la URL.
+- La sesión es una cookie `mis_turnos` httpOnly de 30 minutos
+  (`<cliente>.<vence>.<firma>`, HMAC con propósito propio). Desde un turno de
+  esa sesión, `/turno/[token]` muestra "Volver a mis turnos".
+
+**Panel: ver lo que ya estaba en la base**
+- La Agenda del día muestra los cancelados tachados con su motivo.
+- El chip "Faltó N veces · última d/M" (o "Primera vez") aparece en Hoy,
+  Solicitudes, la Agenda y la hoja del turno (`lib/no-shows.ts`).
+- La hoja del turno suma "Ver ficha", Cobrar / No vino y Cancelar / Rechazar.
+- Clientes (`/admin/clientes`): buscador por nombre, DNI o teléfono; ficha con
+  datos editables, notas privadas, contadores, turno fijo e historial.
+- Las hojas inferiores se cierran deslizando hacia abajo (`lib/sheet-drag.ts`).
+
+**Pago dividido (migración `0016_pago_dividido.sql`)**
+- `payments` y `walk_in_sales` suman `cash_amount` y `transfer_amount`, los dos
+  nulos en un cobro de un solo método. Un check exige que sumen `amount`.
+- `method` guarda el método del monto mayor. Toda suma por método pasa por
+  `amountsByMethod` (`lib/cashbox.ts`), que usa la división si existe.
+- RPC `complete_appointment_with_split_payment` y `record_walk_in_sale_split`
+  (reparte el efectivo entre los ítems en proporción).
+
+**Turno manual y turno fijo (migración `0017_turnos_fijos.sql`)**
+- "+ Nuevo" en la Agenda abre "Nuevo turno" o "Venta suelta". El turno queda
+  confirmado; la grilla es la de la reserva, sin el límite de días ni la
+  anticipación mínima (`getAvailableSlots(..., { ignoreBookingWindow })`).
+- `recurring_appointments` guarda la regla; `appointments.recurring_id` liga
+  cada fecha generada; el índice único `(recurring_id, starts_at)` impide
+  duplicados. `recurring_skips` guarda las fechas salteadas con su motivo.
+- `fillRecurring` (`lib/data/recurring.ts`) completa las próximas 4 fechas.
+  No usa la grilla (se corre con cada reserva): alcanza con que el horario
+  caiga dentro de la atención y no pise un bloqueo ni otro turno
+  (`occurrenceProblem`, `lib/recurring.ts`). Es idempotente: cada fecha se
+  resuelve una vez, aunque se cancele después.
+- La tarea diaria corre `turnos-fijos` antes de los recordatorios.
+- Hoy muestra cada fecha salteada con "Elegir otro horario" (abre "Nuevo
+  turno" con el cliente puesto) o "Saltear esa fecha". La ficha permite
+  Pausar, Reanudar y Terminar (cancela las fechas futuras con el motivo "Fin
+  de turno fijo").
+
+**Estadísticas (`/admin/estadisticas`)**
+- Por semana o mes, con la misma navegación sin espera que Agenda y Caja.
+- Los ingresos se cuentan como en Caja, por el día del cobro. Los turnos, las
+  visitas y el mapa de movimiento, por el día del turno.
+- Frecuencia media de retorno: solo clientes activos (2 o más visitas y la
+  última hace menos de 60 días, el corte de `COMEBACK_MAX_DAYS`); cada cliente
+  aporta su promedio propio.
+- Los cálculos son puros (`lib/stats.ts`) y las lecturas, paginadas de a 1000
+  filas (`lib/data/stats.ts`).
+
+**Pendiente**
+- V2: migración `0015` con `appointments.no_show_at` para que el historial del
+  turno muestre cuándo se marcó la falta. El número 0015 queda reservado.
+- B1: decidir si "peluquería" pasa a "barbería" también fuera de la portada
+  (textos y mails).
