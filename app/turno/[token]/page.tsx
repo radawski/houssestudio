@@ -12,7 +12,7 @@ import { getMyAppointmentsCustomerId } from "@/lib/data/my-appointments";
 import { getAppointmentByToken } from "@/lib/data/public";
 import { formatCurrency, formatLongDate, formatTime } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Tu turno" };
+export const metadata: Metadata = { title: "Tu turno", robots: { index: false } };
 
 export const dynamic = "force-dynamic";
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
-import { BUSINESS_NAME } from "@/lib/config";
+import { BUSINESS_NAME, siteUrl } from "@/lib/config";
 import "./globals.css";
 
 // Pocos pesos a propósito: el sistema es minimalista y la jerarquía la dan el
@@ -14,13 +14,27 @@ const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
 });
 
+const DEFAULT_TITLE = `${BUSINESS_NAME} — Barbería · Reservá tu turno online`;
+const DESCRIPTION = "Reservá tu turno de barbería online, sin llamadas y sin seña previa.";
+
 export const metadata: Metadata = {
+  // Base para las URLs absolutas que piden `og:image`, `og:url` y el canonical.
+  metadataBase: new URL(siteUrl()),
   title: {
-    default: `${BUSINESS_NAME} — Reserva tu turno`,
+    default: DEFAULT_TITLE,
     template: `%s · ${BUSINESS_NAME}`,
   },
-  description:
-    "Reserva tu turno de barbería online, sin llamadas y sin seña previa.",
+  description: DESCRIPTION,
+  // Es lo que muestran WhatsApp e Instagram al pegar el link. La imagen la pone
+  // `app/opengraph-image.png`; acá van solo los textos.
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    siteName: BUSINESS_NAME,
+    title: DEFAULT_TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

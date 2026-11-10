@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { BookingLanding } from "@/components/public/booking-landing";
 import { BookingStepper } from "@/components/public/booking-stepper";
 import { SiteHero } from "@/components/public/site-hero";
@@ -12,6 +14,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // la ventana de reserva (`lib/actions/settings.ts`). La hora es la red de
 // seguridad para lo que se edite directo en Supabase, como el teléfono.
 export const revalidate = 3600;
+
+// El canonical va acá y no en el layout: puesto en la raíz, lo heredarían
+// "Mis turnos" y el resto, y le dirían a Google que son copias de la portada.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   const supabase = createAdminClient();
