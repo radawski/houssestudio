@@ -25,8 +25,13 @@ export type MyAppointmentsResult =
 const NOT_FOUND = "No encontramos turnos con esos datos. Revisá el DNI y el teléfono, o escribinos por WhatsApp.";
 const TOO_MANY = "Demasiados intentos. Esperá un minuto y volvé a probar.";
 
-/** Pocos intentos: con DNI + teléfono, probar a ciegas tiene que ser lento. */
-const LIMIT = { limit: 5, windowMs: 60_000 };
+/**
+ * Pocos intentos por DNI: con DNI + teléfono, probar a ciegas tiene que ser
+ * lento. El de IP es más ancho porque detrás de una IP de celular compartida
+ * (CGNAT) hay muchos clientes reales consultando sus propios turnos.
+ */
+const LIMIT_PER_DNI = { limit: 5, windowMs: 60_000 };
+const LIMIT_PER_IP = { limit: 30, windowMs: 60_000 };
 
 async function getClientIp(): Promise<string> {
   const store = await headers();
@@ -45,9 +50,9 @@ async function getClientIp(): Promise<string> {
  * es donde se ve el detalle y se cancela. Así no hay un segundo camino de
  * cancelación que mantener.
  *
- * Límite de 5 consultas por minuto por IP y otras 5 por DNI: el de IP frena a
+ * Límite de 30 consultas por minuto por IP y 5 por DNI: el de IP frena a
  * quien prueba muchos DNI, el de DNI a quien prueba muchos teléfonos para uno
- * solo desde varias IP.
+ * solo, desde una IP o desde varias.
  *
  * Tiene la firma de `useActionState` para ir directo en el `action` del
  * formulario: así, si se envía antes de que cargue el JavaScript, viaja por
@@ -64,8 +69,8 @@ export async function lookupMyAppointments(
   const { dni } = parsed.data;
 
   const ip = await getClientIp();
-  const ipAllowed = checkRateLimit(`my-appointments:ip:${ip}`, LIMIT);
-  const dniAllowed = checkRateLimit(`my-appointments:dni:${dni}`, LIMIT);
+  const ipAllowed = checkRateLimit(`my-appointments:ip:${ip}`, LIMIT_PER_IP);
+  const dniAllowed = checkRateLimit(`my-appointments:dni:${dni}`, LIMIT_PER_DNI);
   if (!ipAllowed || !dniAllowed) return { status: "error", message: TOO_MANY };
 
   const supabase = createAdminClient();

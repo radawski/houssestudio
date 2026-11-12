@@ -379,7 +379,8 @@ Editor antes del deploy.
 
 **Cliente: "Mis turnos" (`/mis-turnos`)**
 - `lookupMyAppointments` compara DNI y teléfono (`phonesMatch`), con límite de
-  5 intentos por minuto por IP y por DNI y un error genérico que no dice si el
+  5 intentos por minuto por DNI y 30 por IP (ancho por las IP de celular
+  compartidas) y un error genérico que no dice si el
   DNI existe. Va por POST (`useActionState`): los datos nunca quedan en la URL.
 - La sesión es una cookie `mis_turnos` httpOnly de 30 minutos
   (`<cliente>.<vence>.<firma>`, HMAC con propósito propio). Desde un turno de

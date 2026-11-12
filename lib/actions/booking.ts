@@ -31,6 +31,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { deriveManageToken, hashManageToken } from "@/lib/tokens";
 import { bookingSchema, cancelByTokenSchema, identifySchema } from "@/lib/validation/schemas";
 
+/**
+ * Límites por minuto. Los de IP son anchos a propósito: detrás de una IP
+ * pública de celular puede haber decenas de clientes reales (CGNAT). Están
+ * dimensionados para 50 personas en el mismo minuto detrás de una misma IP
+ * (la estampida de un día especial): cada una reintenta hasta 3 veces si le
+ * ganan el horario, y dispara 1 o 2 consultas de DNI mientras tipea.
+ */
+const BOOKING_LIMIT_PER_IP = { limit: 150, windowMs: 60_000 };
+const BOOKING_LIMIT_PER_DNI = { limit: 5, windowMs: 60_000 };
+const DNI_LOOKUP_LIMIT_PER_IP = { limit: 100, windowMs: 60_000 };
+
 /** Código de Postgres para violación de restricción de exclusión. */
 const EXCLUSION_VIOLATION = "23P01";
 
@@ -84,16 +95,20 @@ export type CustomerLookupResult =
 /**
  * Reconoce a un cliente por DNI para la divulgación progresiva del paso 3.
  *
- * Limitada a 20 intentos por minuto por IP: es una consulta pública sin
+ * Limitada a 100 intentos por minuto por IP: es una consulta pública sin
  * fricción (un solo campo, sin captcha), y sin este límite serviría para
- * barrer documentos y recolectar nombres, teléfonos y mails ajenos.
+ * barrer documentos y recolectar nombres, teléfonos y mails ajenos. Era 20,
+ * pero cada cliente dispara una o dos consultas mientras tipea (7 y 8
+ * dígitos) y detrás de una IP de celular compartida (CGNAT) hay muchos
+ * clientes: 20 alcanzaba para unas 10 personas por minuto. Un límite por DNI
+ * no serviría acá: quien barre documentos consulta cada uno una sola vez.
  */
 export async function lookupCustomerByDni(rawDni: string): Promise<CustomerLookupResult> {
   const parsed = identifySchema.safeParse({ dni: rawDni });
   if (!parsed.success) return { status: "not_found" };
 
   const ip = await getClientIp();
-  if (!checkRateLimit(`dni-lookup:${ip}`, { limit: 20, windowMs: 60_000 })) {
+  if (!checkRateLimit(`dni-lookup:${ip}`, DNI_LOOKUP_LIMIT_PER_IP)) {
     return {
       status: "error",
       message: "Demasiados intentos. Esperá un momento y volvé a probar.",
@@ -150,8 +165,15 @@ export async function createBooking(
 
   const { serviceId, startsAt, dni, fullName, phone, email, note } = parsed.data;
 
+  // El límite fino es por DNI: una persona que pierde la carrera por un
+  // horario y reintenta gasta sus propios intentos, no los de sus vecinos. El
+  // de IP es solo un tope ancho contra scripts: las compañías de celular
+  // ponen a muchos clientes detrás de la misma IP pública (CGNAT), y con 10
+  // por IP la prueba de carga dejó afuera a 46 de 50 personas reales.
   const ip = await getClientIp();
-  if (!checkRateLimit(`booking:${ip}`, { limit: 10, windowMs: 60_000 })) {
+  const ipAllowed = checkRateLimit(`booking:ip:${ip}`, BOOKING_LIMIT_PER_IP);
+  const dniAllowed = checkRateLimit(`booking:dni:${dni}`, BOOKING_LIMIT_PER_DNI);
+  if (!ipAllowed || !dniAllowed) {
     return actionError("Demasiados intentos. Esperá un momento y volvé a probar.");
   }
 
