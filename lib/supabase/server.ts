@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 
 import type { Database } from "@/lib/supabase/database.types";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/env";
+import { createRetryFetch } from "@/lib/supabase/retry-fetch";
 
 /**
  * Cliente ligado a la sesion del barbero. Respeta RLS, asi que solo ve datos si
@@ -14,6 +15,8 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(supabaseUrl(), supabaseAnonKey(), {
+    // Reintenta el rechazo de un token recién emitido (ver `retry-fetch.ts`).
+    global: { fetch: createRetryFetch() },
     cookies: {
       getAll() {
         return cookieStore.getAll();

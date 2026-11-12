@@ -66,7 +66,8 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
           <span className="text-sm font-semibold tracking-widest">{BUSINESS_NAME}</span>
           <form action={signOut}>
-            <Button variant="ghost" size="sm" type="submit">
+            {/* 44×44 en el celular (design/admin-iphone n-sistema). */}
+            <Button variant="ghost" size="sm" type="submit" className="max-sm:-mr-2.5 max-sm:size-11">
               <LogOut className="size-4" />
               <span className="sr-only sm:not-sr-only">Salir</span>
             </Button>

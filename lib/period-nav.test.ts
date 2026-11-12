@@ -8,11 +8,11 @@ describe("periodTitle", () => {
   });
 
   it("semana: de lunes a domingo de la semana que contiene la fecha", () => {
-    expect(periodTitle("semana", "2026-09-19")).toBe("14 de septiembre – 20 de septiembre");
+    expect(periodTitle("semana", "2026-09-19")).toBe("14 – 20 de septiembre");
   });
 
   it("semana que cruza de mes", () => {
-    expect(periodTitle("semana", "2026-10-01")).toBe("28 de septiembre – 4 de octubre");
+    expect(periodTitle("semana", "2026-10-01")).toBe("28 de sep – 4 de oct");
   });
 
   it("mes: nombre del mes y año", () => {

@@ -34,13 +34,15 @@ export function AdminNav({ pendingCount }: { pendingCount: number }) {
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              // Entre 768 y 1023px las nueve secciones no entraban y las dos
+              // últimas quedaban fuera de la pantalla: ahí van sin ícono.
+              "flex shrink-0 items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition-colors lg:px-3",
               active
                 ? "bg-secondary text-secondary-foreground"
                 : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
             )}
           >
-            <Icon className="size-4" />
+            <Icon className="hidden size-4 lg:block" />
             {label}
             {href === "/admin/solicitudes" && pendingCount > 0 ? (
               <span className="bg-primary text-primary-foreground ml-0.5 rounded-full px-1.5 py-0.5 text-xs leading-none tabular-nums">

@@ -15,7 +15,8 @@ import { toastActionError, toastError } from "@/lib/toast-error";
 
 function AddButton({ pending }: { pending: boolean }) {
   return (
-    <Button type="submit" disabled={pending}>
+    // Ver `BookingWindowForm`: botón de hoja en el celular.
+    <Button type="submit" disabled={pending} className="max-sm:h-[50px] max-sm:w-full max-sm:text-base">
       {pending ? "Bloqueando…" : "Bloquear"}
     </Button>
   );
@@ -60,21 +61,21 @@ export function TimeBlockForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="date">Fecha</Label>
-          <Input id="date" name="date" type="date" defaultValue={todayKey} min={todayKey} required />
+          <Input id="date" name="date" type="date" defaultValue={todayKey} min={todayKey} required className="max-sm:h-12" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="startTime">Desde</Label>
-          <Input id="startTime" name="startTime" type="time" defaultValue="13:00" required />
+          <Input id="startTime" name="startTime" type="time" defaultValue="13:00" required className="max-sm:h-12" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="endTime">Hasta</Label>
-          <Input id="endTime" name="endTime" type="time" defaultValue="14:00" required />
+          <Input id="endTime" name="endTime" type="time" defaultValue="14:00" required className="max-sm:h-12" />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="reason">Motivo (opcional)</Label>
-        <Input id="reason" name="reason" placeholder="Almuerzo, trámite, feriado…" />
+        <Input id="reason" name="reason" placeholder="Almuerzo, trámite, feriado…" className="max-sm:h-12" />
       </div>
 
       {state.status === "error" ? (

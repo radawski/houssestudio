@@ -33,6 +33,7 @@ const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 export function NativeDatePill({
   value,
   label,
+  shortLabel,
   onValueChange,
   pending = false,
   className,
@@ -40,6 +41,8 @@ export function NativeDatePill({
   value: string;
   /** Texto visible, ya formateado ("Sábado 26 de septiembre"). */
   label: string;
+  /** Versión corta para el celular ("Sáb 26 de sep"), donde la larga se corta. */
+  shortLabel?: string;
   onValueChange: (dateKey: string) => void;
   /** Atenúa la píldora mientras se carga la fecha elegida. */
   pending?: boolean;
@@ -81,7 +84,12 @@ export function NativeDatePill({
       )}
     >
       <CalendarDays className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-      <span className="truncate first-letter:uppercase" aria-hidden="true">
+      {shortLabel ? (
+        <span className="truncate first-letter:uppercase sm:hidden" aria-hidden="true">
+          {shortLabel}
+        </span>
+      ) : null}
+      <span className={cn("truncate first-letter:uppercase", shortLabel && "hidden sm:block")} aria-hidden="true">
         {label}
       </span>
       <input

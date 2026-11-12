@@ -75,7 +75,9 @@ export function DayRangesEditor({
             name={`opens-${weekday}`}
             value={range.opensAt}
             onChange={(event) => update(range.key, { opensAt: event.target.value })}
-            className="w-32"
+            // En la hoja del celular: 44px de alto y el ancho que sobre, para
+            // que la hora no se corte contra el ícono del reloj.
+            className="w-32 max-sm:h-11 max-sm:min-w-0 max-sm:flex-1"
             aria-label={`${dayName}, apertura del bloque ${index + 1}`}
             disabled={disabled}
             required
@@ -86,7 +88,7 @@ export function DayRangesEditor({
             name={`closes-${weekday}`}
             value={range.closesAt}
             onChange={(event) => update(range.key, { closesAt: event.target.value })}
-            className="w-32"
+            className="w-32 max-sm:h-11 max-sm:min-w-0 max-sm:flex-1"
             aria-label={`${dayName}, cierre del bloque ${index + 1}`}
             disabled={disabled}
             required
@@ -98,6 +100,7 @@ export function DayRangesEditor({
               type="button"
               variant="ghost"
               size="icon"
+              className="max-sm:size-11"
               onClick={() => onChange(ranges.filter((r) => r.key !== range.key))}
               aria-label={`Quitar el bloque ${index + 1} del ${dayName.toLowerCase()}`}
             >
@@ -111,7 +114,7 @@ export function DayRangesEditor({
         type="button"
         variant="ghost"
         size="sm"
-        className="text-muted-foreground -ml-2"
+        className="text-muted-foreground -ml-2 max-sm:h-11"
         disabled={disabled}
         onClick={() => onChange([...ranges, suggestedRange(ranges)])}
       >

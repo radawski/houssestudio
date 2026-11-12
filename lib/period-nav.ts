@@ -62,8 +62,15 @@ export function periodTitle(view: PeriodView, dateKey: string): string {
   if (view === "dia") return formatLongDate(dayRange(dateKey).start);
 
   if (view === "semana") {
+    // Corto a propósito (design/admin-iphone n-AgendaSemana: "14 – 20 de
+    // septiembre"): con el mes repetido el título no entraba en el celular y
+    // se cortaba justo antes del segundo mes.
     const { start, days } = weekRange(dateKey);
-    return `${formatInTz(start, "d 'de' MMMM")} – ${formatInTz(dayRange(days[6]).start, "d 'de' MMMM")}`;
+    const end = dayRange(days[6]).start;
+    if (isSameMonth(days[0], days[6])) {
+      return `${formatInTz(start, "d")} – ${formatInTz(end, "d 'de' MMMM")}`;
+    }
+    return `${formatInTz(start, "d 'de' MMM")} – ${formatInTz(end, "d 'de' MMM")}`;
   }
 
   const { monthKey } = monthRange(dateKey);

@@ -6,7 +6,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NativeDatePill } from "@/components/admin/native-date-pill";
 import { usePeriodLink, usePeriodNavigation } from "@/components/admin/period-navigation";
 import { Button } from "@/components/ui/button";
-import { todayKey } from "@/lib/dates";
+import { dayRange, todayKey } from "@/lib/dates";
+import { formatInTz } from "@/lib/format";
 import { periodContainsToday, periodTitle, stepDateKey, stepFrom, type PeriodView } from "@/lib/period-nav";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +90,7 @@ export function CajaToolbar() {
             <NativeDatePill
               value={dateKey}
               label={title}
+              shortLabel={formatInTz(dayRange(dateKey).start, "EEE d 'de' MMM")}
               pending={pressed === "picker"}
               onValueChange={(picked) => navigate({ view: "dia", dateKey: picked }, "picker")}
             />

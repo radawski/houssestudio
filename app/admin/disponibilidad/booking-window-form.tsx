@@ -25,7 +25,9 @@ function lastBookableDate(days: number): string {
 
 function SaveButton({ pending }: { pending: boolean }) {
   return (
-    <Button type="submit" disabled={pending}>
+    // En la hoja del celular va como el resto de las hojas: a todo el ancho y
+    // de 50px (design/admin-iphone n-hojas).
+    <Button type="submit" disabled={pending} className="max-sm:h-[50px] max-sm:w-full max-sm:text-base">
       {pending ? "Guardando…" : "Guardar ventana"}
     </Button>
   );
@@ -97,6 +99,7 @@ export function BookingWindowForm({
             value={days}
             onChange={(event) => setDays(event.target.value)}
             required
+            className="max-sm:h-12"
             aria-invalid={Boolean(state.fieldErrors?.maxBookingDays)}
           />
           {state.fieldErrors?.maxBookingDays ? (
@@ -122,6 +125,7 @@ export function BookingWindowForm({
             inputMode="numeric"
             defaultValue={minLeadMinutes}
             required
+            className="max-sm:h-12"
             aria-invalid={Boolean(state.fieldErrors?.minLeadMinutes)}
           />
           {state.fieldErrors?.minLeadMinutes ? (

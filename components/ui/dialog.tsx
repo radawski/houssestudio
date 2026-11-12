@@ -249,12 +249,14 @@ function DialogContent({
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
+              // Como hoja (celular) el área táctil es de 44px; el ícono queda
+              // en el mismo lugar que antes.
+              className="absolute top-0 right-0 size-11 sm:top-2 sm:right-2 sm:size-7"
               size="icon-sm"
             >
               <XIcon
               />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">Cerrar</span>
             </Button>
           </DialogPrimitive.Close>
         )}
