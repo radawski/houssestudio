@@ -118,7 +118,7 @@ export function MonthCalendar({
             onClick={() => onMonthChange(addMonths(monthKey, -1))}
             disabled={!canGoBack}
             aria-label="Mes anterior"
-            className="border-border hover:bg-accent focus-visible:ring-ring flex size-8 items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
+            className="border-border hover:bg-accent focus-visible:ring-ring flex size-11 items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -127,7 +127,7 @@ export function MonthCalendar({
             onClick={() => onMonthChange(addMonths(monthKey, 1))}
             disabled={!canGoForward}
             aria-label="Mes siguiente"
-            className="border-border hover:bg-accent focus-visible:ring-ring flex size-8 items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
+            className="border-border hover:bg-accent focus-visible:ring-ring flex size-11 items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-30"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -168,7 +168,9 @@ export function MonthCalendar({
               })}
               style={index === 0 ? { gridColumnStart: leadingCells + 1 } : undefined}
               className={cn(
-                "focus-visible:ring-ring flex aspect-square flex-col items-center justify-center gap-0.5 border transition-colors focus-visible:ring-2 focus-visible:outline-none",
+                // Cuadradas solo en el celular: en pantallas anchas una celda
+                // cuadrada mide ~95px y el mes no entra en la pantalla.
+                "focus-visible:ring-ring flex aspect-square flex-col items-center justify-center gap-0.5 border sm:aspect-auto sm:h-14 transition-colors focus-visible:ring-2 focus-visible:outline-none",
                 isSelected
                   ? "border-foreground bg-foreground text-background"
                   : "border-border hover:bg-accent",
@@ -191,10 +193,21 @@ export function MonthCalendar({
         })}
       </div>
 
-      <div className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px]">
-        <span>••• muchos cupos</span>
-        <span>• pocos</span>
-        <span>apagado = sin cupos</span>
+      {/* Mientras se consultan los cupos todos los días están apagados: con
+          conexión lenta eso se leía como "no hay lugar en todo el mes". */}
+      <div
+        className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px]"
+        aria-live="polite"
+      >
+        {loading || counts === null ? (
+          <span>Buscando días con lugar…</span>
+        ) : (
+          <>
+            <span>••• muchos cupos</span>
+            <span>• pocos</span>
+            <span>apagado = sin cupos</span>
+          </>
+        )}
       </div>
     </div>
   );

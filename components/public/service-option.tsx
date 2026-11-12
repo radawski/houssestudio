@@ -32,9 +32,11 @@ export function ServiceOption({
       )}
     >
       <div className="flex items-baseline justify-between gap-4">
-        <span className="flex items-center gap-2 text-lg font-light">
+        {/* La tilde va en línea con el texto: si el nombre ocupa dos renglones
+            queda al final de la última palabra y no flotando en el medio. */}
+        <span className="text-lg font-light">
           {service.name}
-          {selected ? <Check className="size-4" /> : null}
+          {selected ? <Check className="ml-2 inline size-4 align-[-2px]" /> : null}
         </span>
         <span className="tabular-nums">{formatCurrency(service.price)}</span>
       </div>

@@ -58,13 +58,21 @@ export function StepShell({
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">{children}</div>
 
-      <footer ref={footerRef} className="border-border mt-6 flex items-center justify-between gap-4 border-t pt-6">
+      {/* El margen de scroll deja el pie por encima del botón flotante de
+          WhatsApp cuando el stepper lo trae a la vista al elegir un horario:
+          sin él, "Continuar" quedaba pegado al borde y tapado por el botón. */}
+      <footer
+        ref={footerRef}
+        className="border-border mt-6 flex scroll-mb-[calc(6rem+env(safe-area-inset-bottom))] items-center justify-between gap-4 border-t pt-6"
+      >
         {onBack ? (
           <button
             type="button"
             onClick={onBack}
             disabled={pending}
-            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring inline-flex items-center gap-2 text-sm tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30"
+            // El relleno con margen negativo agranda el área táctil a 44px sin
+            // mover el texto de lugar.
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-ring -mx-2 -my-3 inline-flex items-center gap-2 px-2 py-3 text-sm tracking-[0.08em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30"
           >
             <ArrowLeft className="size-4" />
             Volver

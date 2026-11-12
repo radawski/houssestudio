@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <Button type="submit" className="h-11 w-full md:h-8" disabled={pending}>
       {pending ? "Entrando…" : "Entrar"}
     </Button>
   );
@@ -34,6 +34,7 @@ export function LoginForm({ next }: { next?: string }) {
           type="email"
           autoComplete="username"
           required
+          className="h-11 md:h-8"
           aria-invalid={Boolean(state.fieldErrors?.email)}
         />
         {state.fieldErrors?.email ? (
@@ -49,6 +50,7 @@ export function LoginForm({ next }: { next?: string }) {
           type="password"
           autoComplete="current-password"
           required
+          className="h-11 md:h-8"
           aria-invalid={Boolean(state.fieldErrors?.password)}
         />
         {state.fieldErrors?.password ? (

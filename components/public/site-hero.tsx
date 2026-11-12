@@ -77,7 +77,9 @@ export function SiteHero({ tagline }: { tagline?: string }) {
           >
             Mis turnos
           </Link>
-          <p className="text-[13px] text-white/50">Mirá el estado de tu turno o cancelalo.</p>
+          {/* En el celular el botón flotante de WhatsApp queda a esta altura:
+              el relleno derecho hace que el texto corte antes de meterse abajo. */}
+          <p className="pr-14 text-[13px] text-white/50 sm:pr-0">Mirá el estado de tu turno o cancelalo.</p>
         </div>
       </div>
     </section>
