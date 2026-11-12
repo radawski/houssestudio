@@ -48,3 +48,6 @@ HOUSSESTUDIO*/
 
 # respaldos de la base (scripts/vaciar-base.mjs): tienen datos personales
 /respaldos/
+
+# resultados de las pruebas de carga (scripts/carga)
+/scripts/carga/resultados/
