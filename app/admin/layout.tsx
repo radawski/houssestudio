@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Viewport } from "next";
 import { redirect } from "next/navigation";
 import { LogOut } from "lucide-react";
 
@@ -12,6 +13,16 @@ import { signOut } from "@/lib/actions/auth";
 import { BUSINESS_NAME } from "@/lib/config";
 import { countPendingAppointments } from "@/lib/data/appointments";
 import { createClient } from "@/lib/supabase/server";
+
+/**
+ * Solo el panel ocupa la pantalla entera (`cover`): así iOS informa las zonas
+ * seguras (barrita de inicio, isla, esquinas redondeadas) en
+ * `env(safe-area-inset-*)` y la tab bar se apoya encima de la barrita, como la
+ * barra de pestañas nativa. Sin `cover` esos valores son 0 y, en la app de la
+ * pantalla de inicio, los íconos de los extremos quedaban contra la curva de
+ * las esquinas. El sitio público no lo declara y sigue como estaba.
+ */
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const supabase = await createClient();
@@ -58,12 +69,14 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     // scrollea (design/admin-iphone n-sistema: header y tab bar fijos, "main
     // ... scroll propio"). En desktop no hay tab bar que se superponga, así
     // que se conserva el scroll de documento de siempre.
-    <div className="flex h-dvh flex-col overflow-hidden md:h-auto md:min-h-full md:flex-1 md:overflow-visible">
+    <div className="flex h-dvh flex-col overflow-hidden pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] md:h-auto md:min-h-full md:flex-1 md:overflow-visible">
       {/* Anota de dónde se llegó a cada pantalla, para el ← de las de Más. */}
       <Suspense fallback={null}>
         <NavigationTracker />
       </Suspense>
-      <header className="bg-popover shrink-0 border-b md:sticky md:top-0 md:z-20">
+      {/* Con `cover`, si iOS dibuja la página bajo la barra de estado, el
+          header se corre lo que haga falta (en los demás casos vale 0). */}
+      <header className="bg-popover shrink-0 border-b pt-[env(safe-area-inset-top)] md:sticky md:top-0 md:z-20">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4">
           <span className="text-sm font-semibold tracking-widest">{BUSINESS_NAME}</span>
           <form action={signOut}>

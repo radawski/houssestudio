@@ -62,7 +62,7 @@ export function AgendaNewActions({ catalog, dateKey }: { catalog: SaleCatalog; d
           aria-haspopup="menu"
           aria-expanded={false}
           onClick={() => setMenuOpen(true)}
-          className="fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
+          className="fixed right-4 bottom-[84px] standalone:bottom-[calc(78px+max(calc(env(safe-area-inset-bottom)-12px),6px))] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
         >
           <Plus className="size-[18px]" />
           Nuevo
@@ -77,7 +77,7 @@ export function AgendaNewActions({ catalog, dateKey }: { catalog: SaleCatalog; d
             onClick={() => setMenuOpen(false)}
             className="absolute inset-0 bg-[var(--hs-ink)]/45"
           />
-          <div role="menu" className="absolute right-4 bottom-[84px] flex flex-col items-end gap-2.5">
+          <div role="menu" className="absolute right-4 bottom-[84px] standalone:bottom-[calc(78px+max(calc(env(safe-area-inset-bottom)-12px),6px))] flex flex-col items-end gap-2.5">
             <button
               type="button"
               role="menuitem"

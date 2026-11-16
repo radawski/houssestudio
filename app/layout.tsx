@@ -39,10 +39,25 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // `suppressHydrationWarning`: el script de abajo agrega `data-standalone`
+    // a <html> antes de hidratar, y React no tiene que quejarse por eso.
     <html
       lang="es"
       className={`${roboto.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Marca la app abierta desde la pantalla de inicio de iOS antes de
+            pintar (sin parpadeo). iOS informa `display-mode: browser` si el
+            sitio no tiene manifest; `navigator.standalone` sí es fiable. Lo
+            usa la variante `standalone:` de globals.css. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(navigator.standalone||matchMedia('(display-mode: standalone)').matches)document.documentElement.setAttribute('data-standalone','')}catch(e){}",
+          }}
+        />
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

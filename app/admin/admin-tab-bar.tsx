@@ -34,14 +34,18 @@ const MAS_PREFIXES = [
 export function AdminTabBar({ pendingCount }: { pendingCount: number }) {
   const pathname = usePathname();
 
-  // El layout no declara `viewportFit: "cover"`, así que en Safari
-  // `env(safe-area-inset-bottom)` vale 0 (el navegador ya deja su propio
-  // margen abajo) y lo que manda es el piso: con 22px quedaba una franja
-  // blanca de más bajo los íconos. 6px la deja simétrica con el `pt-1.5`.
+  // En Safari el navegador ya deja su propio margen abajo: 6px, simétrico con
+  // el `pt-1.5` (con 22px quedaba una franja blanca de más bajo los íconos).
+  // En la app de la pantalla de inicio no hay barra de Safari: como la tab
+  // bar nativa, el fondo llega al borde y los íconos se apoyan sobre la
+  // zona segura que informa iOS (la barrita de inicio; el panel declara
+  // `viewportFit: "cover"` para que ese valor no sea 0). Se le restan 12px:
+  // los 34px completos del iPhone separaban la barra más de lo que se quería.
+  // Los FAB que flotan sobre la barra suben con la misma cuenta.
   return (
     <nav
       aria-label="Secciones del panel"
-      className="bg-popover flex shrink-0 items-start border-t pt-1.5 pb-[max(env(safe-area-inset-bottom),6px)] md:hidden"
+      className="bg-popover flex shrink-0 items-start border-t pt-1.5 pb-1.5 standalone:pb-[max(calc(env(safe-area-inset-bottom)-12px),6px)] md:hidden"
     >
       {LINKS.map(({ href, label, icon: Icon }) => {
         const active =

@@ -103,7 +103,7 @@ export function ServiceDialog({
           <DialogTrigger asChild>
             <Button
               size="touch-lg"
-              className="fixed right-4 bottom-[84px] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
+              className="fixed right-4 bottom-[84px] standalone:bottom-[calc(78px+max(calc(env(safe-area-inset-bottom)-12px),6px))] z-30 gap-2 rounded-full px-4.5 shadow-lg md:hidden"
             >
               <Plus className="size-[18px]" />
               Nuevo servicio

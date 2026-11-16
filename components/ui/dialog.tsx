@@ -225,7 +225,7 @@ function DialogContent({
           // Dialog de Radix es el mismo en las dos formas — solo cambia la
           // presentación — para conservar foco y accesibilidad sin
           // reimplementar el patrón.
-          "fixed inset-x-0 bottom-0 z-50 grid max-h-[85vh] w-full gap-4 overflow-y-auto rounded-t-[14px] border-t border-[var(--hs-border-card)] bg-popover pt-2 pb-6 text-sm text-popover-foreground outline-none duration-150 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
+          "fixed inset-x-0 bottom-0 z-50 grid max-h-[85vh] w-full gap-4 overflow-y-auto rounded-t-[14px] border-t border-[var(--hs-border-card)] bg-popover pt-2 pb-6 max-sm:standalone:pb-[max(env(safe-area-inset-bottom),24px)] text-sm text-popover-foreground outline-none duration-150 data-open:animate-in data-open:slide-in-from-bottom data-closed:animate-out data-closed:slide-out-to-bottom",
           // Desktop (sm+): diálogo centrado. `bottom-auto` anula el
           // `bottom-0` de la hoja: con `top: 50%` el diálogo quedaba estirado
           // a media pantalla y un formulario largo se salía por debajo. Con

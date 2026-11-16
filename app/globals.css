@@ -7,6 +7,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* La app abierta desde el ícono de la pantalla de inicio: sin la barra de
+   Safari, el borde inferior de la página es el de la pantalla y hay que
+   respetar las zonas seguras de iOS. Sin manifest, iOS no activa
+   `display-mode: standalone` (informa "browser"), así que además se mira el
+   atributo que pone el script de `app/layout.tsx` con `navigator.standalone`. */
+@custom-variant standalone {
+  @media (display-mode: standalone) {
+    @slot;
+  }
+  &:where([data-standalone] *) {
+    @slot;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
