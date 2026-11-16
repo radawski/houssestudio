@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { AdminNav } from "@/app/admin/admin-nav";
 import { AdminTabBar } from "@/app/admin/admin-tab-bar";
 import { NavigationTracker } from "@/components/admin/navigation-tracker";
+import { PullToRefreshMain } from "@/components/admin/pull-to-refresh";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { signOut } from "@/lib/actions/auth";
@@ -78,9 +79,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto p-4 md:overflow-visible">
+      {/* En la app de la pantalla de inicio (iOS standalone) suma "deslizar
+          para actualizar", que Safari ahí no ofrece. */}
+      <PullToRefreshMain className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto p-4 md:overflow-visible">
         {children}
-      </main>
+      </PullToRefreshMain>
 
       <AdminTabBar pendingCount={pendingCount} />
 
