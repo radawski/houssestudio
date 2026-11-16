@@ -33,13 +33,23 @@ import { toastActionError, toastError } from "@/lib/toast-error";
 import type { PaymentMethod } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
-export function ConfirmAppointmentButton({ id }: { id: string }) {
+export function ConfirmAppointmentButton({
+  id,
+  label = "Aceptar",
+  size = "touch",
+  className = "flex-1",
+}: {
+  id: string;
+  label?: string;
+  size?: "touch" | "touch-lg";
+  className?: string;
+}) {
   const [pending, startTransition] = useTransition();
 
   return (
     <Button
-      size="touch"
-      className="flex-1"
+      size={size}
+      className={className}
       disabled={pending}
       onClick={function run() {
         startTransition(async () => {
@@ -53,7 +63,7 @@ export function ConfirmAppointmentButton({ id }: { id: string }) {
       }}
     >
       <Check className="size-4" />
-      Aceptar
+      {label}
     </Button>
   );
 }

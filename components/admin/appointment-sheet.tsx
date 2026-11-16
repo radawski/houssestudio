@@ -5,6 +5,7 @@ import { ChevronRight, CircleAlert, IdCard, Mail, Phone, StickyNote, Wallet } fr
 
 import {
   CancelAppointmentButton,
+  ConfirmAppointmentButton,
   ConfirmedAppointmentActions,
   CorrectPaymentButton,
   RestoreAppointmentButton,
@@ -67,7 +68,7 @@ function ClientRow({
  * tarjeta no lleva botones.
  *
  * Por eso, para un turno pendiente o confirmado, la ficha ofrece rechazarlo o
- * cancelarlo: es la única forma de hacerlo desde la Agenda del celular. Abre
+ * cancelarlo (y a un pendiente, aceptarlo): es la única forma de hacerlo desde la Agenda del celular. Abre
  * la misma hoja de confirmación con motivo que la tarjeta de Hoy; nunca
  * cancela de un toque.
  */
@@ -265,11 +266,23 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
             />
           </>
         ) : null}
-        <DialogClose asChild>
-          <Button variant="ghost" size="touch-lg">
-            Cerrar
-          </Button>
-        </DialogClose>
+        {/* Una solicitud se resuelve desde la ficha: en lugar de "Cerrar"
+            va "Aceptar turno", junto a "Rechazar solicitud". La hoja igual
+            se cierra tocando afuera. */}
+        {status === "pendiente" ? (
+          <ConfirmAppointmentButton
+            id={appointment.id}
+            label="Aceptar turno"
+            size="touch-lg"
+            className="w-full"
+          />
+        ) : (
+          <DialogClose asChild>
+            <Button variant="ghost" size="touch-lg">
+              Cerrar
+            </Button>
+          </DialogClose>
+        )}
       </div>
     </DialogContent>
   );
