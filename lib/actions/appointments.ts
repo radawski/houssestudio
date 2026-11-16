@@ -245,6 +245,29 @@ export async function undoNoShow(id: string): Promise<ActionState> {
 }
 
 /**
+ * Quita un turno cancelado de la Agenda del día (o lo vuelve a mostrar, con
+ * `hidden` en false: el "Deshacer" del aviso). Es solo visual: el turno no se
+ * borra y sigue en la ficha del cliente y en las estadísticas.
+ */
+export async function setCancelledHiddenFromAgenda(id: string, hidden: boolean): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const { data, error } = await supabase
+    .from("appointments")
+    .update({ hidden_from_agenda_at: hidden ? new Date().toISOString() : null })
+    .eq("id", id)
+    .eq("status", "cancelado")
+    .select("id")
+    .maybeSingle();
+
+  if (error) return actionError(`No se pudo actualizar la agenda: ${error.message}`);
+  if (!data) return actionError("Ese turno ya no está cancelado.");
+
+  revalidateAgenda();
+  return actionSuccess(hidden ? "Turno quitado de la agenda." : "El turno volvió a la agenda.");
+}
+
+/**
  * Restaura un turno que el peluquero canceló o rechazó por error. Vuelve a
  * confirmado (y se le reenvía al cliente el email de turno confirmado, si el
  * turno todavía no pasó) o, si era una solicitud, a pendiente.
@@ -279,6 +302,8 @@ export async function restoreAppointment(id: string): Promise<ActionState> {
       cancelled_at: null,
       cancelled_by: null,
       cancellation_reason: null,
+      // Si estaba quitado de la Agenda, vuelve a verse.
+      hidden_from_agenda_at: null,
     })
     .eq("id", id)
     .eq("status", "cancelado")

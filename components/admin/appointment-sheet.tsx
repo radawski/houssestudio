@@ -8,12 +8,13 @@ import {
   ConfirmAppointmentButton,
   ConfirmedAppointmentActions,
   CorrectPaymentButton,
+  HideFromAgendaButton,
   RestoreAppointmentButton,
   UndoNoShowButton,
 } from "@/components/admin/appointment-actions";
 import { AdminStatusBadge } from "@/components/admin/status-badge";
 import { Button } from "@/components/ui/button";
-import { DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { buildAppointmentTimeline } from "@/lib/appointment-timeline";
 import { canMarkNoShow, restoreTarget } from "@/lib/appointment-rules";
 import { describePayment, splitFromColumns } from "@/lib/cashbox";
@@ -72,7 +73,14 @@ function ClientRow({
  * la misma hoja de confirmación con motivo que la tarjeta de Hoy; nunca
  * cancela de un toque.
  */
-export function AppointmentSheet({ appointment }: { appointment: AppointmentWithCustomer }) {
+export function AppointmentSheet({
+  appointment,
+  inAgenda = false,
+}: {
+  appointment: AppointmentWithCustomer;
+  /** Abierta desde la Agenda: un cancelado ofrece "Quitar de la agenda". */
+  inAgenda?: boolean;
+}) {
   const { customer, status } = appointment;
   const timeline = buildAppointmentTimeline(appointment);
   const isOpen = status === "pendiente" || status === "confirmado";
@@ -239,6 +247,7 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
             <Button asChild variant="outline" size="touch">
               <Link href="/admin/agenda">Ver el horario libre en la agenda</Link>
             </Button>
+            {inAgenda ? <HideFromAgendaButton id={appointment.id} /> : null}
           </>
         ) : isOpen ? (
           <>
@@ -266,9 +275,9 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
             />
           </>
         ) : null}
-        {/* Una solicitud se resuelve desde la ficha: en lugar de "Cerrar"
-            va "Aceptar turno", junto a "Rechazar solicitud". La hoja igual
-            se cierra tocando afuera. */}
+        {/* La ficha no lleva "Cerrar" (pedido del peluquero, para que quede
+            más limpia): se cierra tocando afuera. Una solicitud se resuelve
+            desde acá, con "Aceptar turno" junto a "Rechazar solicitud". */}
         {status === "pendiente" ? (
           <ConfirmAppointmentButton
             id={appointment.id}
@@ -276,13 +285,7 @@ export function AppointmentSheet({ appointment }: { appointment: AppointmentWith
             size="touch-lg"
             className="w-full"
           />
-        ) : (
-          <DialogClose asChild>
-            <Button variant="ghost" size="touch-lg">
-              Cerrar
-            </Button>
-          </DialogClose>
-        )}
+        ) : null}
       </div>
     </DialogContent>
   );

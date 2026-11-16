@@ -92,6 +92,8 @@ export type Appointment = {
   cancelled_at: string | null;
   /** Turno fijo (0017) que generó este turno. Nulo en los turnos sueltos. */
   recurring_id: string | null;
+  /** Cancelado que el peluquero quitó de la Agenda (0019). Solo visual. */
+  hidden_from_agenda_at: string | null;
 } & Timestamps;
 
 /**
@@ -255,6 +257,7 @@ export type Database = {
         | "completed_at"
         | "cancelled_at"
         | "recurring_id"
+        | "hidden_from_agenda_at"
       >;
       recurring_appointments: TableShape<
         RecurringAppointment,

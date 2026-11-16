@@ -63,8 +63,8 @@ export async function getPendingAppointments(): Promise<AppointmentWithCustomer[
  *
  * Sin los cancelados, salvo que se pidan: Hoy, la semana y el mes no los
  * muestran (un turno cancelado ya no ocupa la agenda), pero la Agenda del día
- * sí, tachados y con su motivo (plan de noviembre, decisión 5). Caja no
- * depende de esta lectura.
+ * sí, tachados y con su motivo (plan de noviembre, decisión 5), salvo los
+ * que el peluquero quitó de la Agenda. Caja no depende de esta lectura.
  */
 export async function getAppointmentsBetween(
   start: Date,
@@ -78,6 +78,10 @@ export async function getAppointmentsBetween(
     .gte("starts_at", start.toISOString())
     .lt("starts_at", end.toISOString());
   if (!includeCancelled) query = query.neq("status", "cancelado");
+  // Los cancelados que el peluquero quitó de la Agenda (0019) no se muestran.
+  // Se oculta solo lo que está cancelado Y marcado: un pendiente o confirmado
+  // se ve siempre, aunque por algún error llevara la marca.
+  else query = query.or("hidden_from_agenda_at.is.null,status.neq.cancelado");
 
   const { data, error } = await query.order("starts_at", { ascending: true });
 

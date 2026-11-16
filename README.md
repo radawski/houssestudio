@@ -88,6 +88,10 @@ En el **SQL Editor** de Supabase, ejecutar en orden los archivos de
     transferencia, y sus funciones.
 16. `0017_turnos_fijos.sql` — turnos fijos, sus fechas salteadas y
     `appointments.recurring_id`.
+17. `0018_correcciones.sql` — funciones para corregir cobros y ventas
+    sueltas.
+18. `0019_ocultar_cancelados.sql` — `appointments.hidden_from_agenda_at`,
+    para quitar un cancelado de la Agenda (solo visual).
 
 El número 0015 no existe todavía: queda reservado para `no_show_at` (ver
 `SPEC.md` §10).

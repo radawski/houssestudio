@@ -94,7 +94,7 @@ function AgendaAppointmentRow({ appointment }: { appointment: AppointmentWithCus
             {open ? <CustomerHistoryChip history={appointment.history} className="mt-2" /> : null}
           </button>
         </DialogTrigger>
-        <AppointmentSheet appointment={appointment} />
+        <AppointmentSheet appointment={appointment} inAgenda />
       </Dialog>
     </div>
   );

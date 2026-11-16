@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, type TransitionStartFunction } from "react";
-import { Banknote, Check, Mail, Pencil, Phone, RotateCcw, Undo2, UserX, X } from "lucide-react";
+import { Banknote, Check, EyeOff, Mail, Pencil, Phone, RotateCcw, Undo2, UserX, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
   correctPayment,
   markNoShow,
   restoreAppointment,
+  setCancelledHiddenFromAgenda,
   undoNoShow,
   undoPayment,
 } from "@/lib/actions/appointments";
@@ -542,6 +543,51 @@ async function runCorrection(
     toastActionError(error, fallback, retry);
     return false;
   }
+}
+
+/**
+ * Ficha de un turno cancelado, en la Agenda: lo quita de la vista del día
+ * para que quede más limpia. Solo visual (el turno sigue en la ficha del
+ * cliente), así que actúa de un toque y el aviso ofrece "Deshacer".
+ */
+export function HideFromAgendaButton({ id }: { id: string }) {
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <Button
+      size="touch"
+      variant="outline"
+      disabled={pending}
+      onClick={function run() {
+        startTransition(async () => {
+          try {
+            const result = await setCancelledHiddenFromAgenda(id, true);
+            if (result.status !== "success") {
+              toastError(result.message ?? "No se pudo quitar el turno de la agenda.");
+              return;
+            }
+            toast.success(result.message ?? "Turno quitado de la agenda.", {
+              action: {
+                label: "Deshacer",
+                onClick: () => {
+                  void runCorrection(
+                    () => setCancelledHiddenFromAgenda(id, false),
+                    "No se pudo volver a mostrar el turno.",
+                    () => {},
+                  );
+                },
+              },
+            });
+          } catch (error) {
+            toastActionError(error, "No se pudo quitar el turno de la agenda.", run);
+          }
+        });
+      }}
+    >
+      <EyeOff className="size-4" />
+      {pending ? "Quitando…" : "Quitar de la agenda"}
+    </Button>
+  );
 }
 
 /** Ficha de un turno "No vino": lo devuelve a confirmado (el cliente llegó tarde). */
