@@ -49,6 +49,19 @@ export function describePayment(charge: Charge, formatAmount: (n: number) => str
   return charge.method === "efectivo" ? "Efectivo" : "Transferencia";
 }
 
+/**
+ * Varios cobros que se pagaron juntos (un turno y los productos que se
+ * cobraron con él, 0020) como uno solo: el total y cómo se pagó. Si hubo
+ * plata en los dos métodos queda como dividido.
+ */
+export function combineCharges(charges: Charge[]): Charge {
+  const { total, byMethod } = summarizeCharges(charges);
+  if (byMethod.efectivo > 0 && byMethod.transferencia > 0) {
+    return { amount: total, method: byMethod.efectivo >= byMethod.transferencia ? "efectivo" : "transferencia", split: byMethod };
+  }
+  return { amount: total, method: byMethod.transferencia > 0 ? "transferencia" : (charges[0]?.method ?? "efectivo") };
+}
+
 function addAmounts(target: Record<PaymentMethod, number>, charge: Charge) {
   const amounts = amountsByMethod(charge);
   target.efectivo += amounts.efectivo;

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition, type TransitionStartFunction } from "react";
-import { Banknote, Check, EyeOff, Mail, Pencil, Phone, RotateCcw, Undo2, UserX, X } from "lucide-react";
+import { Banknote, Check, EyeOff, Mail, Pencil, Phone, Plus, RotateCcw, Undo2, UserX, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { CatalogPicker, itemKey, type CatalogGroup } from "@/components/admin/catalog-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,10 +29,12 @@ import {
   undoPayment,
 } from "@/lib/actions/appointments";
 import type { ActionState } from "@/lib/actions/result";
+import { getCheckoutProducts } from "@/lib/actions/sales";
+import { combineCharges, splitFromColumns } from "@/lib/cashbox";
 import { todayKey } from "@/lib/dates";
 import { businessDateKey, formatCurrency, formatDateTime, formatDayAndTime } from "@/lib/format";
 import { toastActionError, toastError } from "@/lib/toast-error";
-import type { PaymentMethod } from "@/lib/supabase/database.types";
+import type { PaymentMethod, WalkInSaleKind } from "@/lib/supabase/database.types";
 import { cn } from "@/lib/utils";
 
 export function ConfirmAppointmentButton({
@@ -218,20 +221,72 @@ export function CompleteAppointmentButton({
   const [amount, setAmount] = useState(String(suggestedAmount));
   const [method, setMethod] = useState<PaymentChoice>("efectivo");
   const [cash, setCash] = useState("");
+  // Productos que se suman al cobro (0020): el catálogo se pide al abrir la
+  // hoja, y el carrito arranca vacío y cerrado — lo común es cobrar solo el turno.
+  const [catalog, setCatalog] = useState<CatalogGroup[] | null>(null);
+  const [catalogFailed, setCatalogFailed] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [cart, setCart] = useState<Map<string, number>>(() => new Map());
 
-  const total = Number(amount) || 0;
+  function loadCatalog() {
+    setCatalogFailed(false);
+    getCheckoutProducts()
+      .then((categories) =>
+        setCatalog(
+          categories.map((category) => ({
+            key: category.id,
+            name: category.name,
+            kind: "producto" as const,
+            items: category.products,
+          })),
+        ),
+      )
+      .catch(() => setCatalogFailed(true));
+  }
+
+  function openDialog() {
+    setAmount(String(suggestedAmount));
+    setMethod("efectivo");
+    setCash("");
+    setCart(new Map());
+    setPickerOpen(false);
+    setOpen(true);
+    if (!catalog) loadCatalog();
+  }
+
+  function setQuantity(kind: WalkInSaleKind, productId: string, quantity: number) {
+    setCart((current) => {
+      const next = new Map(current);
+      if (quantity <= 0) next.delete(itemKey(kind, productId));
+      else next.set(itemKey(kind, productId), Math.min(quantity, 99));
+      return next;
+    });
+  }
+
+  const lines = (catalog ?? []).flatMap((group) =>
+    group.items
+      .filter((item) => cart.has(itemKey("producto", item.id)))
+      .map((item) => ({ item, quantity: cart.get(itemKey("producto", item.id))! })),
+  );
+  const productsTotal = lines.reduce((sum, line) => sum + line.quantity * line.item.price, 0);
+  const turnoAmount = Number(amount) || 0;
+  const total = turnoAmount + productsTotal;
   const cashValue = Math.min(Math.max(Number(cash) || 0, 0), total);
   const split = method === "dividido";
-  const payment = split
-    ? { amount: total, method: "efectivo" as const, cash: cashValue }
-    : { amount: total, method };
+  const products = lines.map((line) => ({ kind: "producto" as const, id: line.item.id, quantity: line.quantity }));
+  const payment = {
+    amount: turnoAmount,
+    ...(split ? { method: "efectivo" as const, cash: cashValue } : { method }),
+    ...(products.length > 0 ? { products } : {}),
+  };
   const paidLabel = split
     ? `${formatCurrency(cashValue)} en efectivo y ${formatCurrency(total - cashValue)} por transferencia`
     : `${formatCurrency(total)} en ${method}`;
+  const units = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
     <>
-      <Button size="touch" className="flex-1" disabled={pending} onClick={() => setOpen(true)}>
+      <Button size="touch" className="flex-1" disabled={pending} onClick={openDialog}>
         {pending ? (
           <span className="border-background size-4 animate-spin rounded-full border-2 border-t-transparent" />
         ) : (
@@ -241,7 +296,11 @@ export function CompleteAppointmentButton({
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        {/* Con productos la hoja crece y se desplaza: el pie con el total
+            queda fijo abajo (sin el relleno inferior de la hoja, que si no
+            deja un hueco debajo del pie). Sin productos, como siempre: el pie
+            va al final y se desplaza con el resto. */}
+        <DialogContent className={cn("sm:max-w-md", lines.length > 0 && "pb-0 max-sm:standalone:pb-0 sm:pb-0")}>
           <DialogHeader>
             <DialogTitle>Cobrar turno</DialogTitle>
             <DialogDescription>
@@ -251,7 +310,7 @@ export function CompleteAppointmentButton({
 
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor={`amount-${id}`}>Monto</Label>
+              <Label htmlFor={`amount-${id}`}>{lines.length > 0 ? "Monto del turno" : "Monto"}</Label>
               <div className="relative">
                 <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm tabular-nums">
                   $
@@ -272,6 +331,88 @@ export function CompleteAppointmentButton({
               </p>
             </div>
 
+            <div className="space-y-2">
+              {lines.length > 0 ? (
+                <div className="space-y-1.5">
+                  <Label>Productos</Label>
+                  <ul className="divide-y divide-[var(--hs-divider)] rounded-md border border-[var(--hs-border-card)]">
+                    {lines.map((line) => (
+                      <li key={line.item.id} className="flex min-h-12 items-center gap-2 px-3 py-1.5 text-sm">
+                        <span className="min-w-0 flex-1 truncate">
+                          {line.item.name}
+                          {line.quantity > 1 ? (
+                            <span className="text-muted-foreground"> × {line.quantity}</span>
+                          ) : null}
+                        </span>
+                        <span className="tabular-nums">{formatCurrency(line.quantity * line.item.price)}</span>
+                        <button
+                          type="button"
+                          aria-label={`Sacar ${line.item.name} del cobro`}
+                          onClick={() => setQuantity("producto", line.item.id, 0)}
+                          className="text-muted-foreground -mr-2 flex size-10 items-center justify-center"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {pickerOpen ? (
+                catalog ? (
+                  catalog.length === 0 ? (
+                    <p className="text-muted-foreground rounded-md border border-dashed p-3 text-center text-sm">
+                      Todavía no hay productos cargados. Se cargan en Más › Productos.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      <CatalogPicker
+                        groups={catalog}
+                        cart={cart}
+                        onQuantityChange={setQuantity}
+                        initialExpanded={() => new Set(catalog.length === 1 ? [catalog[0].key] : [])}
+                        searchId={`checkout-search-${id}`}
+                        emptyLabel="Todavía no hay productos cargados."
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="touch"
+                        className="w-full"
+                        onClick={() => setPickerOpen(false)}
+                      >
+                        Listo
+                      </Button>
+                    </div>
+                  )
+                ) : catalogFailed ? (
+                  <div className="flex items-center gap-2 rounded-md border border-dashed p-3 text-sm">
+                    <span className="flex-1">No se pudieron traer los productos.</span>
+                    <Button type="button" variant="outline" size="sm" onClick={loadCatalog}>
+                      Reintentar
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground p-3 text-center text-sm">Cargando productos…</p>
+                )
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="touch"
+                  className="w-full"
+                  onClick={() => {
+                    setPickerOpen(true);
+                    if (catalogFailed) loadCatalog();
+                  }}
+                >
+                  <Plus className="size-4" />
+                  {lines.length > 0 ? "Agregar otro producto" : "Agregar producto"}
+                </Button>
+              )}
+            </div>
+
             <PaymentMethodPicker value={method} onChange={setMethod} />
 
             {split ? (
@@ -279,18 +420,31 @@ export function CompleteAppointmentButton({
             ) : null}
           </div>
 
-          <DialogFooter>
-            <Button variant="ghost" size="touch-lg" onClick={() => setOpen(false)} disabled={pending}>
-              Cancelar
-            </Button>
+          <DialogFooter
+            className={cn(
+              lines.length > 0 &&
+                "bg-popover sticky bottom-0 z-10 mb-0 pb-6 max-sm:standalone:pb-[max(env(safe-area-inset-bottom),24px)] sm:mb-0 sm:pb-4",
+            )}
+          >
+            {/* Sin "Cancelar" (pedido del peluquero): la hoja se cierra con
+                la cruz o tocando afuera, y el pie queda con un solo botón. */}
             <Button
               size="touch-xl"
               disabled={pending || !amount || (split && (Number(cash) || 0) > total)}
               onClick={function run() {
                 startTransition(async () => {
                   try {
-                    await completeAppointment(id, payment);
-                    toast.success(`Turno cobrado · ${paidLabel}.`);
+                    const result = await completeAppointment(id, payment);
+                    if (result.status !== "success") {
+                      // Un dato que hay que corregir en la hoja: sin "Reintentar".
+                      toastError(result.message ?? "No se pudo cobrar el turno.");
+                      return;
+                    }
+                    toast.success(
+                      lines.length > 0
+                        ? `Turno y ${units === 1 ? "producto" : "productos"} cobrados · ${paidLabel}.`
+                        : `Turno cobrado · ${paidLabel}.`,
+                    );
                     setOpen(false);
                   } catch (error) {
                     toastActionError(error, "No se pudo cobrar el turno.", run);
@@ -298,8 +452,18 @@ export function CompleteAppointmentButton({
                 });
               }}
             >
-              {pending ? "Cobrando…" : "Cobrar y completar"}
+              {pending ? "Cobrando…" : lines.length > 0 ? `Cobrar ${formatCurrency(total)}` : "Cobrar y completar"}
             </Button>
+            {/* Último en el código: en el celular el pie va en columna invertida
+                y así queda arriba de los botones; en escritorio, a la izquierda. */}
+            {lines.length > 0 ? (
+              <div className="flex items-baseline justify-between gap-3 sm:order-first sm:mr-auto sm:flex-col sm:items-start sm:gap-0">
+                <span className="text-muted-foreground text-xs">
+                  Turno + {units} {units === 1 ? "producto" : "productos"}
+                </span>
+                <span className="text-lg font-semibold tabular-nums">{formatCurrency(total)}</span>
+              </div>
+            ) : null}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -685,6 +849,15 @@ export type RecordedPayment = {
   paid_at: string;
 };
 
+/** Un producto cobrado junto con el turno (0020), como lo muestra "Corregir cobro". */
+export type CheckoutProduct = {
+  name: string;
+  quantity: number;
+  amount: number;
+  method: PaymentMethod;
+  split: Record<PaymentMethod, number> | null;
+};
+
 /**
  * Corregir un cobro ya registrado: monto, medio (o dividido) y día. Es el
  * mismo formulario que "Cobrar", con lo que se cargó ya puesto. Adentro está
@@ -696,6 +869,7 @@ export type RecordedPayment = {
 export function CorrectPaymentButton({
   id,
   payment,
+  products = [],
   clientName,
   serviceName,
   startsAt,
@@ -704,6 +878,8 @@ export function CorrectPaymentButton({
 }: {
   id: string;
   payment: RecordedPayment;
+  /** Productos cobrados junto con el turno (0020): el medio y el día valen para todos. */
+  products?: CheckoutProduct[];
   clientName?: string;
   serviceName: string;
   startsAt?: string;
@@ -711,12 +887,21 @@ export function CorrectPaymentButton({
   /** Clases del disparador cuando es `children` (una fila de Caja). */
   triggerClassName?: string;
 }) {
-  const initialSplit = payment.cash_amount !== null && payment.transfer_amount !== null;
+  // Lo que se cobró junto (turno + productos), como un solo cobro: de ahí
+  // salen el medio de pago y el efectivo con los que arranca la hoja.
+  const recorded = combineCharges([
+    { amount: Number(payment.amount), method: payment.method, split: splitFromColumns(payment.cash_amount, payment.transfer_amount) },
+    ...products.map((product) => ({ amount: Number(product.amount), method: product.method, split: product.split })),
+  ]);
+  const initialSplit = Boolean(recorded.split);
+  const initialMethod: PaymentChoice = initialSplit ? "dividido" : recorded.method;
+  const initialCash = recorded.split ? String(recorded.split.efectivo) : "";
+  const productsTotal = products.reduce((sum, product) => sum + Number(product.amount), 0);
   const [open, setOpen] = useState(false);
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [amount, setAmount] = useState(String(payment.amount));
-  const [method, setMethod] = useState<PaymentChoice>(initialSplit ? "dividido" : payment.method);
-  const [cash, setCash] = useState(initialSplit ? String(payment.cash_amount) : "");
+  const [method, setMethod] = useState<PaymentChoice>(initialMethod);
+  const [cash, setCash] = useState(initialCash);
   const [paidOn, setPaidOn] = useState(businessDateKey(payment.paid_at));
   const [pending, startTransition] = useTransition();
 
@@ -724,14 +909,15 @@ export function CorrectPaymentButton({
   // anterior que se cerró sin guardar).
   function openDialog() {
     setAmount(String(payment.amount));
-    setMethod(initialSplit ? "dividido" : payment.method);
-    setCash(initialSplit ? String(payment.cash_amount) : "");
+    setMethod(initialMethod);
+    setCash(initialCash);
     setPaidOn(businessDateKey(payment.paid_at));
     setConfirmUndo(false);
     setOpen(true);
   }
 
-  const total = Number(amount) || 0;
+  const turnoAmount = Number(amount) || 0;
+  const total = turnoAmount + productsTotal;
   const split = method === "dividido";
   const cashValue = Math.min(Math.max(Number(cash) || 0, 0), total);
   const today = todayKey();
@@ -757,8 +943,14 @@ export function CorrectPaymentButton({
               <DialogHeader>
                 <DialogTitle>Deshacer cobro</DialogTitle>
                 <DialogDescription>
-                  {context}. Se borra el cobro de {formatCurrency(payment.amount)} y el turno vuelve a
-                  estar confirmado, para cobrarlo de nuevo o marcar que no vino. No se puede volver atrás.
+                  {context}.{" "}
+                  {products.length > 0
+                    ? `Se borra el cobro de ${formatCurrency(recorded.amount)}, con ${
+                        products.length === 1 ? "el producto que se cobró" : `los ${products.length} productos que se cobraron`
+                      } junto,`
+                    : `Se borra el cobro de ${formatCurrency(payment.amount)}`}{" "}
+                  y el turno vuelve a estar confirmado, para cobrarlo de nuevo o marcar que no vino. No se puede
+                  volver atrás.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
@@ -789,7 +981,7 @@ export function CorrectPaymentButton({
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor={`fix-amount-${id}`}>Monto</Label>
+                  <Label htmlFor={`fix-amount-${id}`}>{products.length > 0 ? "Monto del turno" : "Monto"}</Label>
                   <div className="relative">
                     <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm tabular-nums">
                       $
@@ -806,6 +998,27 @@ export function CorrectPaymentButton({
                     />
                   </div>
                 </div>
+
+                {products.length > 0 ? (
+                  <div className="space-y-1.5">
+                    <Label>Productos cobrados junto</Label>
+                    <ul className="text-muted-foreground divide-y divide-[var(--hs-divider)] rounded-md border border-[var(--hs-border-card)] text-sm tabular-nums">
+                      {products.map((product, index) => (
+                        <li key={index} className="flex min-h-11 items-center justify-between gap-3 px-3">
+                          <span className="min-w-0 truncate">
+                            {product.name}
+                            {product.quantity > 1 ? ` × ${product.quantity}` : ""}
+                          </span>
+                          <span>{formatCurrency(product.amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-muted-foreground text-xs">
+                      Total {formatCurrency(total)}. El medio de pago y el día valen para todo; para cambiar
+                      los productos, corregilos desde Caja.
+                    </p>
+                  </div>
+                ) : null}
 
                 <PaymentMethodPicker value={method} onChange={setMethod} />
 
@@ -844,7 +1057,7 @@ export function CorrectPaymentButton({
                       const ok = await runCorrection(
                         () =>
                           correctPayment(id, {
-                            amount: total,
+                            amount: turnoAmount,
                             method: split ? "efectivo" : method,
                             cash: split ? cashValue : undefined,
                             paidOn,

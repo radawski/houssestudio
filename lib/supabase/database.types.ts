@@ -190,6 +190,8 @@ export type WalkInSale = {
   transfer_amount: number | null;
   sold_at: string;
   note: string | null;
+  /** Productos cobrados junto con un turno (0020): el turno. Nulo en una venta suelta. */
+  appointment_id: string | null;
   created_at: string;
 };
 
@@ -277,6 +279,7 @@ export type Database = {
         | "note"
         | "cash_amount"
         | "transfer_amount"
+        | "appointment_id"
       >;
       product_categories: TableShape<ProductCategory, "sort_order">;
       products: TableShape<Product, "is_active" | "sort_order">;
@@ -344,6 +347,26 @@ export type Database = {
       };
       update_walk_in_sale_payment: {
         Args: { p_sale_id: string; p_method: PaymentMethod; p_cash: number | null };
+        Returns: void;
+      };
+      complete_appointment_with_products: {
+        Args: {
+          p_appointment_id: string;
+          p_amount: number;
+          p_method: PaymentMethod;
+          p_cash: number | null;
+          p_items: { kind: "producto"; id: string; quantity: number }[];
+        };
+        Returns: string;
+      };
+      update_appointment_checkout: {
+        Args: {
+          p_appointment_id: string;
+          p_amount: number;
+          p_method: PaymentMethod;
+          p_cash: number | null;
+          p_paid_at: string;
+        };
         Returns: void;
       };
       replace_walk_in_sale: {

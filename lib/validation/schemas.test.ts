@@ -8,6 +8,7 @@ import {
   normalizeDni,
   normalizePhone,
   paymentCorrectionSchema,
+  paymentSchema,
   productCategorySchema,
   productSchema,
   walkInSalePaymentSchema,
@@ -248,6 +249,33 @@ describe("productCategorySchema / productSchema", () => {
   });
 });
 
+describe("paymentSchema con productos", () => {
+  const base = {
+    appointmentId: "8f1c2b8e-5c43-4c51-9a3e-2f1d6b7a9c10",
+    amount: 12000,
+    method: "efectivo",
+  };
+  const product = { kind: "producto", id: "1f1c2b8e-5c43-4c51-9a3e-2f1d6b7a9c11", quantity: 1 };
+
+  it("sin productos, rechaza efectivo mayor que el monto", () => {
+    const result = paymentSchema.safeParse({ ...base, cash: 15000 });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["cash"]);
+  });
+
+  it("con productos, el efectivo puede superar el monto del turno", () => {
+    expect(paymentSchema.safeParse({ ...base, cash: 15000, products: [product] }).success).toBe(true);
+  });
+
+  it("solo acepta productos, no servicios", () => {
+    expect(paymentSchema.safeParse({ ...base, products: [{ ...product, kind: "servicio" }] }).success).toBe(false);
+  });
+
+  it("rechaza el mismo producto dos veces", () => {
+    expect(paymentSchema.safeParse({ ...base, products: [product, product] }).success).toBe(false);
+  });
+});
+
 describe("paymentCorrectionSchema", () => {
   const base = {
     appointmentId: "8f1c2b8e-5c43-4c51-9a3e-2f1d6b7a9c10",
@@ -264,10 +292,14 @@ describe("paymentCorrectionSchema", () => {
     expect(paymentCorrectionSchema.safeParse({ ...base, cash: 5000 }).success).toBe(true);
   });
 
-  it("rechaza efectivo mayor que el total", () => {
-    const result = paymentCorrectionSchema.safeParse({ ...base, cash: 15000 });
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0]?.path).toEqual(["cash"]);
+  // Con productos cobrados junto al turno (0020) el efectivo es del total,
+  // que conoce la base: ahí se controla, no acá.
+  it("deja pasar efectivo mayor que el monto del turno", () => {
+    expect(paymentCorrectionSchema.safeParse({ ...base, cash: 15000 }).success).toBe(true);
+  });
+
+  it("rechaza efectivo negativo", () => {
+    expect(paymentCorrectionSchema.safeParse({ ...base, cash: -1 }).success).toBe(false);
   });
 
   it("exige el día del cobro con formato yyyy-MM-dd", () => {

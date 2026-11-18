@@ -36,7 +36,14 @@ export type CashboxMovement = CategorizedCharge & {
    */
   correction:
     | { kind: "turno"; appointmentId: string; clientName: string | null; startsAt: string | null }
-    | { kind: "venta"; saleId: string; itemKind: "servicio" | "producto"; catalogId: string | null };
+    | {
+        kind: "venta";
+        saleId: string;
+        itemKind: "servicio" | "producto";
+        catalogId: string | null;
+        /** Productos cobrados junto con un turno (0020): ese turno. */
+        appointmentId: string | null;
+      };
 };
 
 /**
@@ -77,7 +84,7 @@ export async function getCashboxSummary(range: {
     supabase
       .from("walk_in_sales")
       .select(
-        "id, sale_id, kind, service_id, product_id, service_name, quantity, unit_price, category_id, amount, method, cash_amount, transfer_amount, sold_at, note",
+        "id, sale_id, kind, service_id, product_id, service_name, quantity, unit_price, category_id, amount, method, cash_amount, transfer_amount, sold_at, note, appointment_id",
       )
       .gte("sold_at", range.start)
       .lt("sold_at", range.end),
@@ -134,6 +141,15 @@ export async function getCashboxSummary(range: {
       };
     });
 
+  // Clientes de los turnos cobrados, para rotular los productos que se
+  // cobraron junto con uno (0020).
+  const turnoClients = new Map(
+    (paymentsResult.data as unknown as PaymentRow[]).map((row) => [
+      row.appointment_id,
+      row.appointment?.customer?.full_name ?? null,
+    ]),
+  );
+
   const saleMovements: CashboxMovement[] = salesResult.data.map((row) => {
     const category = row.category_id ? categories.get(row.category_id) : undefined;
     const placement =
@@ -150,12 +166,17 @@ export async function getCashboxSummary(range: {
       method: row.method,
       split: splitFromColumns(row.cash_amount, row.transfer_amount),
       at: row.sold_at,
-      note: row.note,
+      note:
+        row.note ??
+        (row.appointment_id
+          ? `Con el turno${turnoClients.get(row.appointment_id) ? ` de ${turnoClients.get(row.appointment_id)}` : ""}`
+          : null),
       correction: {
         kind: "venta" as const,
         saleId: row.sale_id,
         itemKind: row.kind,
         catalogId: row.kind === "producto" ? row.product_id : row.service_id,
+        appointmentId: row.appointment_id,
       },
       ...placement,
       concept: row.service_name,

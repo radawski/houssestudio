@@ -5,7 +5,7 @@ import { fetchBusinessDays, toDayHours } from "@/lib/data/availability";
 import { dayRange } from "@/lib/dates";
 import { summarizeCustomerHistory, type CustomerHistory } from "@/lib/no-shows";
 import { createClient } from "@/lib/supabase/server";
-import type { Appointment, Customer, Payment, Service } from "@/lib/supabase/database.types";
+import type { Appointment, Customer, Payment, Service, WalkInSale } from "@/lib/supabase/database.types";
 
 /**
  * Lecturas del panel privado.
@@ -26,6 +26,8 @@ export type AppointmentWithCustomer = Appointment & {
    * solo objeto, no un arreglo.
    */
   payment: Pick<Payment, "amount" | "method" | "paid_at" | "cash_amount" | "transfer_amount"> | null;
+  /** Productos cobrados junto con el turno (0020). Vacío si no hubo. */
+  products?: Pick<WalkInSale, "service_name" | "quantity" | "amount" | "method" | "cash_amount" | "transfer_amount">[];
   /**
    * Faltas y visitas anteriores del cliente, para el aviso "Faltó N veces".
    * Solo viene cuando la pantalla lo pidió con `withCustomerHistory`.
@@ -34,7 +36,7 @@ export type AppointmentWithCustomer = Appointment & {
 };
 
 const WITH_CUSTOMER =
-  "*, customer:customers(id, dni, full_name, phone, email), payment:payments(amount, method, paid_at, cash_amount, transfer_amount)";
+  "*, customer:customers(id, dni, full_name, phone, email), payment:payments(amount, method, paid_at, cash_amount, transfer_amount), products:walk_in_sales(service_name, quantity, amount, method, cash_amount, transfer_amount)";
 
 export async function countPendingAppointments(): Promise<number> {
   const supabase = await createClient();

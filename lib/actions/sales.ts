@@ -8,6 +8,7 @@ import {
 } from "@/lib/actions/result";
 import { revalidateAgenda } from "@/lib/cache";
 import { requireAdmin } from "@/lib/auth";
+import { getSaleCatalog, type SaleCatalog } from "@/lib/data/products";
 import type { PaymentMethod, WalkInSaleKind } from "@/lib/supabase/database.types";
 import { walkInSalePaymentSchema, walkInSaleSchema } from "@/lib/validation/schemas";
 
@@ -117,4 +118,16 @@ export async function correctWalkInSalePayment(input: {
 
   revalidateAgenda();
   return actionSuccess("Medio de pago corregido.");
+}
+
+/**
+ * Los productos que se pueden sumar al cobro de un turno (0020), por
+ * categoría. Lo pide la hoja "Cobrar turno" al abrirse: Cobrar está en Hoy,
+ * Agenda, Solicitudes y la ficha del cliente, y así ninguna de esas pantallas
+ * tiene que cargar el catálogo por las dudas.
+ */
+export async function getCheckoutProducts(): Promise<SaleCatalog["categories"]> {
+  await requireAdmin();
+  const catalog = await getSaleCatalog();
+  return catalog.categories;
 }

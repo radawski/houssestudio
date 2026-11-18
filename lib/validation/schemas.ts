@@ -212,15 +212,34 @@ export const cancelByTokenSchema = z.object({
   reason: z.string().trim().max(300, "El motivo es demasiado largo").optional(),
 });
 
+/** Productos que se cobran junto con un turno (0020): solo productos del catálogo. */
+const checkoutProductsSchema = z
+  .array(
+    z.object({
+      kind: z.literal("producto"),
+      id: z.uuid(),
+      quantity: z.coerce.number<number>().int().min(1).max(99, "Demasiadas unidades"),
+    }),
+  )
+  .max(50)
+  .refine((items) => new Set(items.map((item) => item.id)).size === items.length, "Un producto aparece dos veces");
+
 export const paymentSchema = z
   .object({
     appointmentId: z.uuid(),
+    /** Monto del turno solo (sin los productos). */
     amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
     method: z.enum(["efectivo", "transferencia"]),
-    /** Pago dividido (0016): cuánto fue en efectivo; el resto, por transferencia. */
-    cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").optional(),
+    /**
+     * Pago dividido (0016): cuánto fue en efectivo; el resto, por transferencia.
+     * Con productos es el efectivo del total (turno + productos).
+     */
+    cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").max(10_000_000).optional(),
+    /** Productos cobrados junto con el turno (0020). */
+    products: checkoutProductsSchema.optional(),
   })
-  .refine((payment) => payment.cash === undefined || payment.cash <= payment.amount, {
+  // Con productos, el total lo conoce la base (precios del catálogo) y lo controla ella.
+  .refine((payment) => payment.cash === undefined || (payment.products?.length ?? 0) > 0 || payment.cash <= payment.amount, {
     message: "El efectivo no puede superar el total.",
     path: ["cash"],
   });
@@ -235,13 +254,12 @@ export const paymentCorrectionSchema = z
     appointmentId: z.uuid(),
     amount: z.coerce.number<number>().min(0, "El monto no puede ser negativo").max(10_000_000),
     method: z.enum(["efectivo", "transferencia"]),
-    cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").optional(),
+    cash: z.coerce.number<number>().min(0, "El efectivo no puede ser negativo").max(10_000_000).optional(),
     paidOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Elegí el día del cobro"),
-  })
-  .refine((payment) => payment.cash === undefined || payment.cash <= payment.amount, {
-    message: "El efectivo no puede superar el total.",
-    path: ["cash"],
   });
+// Sin `cash <= amount`: con productos cobrados junto al turno (0020), el
+// efectivo es del total, y ese total lo conoce la base, que es la que lo
+// controla (`update_appointment_checkout`).
 
 /** Cambio del medio de pago de una venta suelta ya registrada (0018). */
 export const walkInSalePaymentSchema = z.object({

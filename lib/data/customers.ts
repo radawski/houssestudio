@@ -61,7 +61,9 @@ export async function getCustomerDetail(id: string): Promise<CustomerDetail | nu
     supabase.from("customers").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("appointments")
-      .select("*, payment:payments(amount, method, paid_at, cash_amount, transfer_amount)")
+      .select(
+        "*, payment:payments(amount, method, paid_at, cash_amount, transfer_amount), products:walk_in_sales(service_name, quantity, amount, method, cash_amount, transfer_amount)",
+      )
       .eq("customer_id", id)
       .order("starts_at", { ascending: false }),
   ]);

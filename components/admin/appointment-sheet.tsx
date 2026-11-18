@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { buildAppointmentTimeline } from "@/lib/appointment-timeline";
 import { canMarkNoShow, restoreTarget } from "@/lib/appointment-rules";
-import { describePayment, splitFromColumns } from "@/lib/cashbox";
+import { combineCharges, describePayment, splitFromColumns } from "@/lib/cashbox";
 import type { AppointmentWithCustomer } from "@/lib/data/appointments";
 import {
   formatCurrency,
@@ -84,6 +84,23 @@ export function AppointmentSheet({
   const { customer, status } = appointment;
   const timeline = buildAppointmentTimeline(appointment);
   const isOpen = status === "pendiente" || status === "confirmado";
+  const products = appointment.products ?? [];
+  // El turno y los productos que se cobraron con él (0020), como un solo cobro.
+  const checkoutCharge = appointment.payment
+    ? combineCharges([
+        {
+          amount: Number(appointment.payment.amount),
+          method: appointment.payment.method,
+          split: splitFromColumns(appointment.payment.cash_amount, appointment.payment.transfer_amount),
+        },
+        ...products.map((product) => ({
+          amount: Number(product.amount),
+          method: product.method,
+          split: splitFromColumns(product.cash_amount, product.transfer_amount),
+        })),
+      ])
+    : null;
+  const checkout = checkoutCharge ? { total: checkoutCharge.amount, charge: checkoutCharge } : null;
   const restoreTo = restoreTarget({
     status,
     cancelledBy: appointment.cancelled_by,
@@ -151,29 +168,40 @@ export function AppointmentSheet({
       ) : null}
 
       {status === "completado" && appointment.payment ? (
-        <div className="flex items-center gap-3 rounded-md border border-[var(--hs-border-card)] p-3.5">
-          <Wallet className="text-muted-foreground size-[18px] shrink-0" strokeWidth={1.75} />
-          <div className="flex-1">
-            <p className="text-muted-foreground text-[10px] font-medium tracking-[0.08em] uppercase">
-              Cobrado
-            </p>
-            <p className="mt-0.5 text-[15px] font-semibold tabular-nums">
-              {formatCurrency(appointment.payment.amount)}
-            </p>
-            <p className="text-muted-foreground text-[13px] tabular-nums">
-              {describePayment(
-                {
-                  amount: appointment.payment.amount,
-                  method: appointment.payment.method,
-                  split: splitFromColumns(appointment.payment.cash_amount, appointment.payment.transfer_amount),
-                },
-                formatCurrency,
-              )}
-            </p>
+        <div className="flex flex-col gap-2.5 rounded-md border border-[var(--hs-border-card)] p-3.5">
+          <div className="flex items-center gap-3">
+            <Wallet className="text-muted-foreground size-[18px] shrink-0" strokeWidth={1.75} />
+            <div className="flex-1">
+              <p className="text-muted-foreground text-[10px] font-medium tracking-[0.08em] uppercase">
+                Cobrado
+              </p>
+              <p className="mt-0.5 text-[15px] font-semibold tabular-nums">{formatCurrency(checkout!.total)}</p>
+              <p className="text-muted-foreground text-[13px] tabular-nums">
+                {describePayment(checkout!.charge, formatCurrency)}
+              </p>
+            </div>
+            <span className="text-muted-foreground text-xs tabular-nums">
+              {formatTime(appointment.payment.paid_at)}
+            </span>
           </div>
-          <span className="text-muted-foreground text-xs tabular-nums">
-            {formatTime(appointment.payment.paid_at)}
-          </span>
+          {products.length > 0 ? (
+            // Productos cobrados junto con el turno (0020).
+            <ul className="text-muted-foreground border-t border-[var(--hs-divider)] pt-2.5 pl-[30px] text-[13px] tabular-nums">
+              <li className="flex justify-between gap-3">
+                <span>Turno</span>
+                <span>{formatCurrency(appointment.payment.amount)}</span>
+              </li>
+              {products.map((product, index) => (
+                <li key={index} className="flex justify-between gap-3">
+                  <span className="min-w-0 truncate">
+                    {product.service_name}
+                    {product.quantity > 1 ? ` × ${product.quantity}` : ""}
+                  </span>
+                  <span>{formatCurrency(product.amount)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       ) : null}
 
@@ -222,6 +250,13 @@ export function AppointmentSheet({
               <CorrectPaymentButton
                 id={appointment.id}
                 payment={appointment.payment}
+                products={products.map((product) => ({
+                  name: product.service_name,
+                  quantity: product.quantity,
+                  amount: product.amount,
+                  method: product.method,
+                  split: splitFromColumns(product.cash_amount, product.transfer_amount),
+                }))}
                 clientName={customer?.full_name}
                 serviceName={appointment.service_name_at_booking}
                 startsAt={appointment.starts_at}

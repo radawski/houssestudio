@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { ChevronDown, ChevronRight, Minus, Plus, Search, ShoppingBag } from "lucide-react";
+import { Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 import { SplitAmounts, type PaymentChoice } from "@/components/admin/appointment-actions";
+import { CatalogPicker, itemKey, type CatalogGroup } from "@/components/admin/catalog-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,45 +24,6 @@ import { formatCurrency } from "@/lib/format";
 import type { WalkInSaleKind } from "@/lib/supabase/database.types";
 import { toastActionError, toastError } from "@/lib/toast-error";
 import { cn } from "@/lib/utils";
-
-type CatalogItem = SaleCatalog["services"][number];
-
-type Group = { key: string; name: string; kind: WalkInSaleKind; items: CatalogItem[] };
-
-/** Clave de un ítem en el carrito: el mismo id no se repite entre servicios y productos. */
-const itemKey = (kind: WalkInSaleKind, id: string) => `${kind}:${id}`;
-
-function normalize(text: string) {
-  return text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-}
-
-/** − n + de un ítem ya agregado (design VentaC: "Quitar uno de…" / "Sumar uno de…"). */
-function Stepper({ name, quantity, onChange }: { name: string; quantity: number; onChange: (n: number) => void }) {
-  return (
-    <div className="flex items-center rounded-md border border-[var(--hs-mist)]">
-      <button
-        type="button"
-        aria-label={`Quitar uno de ${name}`}
-        onClick={() => onChange(quantity - 1)}
-        className="flex size-10 items-center justify-center"
-      >
-        <Minus className="size-4" />
-      </button>
-      <span className="w-6 text-center text-sm font-medium tabular-nums" aria-live="polite">
-        {quantity}
-      </span>
-      <button
-        type="button"
-        aria-label={`Sumar uno de ${name}`}
-        onClick={() => onChange(quantity + 1)}
-        disabled={quantity >= 99}
-        className="flex size-10 items-center justify-center disabled:opacity-40"
-      >
-        <Plus className="size-4" />
-      </button>
-    </div>
-  );
-}
 
 /**
  * Una venta ya registrada que se vuelve a cargar para corregirla ("Anular y
@@ -103,7 +65,7 @@ export function WalkInSaleButton({
   /** Sus propios botones (escritorio y FAB). La Agenda los reemplaza por "+ Nuevo". */
   withTriggers?: boolean;
 }) {
-  const groups: Group[] = useMemo(
+  const groups: CatalogGroup[] = useMemo(
     () => [
       { key: SERVICES_CATEGORY.key, name: SERVICES_CATEGORY.name, kind: "servicio", items: catalog.services },
       ...catalog.categories
@@ -130,8 +92,6 @@ export function WalkInSaleButton({
         .map((group) => group.key),
     ]);
   const [cart, setCart] = useState<Map<string, number>>(initialCart);
-  const [expanded, setExpanded] = useState<Set<string>>(initialExpanded);
-  const [query, setQuery] = useState("");
   const [method, setMethod] = useState<PaymentChoice>(initial?.method ?? "efectivo");
   const [cash, setCash] = useState(initial?.cash ?? "");
   const [note, setNote] = useState(initial?.note ?? "");
@@ -139,8 +99,6 @@ export function WalkInSaleButton({
 
   function reset() {
     setCart(initialCart());
-    setExpanded(initialExpanded());
-    setQuery("");
     setMethod(initial?.method ?? "efectivo");
     setCash(initial?.cash ?? "");
     setNote(initial?.note ?? "");
@@ -154,23 +112,6 @@ export function WalkInSaleButton({
       return next;
     });
   }
-
-  function toggle(key: string) {
-    setExpanded((current) => {
-      const next = new Set(current);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
-
-  // Con búsqueda, se ven solo los ítems que coinciden y sus categorías, abiertas.
-  const search = normalize(query.trim());
-  const visibleGroups = search
-    ? groups
-        .map((group) => ({ ...group, items: group.items.filter((item) => normalize(item.name).includes(search)) }))
-        .filter((group) => group.items.length > 0)
-    : groups;
 
   const lines = groups.flatMap((group) =>
     group.items
@@ -264,88 +205,13 @@ export function WalkInSaleButton({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative">
-          <Label htmlFor="walkin-search" className="sr-only">
-            Buscar
-          </Label>
-          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            id="walkin-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar"
-            autoComplete="off"
-            className="h-11 pl-9 text-base md:h-9 md:text-sm"
-          />
-        </div>
-
-        <div className="space-y-2">
-          {visibleGroups.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">
-              {search ? "No hay nada con ese nombre." : "Todavía no hay servicios ni productos cargados."}
-            </p>
-          ) : null}
-          {visibleGroups.map((group) => {
-            const isOpen = Boolean(search) || expanded.has(group.key);
-            const chosen = group.items.filter((item) => cart.has(itemKey(group.kind, item.id))).length;
-            return (
-              <section key={group.key} className="overflow-hidden rounded-md border border-[var(--hs-border-card)]">
-                <button
-                  type="button"
-                  aria-expanded={isOpen}
-                  onClick={() => toggle(group.key)}
-                  className="flex h-12 w-full items-center gap-2 bg-[var(--hs-surface-raised)] px-3 text-left"
-                >
-                  {isOpen ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
-                  <span className="flex-1 text-[15px] font-medium">
-                    {group.name} <span className="text-muted-foreground font-normal">· {group.items.length}</span>
-                  </span>
-                  {chosen > 0 ? (
-                    <span className="text-muted-foreground text-xs">
-                      {chosen} {chosen === 1 ? "elegido" : "elegidos"}
-                    </span>
-                  ) : null}
-                </button>
-                {isOpen ? (
-                  <ul className="divide-y divide-[var(--hs-divider)]">
-                    {group.items.map((item) => {
-                      const quantity = cart.get(itemKey(group.kind, item.id)) ?? 0;
-                      return (
-                        <li key={item.id} className="flex min-h-14 items-center gap-3 px-3 py-1.5">
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm">{item.name}</span>
-                            <span className="text-muted-foreground block text-xs tabular-nums">
-                              {formatCurrency(item.price)}
-                            </span>
-                          </span>
-                          {quantity > 0 ? (
-                            <Stepper
-                              name={item.name}
-                              quantity={quantity}
-                              onChange={(n) => setQuantity(group.kind, item.id, n)}
-                            />
-                          ) : (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="h-10"
-                              aria-label={`Agregar ${item.name}`}
-                              onClick={() => setQuantity(group.kind, item.id, 1)}
-                            >
-                              Agregar
-                            </Button>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : null}
-              </section>
-            );
-          })}
-        </div>
+        <CatalogPicker
+          groups={groups}
+          cart={cart}
+          onQuantityChange={setQuantity}
+          initialExpanded={initialExpanded}
+          searchId="walkin-search"
+        />
 
         <div className="space-y-1.5">
           <Label>Medio de pago</Label>
@@ -398,3 +264,4 @@ export function WalkInSaleButton({
     </Dialog>
   );
 }
+

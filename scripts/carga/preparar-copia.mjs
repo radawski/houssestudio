@@ -4,8 +4,10 @@
  *   node scripts/carga/preparar-copia.mjs
  *
  * Copia solo lo que define la disponibilidad pública: ajustes, servicios,
- * horario semanal con sus bloques y bloqueos futuros. Nunca copia clientes ni
- * turnos (datos personales). De producción solo LEE.
+ * horario semanal con sus bloques y bloqueos futuros. También el catálogo de
+ * productos (categorías y productos), para probar ventas y cobros en la base
+ * de prueba. Nunca copia clientes, turnos, cobros ni ventas (datos
+ * personales y de caja). De producción solo LEE.
  */
 import { loadEnvs, prodClient, testClient } from "./entorno.mjs";
 
@@ -33,12 +35,14 @@ async function write(table, rows, upsertOn) {
   if (error) throw new Error(`Escribiendo ${table} en prueba: ${error.message}`);
 }
 
-const [settings, services, hours, ranges, blocks] = await Promise.all([
+const [settings, services, hours, ranges, blocks, categories, products] = await Promise.all([
   read("settings"),
   read("services"),
   read("business_hours"),
   read("business_hour_ranges"),
   read("time_blocks", (q) => q.gt("ends_at", new Date().toISOString())),
+  read("product_categories"),
+  read("products"),
 ]);
 
 // Orden: primero lo que depende de otra tabla.
@@ -46,16 +50,22 @@ await wipe("business_hour_ranges", "weekday");
 await wipe("time_blocks", "id");
 // Los servicios del seed no tienen turnos en la base de prueba recién creada.
 await wipe("services", "id");
+// Productos antes que categorías: borrar una categoría con productos está impedido.
+await wipe("products", "id");
+await wipe("product_categories", "id");
 
 await write("settings", settings, "id");
 await write("services", services);
 await write("business_hours", hours, "weekday");
 await write("business_hour_ranges", ranges);
 await write("time_blocks", blocks);
+await write("product_categories", categories);
+await write("products", products);
 
 console.log("Catálogo copiado a la base de prueba:");
 console.log(`  servicios activos: ${services.filter((s) => s.is_active).length}`);
 console.log(`  días con horario: ${hours.filter((h) => !h.is_closed).length}, bloques: ${ranges.length}`);
 console.log(`  bloqueos futuros: ${blocks.length}`);
+console.log(`  productos activos: ${products.filter((p) => p.is_active).length} en ${categories.length} categorías`);
 const s = settings[0];
 console.log(`  ventana: ${s.max_booking_days} días, anticipación mínima ${s.min_booking_lead_minutes} min`);

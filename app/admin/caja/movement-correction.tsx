@@ -66,6 +66,16 @@ export function MovementCorrection({
           transfer_amount: movement.split?.transferencia ?? null,
           paid_at: movement.at,
         }}
+        // Productos cobrados junto con este turno (0020): caen el mismo día.
+        products={movements
+          .filter((m) => m.correction.kind === "venta" && m.correction.appointmentId === correction.appointmentId)
+          .map((m) => ({
+            name: m.serviceName,
+            quantity: m.quantity,
+            amount: m.amount,
+            method: m.method,
+            split: m.split ?? null,
+          }))}
         clientName={correction.clientName ?? undefined}
         serviceName={movement.serviceName}
         startsAt={correction.startsAt ?? undefined}

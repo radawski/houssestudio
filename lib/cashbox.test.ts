@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   amountsByMethod,
+  combineCharges,
   type CategorizedCharge,
   describePayment,
   groupByCategory,
@@ -168,5 +169,34 @@ describe("pago dividido", () => {
     const money = (n: number) => `$${n}`;
     expect(describePayment(split, money)).toBe("Efectivo $5000 + Transf. $7000");
     expect(describePayment({ amount: 1, method: "transferencia" }, money)).toBe("Transferencia");
+  });
+});
+
+describe("combineCharges", () => {
+  it("un turno y un producto en efectivo quedan en efectivo", () => {
+    expect(
+      combineCharges([
+        { amount: 12000, method: "efectivo" },
+        { amount: 1500, method: "efectivo" },
+      ]),
+    ).toEqual({ amount: 13500, method: "efectivo" });
+  });
+
+  it("todo por transferencia queda en transferencia", () => {
+    expect(
+      combineCharges([
+        { amount: 12000, method: "transferencia" },
+        { amount: 1500, method: "transferencia" },
+      ]),
+    ).toEqual({ amount: 13500, method: "transferencia" });
+  });
+
+  it("un pago dividido repartido entre turno y producto se vuelve a juntar", () => {
+    expect(
+      combineCharges([
+        { amount: 12000, method: "efectivo", split: { efectivo: 4400, transferencia: 7600 } },
+        { amount: 1500, method: "efectivo", split: { efectivo: 600, transferencia: 900 } },
+      ]),
+    ).toEqual({ amount: 13500, method: "transferencia", split: { efectivo: 5000, transferencia: 8500 } });
   });
 });

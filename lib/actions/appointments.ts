@@ -107,20 +107,39 @@ async function notifyConfirmed(id: string, appointment: ConfirmedAppointment | n
  */
 export async function completeAppointment(
   id: string,
-  payment: { amount: number; method: PaymentMethod; cash?: number },
-) {
+  payment: {
+    amount: number;
+    method: PaymentMethod;
+    cash?: number;
+    /** Productos que se cobran junto con el turno (0020). */
+    products?: { kind: "producto"; id: string; quantity: number }[];
+  },
+): Promise<ActionState> {
   const { supabase } = await requireAdmin();
 
+  // Devuelve el error en vez de lanzarlo: en producción Next reemplaza el
+  // mensaje de un error lanzado por uno genérico, y "un producto ya no está
+  // en el catálogo" tiene que llegar tal cual a la hoja.
   const parsed = paymentSchema.safeParse({ appointmentId: id, ...payment });
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Datos de pago invalidos.");
+    return actionError(parsed.error.issues[0]?.message ?? "Datos de pago inválidos.");
   }
 
   // Con `cash`, el pago es dividido (migración 0016): esa parte en efectivo y
   // el resto por transferencia, en la misma transacción.
-  const { amount, method, cash } = parsed.data;
+  // Con productos (0020), el turno y los productos van en una sola
+  // transacción. Sin productos, el camino de siempre, sin cambios.
+  const { amount, method, cash, products } = parsed.data;
   const { error } =
-    cash === undefined
+    products && products.length > 0
+      ? await supabase.rpc("complete_appointment_with_products", {
+          p_appointment_id: id,
+          p_amount: amount,
+          p_method: method,
+          p_cash: cash ?? null,
+          p_items: products,
+        })
+      : cash === undefined
       ? await supabase.rpc("complete_appointment_with_payment", {
           p_appointment_id: id,
           p_amount: amount,
@@ -132,9 +151,21 @@ export async function completeAppointment(
           p_transfer: amount - cash,
         });
 
-  if (error) throw new Error(`No se pudo registrar el cobro: ${error.message}`);
+  if (error) {
+    if (error.message.includes("ya no esta disponible")) {
+      return actionError("Un producto ya no está en el catálogo. Sacalo del cobro y volvé a intentar.");
+    }
+    if (error.message.includes("no puede superar el total")) {
+      return actionError("El efectivo no puede superar el total.");
+    }
+    if (error.message.includes("ya no esta en un estado")) {
+      return actionError("Este turno ya no se puede cobrar: puede que ya esté cobrado o cancelado.");
+    }
+    return actionError(`No se pudo registrar el cobro: ${error.message}`);
+  }
 
   revalidateAgenda();
+  return actionSuccess();
 }
 
 /**
@@ -355,7 +386,9 @@ export async function correctPayment(
   if (!paidAt) return actionError("El día del cobro no puede ser posterior a hoy.", { paidOn: "Elegí hoy o un día anterior." });
 
   const { amount, method, cash } = parsed.data;
-  const { error } = await supabase.rpc("update_appointment_payment", {
+  // `update_appointment_checkout` (0020) incluye los productos cobrados junto
+  // con el turno; sin productos hace lo mismo que `update_appointment_payment`.
+  const { error } = await supabase.rpc("update_appointment_checkout", {
     p_appointment_id: id,
     p_amount: amount,
     p_method: method,
@@ -366,6 +399,9 @@ export async function correctPayment(
   if (error) {
     if (error.message.includes("no tiene un cobro")) {
       return actionError("Ese turno ya no tiene un cobro para corregir.");
+    }
+    if (error.message.includes("no puede superar el total")) {
+      return actionError("El efectivo no puede superar el total.", { cash: "No puede superar el total." });
     }
     return actionError(`No se pudo corregir el cobro: ${error.message}`);
   }
